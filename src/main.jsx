@@ -4,8 +4,11 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 
 import App from './App.jsx'
-import PageNotFound from './pages/PageNotFound.jsx'
-
+import Home from './pages/Home.jsx'
+import Testes from './pages/Testes.jsx'
+import Mapa from './pages/Mapa.jsx'
+import Historias from './pages/Historias.jsx'
+import Game from './pages/Game.jsx'
 
 
 const router = createBrowserRouter([
@@ -13,15 +16,16 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
-      { index: true, element: <Scene /> },
-      // { path: '/story', element: <Story /> },
-      // { path: '/legendary', element: <Legendary /> }
+      { index: true, element: <Home /> },
+      { path: "/testes", element: < Testes /> },
+      { path: "/mapa", element: < Mapa /> },
+      { path: "/historias", element: < Historias /> },
+      { path: "/game", element: < Game /> },
       { path: '*', element: <PageNotFound /> },
       // { path: ':name', element: <ContentPage /> }
     ]
   }
 ])
-
 
 
 createRoot(document.getElementById('root')).render(
