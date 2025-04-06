@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
+import LinhaDoTempo from '../components/LinhaDoTempo';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -40,7 +41,8 @@ export default function Home() {
             <section className="section">
                 <h3 className="text-2xl font-semibold">📅 Linha do Tempo</h3>
                 <p className="text-gray-600 mt-2">Acompanhe a evolução dos direitos e oportunidades dos jovens no mercado de trabalho.</p>
-                <div className="bg-gray-200 h-32 mt-4 rounded-md flex items-center justify-center">[Linha do tempo animada em breve]</div>
+                <LinhaDoTempo/>
+                
             </section>
 
             <section className="section">
