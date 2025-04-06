@@ -9,6 +9,7 @@ import Testes from './pages/Testes.jsx'
 import Mapa from './pages/Mapa.jsx'
 import Historias from './pages/Historias.jsx'
 import Game from './pages/Game.jsx'
+import PageNotFound from './pages/PageNotFound.jsx'
 
 
 const router = createBrowserRouter([
