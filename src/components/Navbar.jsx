@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
@@ -43,9 +44,9 @@ export default function Navbar() {
                                 {navigation.map((item) => {
                                     const isCurrent = currentPath === item.href
                                     return (
-                                        <a
+                                        <Link
                                             key={item.name}
-                                            href={item.href}
+                                            to={item.href}
                                             aria-current={isCurrent ? 'page' : undefined}
                                             className={classNames(
                                                 isCurrent
@@ -55,7 +56,7 @@ export default function Navbar() {
                                             )}
                                         >
                                             {item.name}
-                                        </a>
+                                        </Link>
                                     )
                                 })}
                             </div>
