@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+.bg_navbar {
+  background-color: #472564;
+}
+.bg_navbar_hover {
+  background-color: #321A47;
+}
+
+
