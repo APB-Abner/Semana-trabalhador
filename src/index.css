@@ -1,13 +1,19 @@
 @import "tailwindcss";
 
-.bg_navbar {
-  background-color: #472564;
+@theme{
+  --bg_color_navbar: #472564;
+  --bg_color_navbar_current: #321A47;
+  --bg_color_navbar_hover: #693795;
+}
+
+ .bg_navbar {
+  background-color: var(--bg_color_navbar)
 }
 .bg_navbar_current {
-  background-color: #321A47;
+  background-color: var(--bg_color_navbar_current)
 }
 .bg_navbar_hover {
-  background-color: #693795;
+  background-color: var(--bg_color_navbar_hover)
 }
 
 
