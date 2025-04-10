@@ -5,7 +5,7 @@ const perguntas = [
     {
         pergunta: 'Qual é a carga horária máxima para um jovem aprendiz por dia?',
         opcoes: ['8 horas', '6 horas', '4 horas', '10 horas'],
-        resposta: '6 horas',
+        resposta: '8 horas',
     },
     {
         pergunta: 'Jovens aprendizes têm direito a:',
