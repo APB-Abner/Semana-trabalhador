@@ -39,8 +39,8 @@ const perguntas = [
     },
     {
         pergunta: 'É obrigatório que o jovem aprendiz esteja:',
-        opcoes: ['No ensino médio ou em curso técnico', 'Empregado fixo', 'Disponível integralmente para o trabalho', 'Fazendo faculdade'],
-        resposta: 'No ensino médio ou em curso técnico',
+        opcoes: ['No ensino médio, em curso técnico ou concluído', 'Empregado fixo', 'Disponível integralmente para o trabalho', 'Fazendo faculdade'],
+        resposta: 'No ensino médio, em curso técnico ou concluído',
     },
     {
         pergunta: 'Durante o período de provas na escola, o jovem aprendiz:',
