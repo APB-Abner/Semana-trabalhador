@@ -115,9 +115,11 @@ export default function Quiz({ onComplete }) {
                     </button>
                 ))}
             </div>
-            <p className="mt-4 text-gray-500 text-sm">
-                Pergunta {indice + 1} de {perguntas.length}
-            </p>
+            <div className="mt-4 text-sm text-gray-600 flex justify-between">
+                <span>Pergunta {indice + 1} de {perguntas.length}</span>
+                <span>Acertos: {acertos}</span>
+            </div>
+
         </div>
     );
 }
