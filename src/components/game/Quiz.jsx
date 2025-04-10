@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { somAcerto, somErro, somVitoria } from '../../sounds/sounds.js';
 
 const perguntas = [
     {
@@ -71,6 +72,9 @@ export default function Quiz({ onComplete }) {
 
         if (opcao === perguntaAtual.resposta) {
             setAcertos(acertos + 1);
+            somAcerto.play();
+        } else {
+            somErro.play();
         }
 
         setTimeout(() => {
@@ -80,6 +84,8 @@ export default function Quiz({ onComplete }) {
                 setIndice(indice + 1);
             } else {
                 onComplete(acertos + (opcao === perguntaAtual.resposta ? 1 : 0));
+                somVitoria.play();
+
             }
         }, 800);
     };
