@@ -34,8 +34,8 @@ const perguntas = [
     },
     {
         pergunta: 'Jovem aprendiz tem direito a carteira assinada?',
-        opcoes: ['Sim, desde o primeiro dia', 'Apenas após 6 meses', 'Não', 'Só se for CLT'],
-        resposta: 'Sim, desde o primeiro dia',
+        opcoes: ['Sim, desde o primeiro dia como CLT', 'Apenas após 6 meses', 'Não', 'Só após 2 anos'],
+        resposta: 'Sim, desde o primeiro dia como CLT',
     },
     {
         pergunta: 'É obrigatório que o jovem aprendiz esteja:',
