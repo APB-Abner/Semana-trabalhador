@@ -38,7 +38,9 @@ export default function Memoria({ onComplete }) {
     useEffect(() => {
         if (concluidas.length === cartas.length && cartas.length > 0) {
             setTimeout(() => {
-                onComplete(); // fim do jogo
+                // 6 pares = 10 pontos
+                const pontuacao = Math.round((concluidas.length / cartas.length) * 10);
+                onComplete(pontuacao);
             }, 1000);
         }
     }, [cartas.length, concluidas, onComplete]);
