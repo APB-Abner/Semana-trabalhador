@@ -92,9 +92,12 @@ export default function Testes() {
         return resultados[areaMaisFrequente];
     };
 
+    const progresso = Math.round(((etapa + 1) / perguntas.length) * 100);
+
     return (
         <div className="p-6 max-w-xl mx-auto">
             <h2 className="text-2xl font-bold mb-4 text-center">🧭 Teste Vocacional Interativo</h2>
+
             {finalizado ? (
                 <div className="bg-green-100 text-green-800 p-6 rounded-lg shadow text-center animate-fade-in">
                     <h3 className="text-xl font-semibold mb-2">Resultado:</h3>
@@ -112,6 +115,18 @@ export default function Testes() {
                 </div>
             ) : (
                 <div className="bg-white p-6 rounded-lg shadow animate-fade-in">
+                    {/* Progresso visual */}
+                    <div className="mb-4">
+                        <div className="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>Pergunta {etapa + 1} de {perguntas.length}</span>
+                            <span>{progresso}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-500 transition-all" style={{ width: `${progresso}%` }}></div>
+                        </div>
+                    </div>
+
+                    {/* Pergunta e opções */}
                     <p className="text-lg font-medium mb-4">{perguntas[etapa].texto}</p>
                     <div className="space-y-3">
                         {perguntas[etapa].opcoes.map((opcao, idx) => (
