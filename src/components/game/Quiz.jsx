@@ -57,6 +57,11 @@ const perguntas = [
         opcoes: ['Contratar entre 5% e 15% de aprendizes', 'Ter ao menos 1 jovem aprendiz', 'Oferecer cursos gratuitos', 'Pagar salários acima do mínimo'],
         resposta: 'Contratar entre 5% e 15% de aprendizes',
     },
+    {
+        pergunta: 'Qual é o número da Lei da Aprendizagem que regulamenta a contratação de jovens aprendizes no Brasil?',
+        opcoes: ['Lei nº 10.097 / 2000', 'Lei nº 8.666 / 1993', 'Lei nº 11.494 / 2007', 'Lei nº 9.394 / 1996'],
+        resposta: 'Lei nº 10.097/2000',
+    },
 
 ];
 
