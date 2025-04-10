@@ -1,101 +1,117 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const perguntas = [
     {
-        pergunta: 'Você prefere trabalhar com ideias ou com pessoas?',
-        opcoes: ['Ideias', 'Pessoas'],
-        correta: 'Ideias',
+        pergunta: 'Qual é a carga horária máxima para um jovem aprendiz por dia?',
+        opcoes: ['8 horas', '6 horas', '4 horas', '10 horas'],
+        resposta: '6 horas',
     },
     {
-        pergunta: 'Você gosta de seguir rotinas ou resolver problemas novos?',
-        opcoes: ['Rotinas', 'Problemas novos'],
-        correta: 'Problemas novos',
+        pergunta: 'Jovens aprendizes têm direito a:',
+        opcoes: [
+            '13º salário e férias',
+            'Apenas bolsa auxílio',
+            'Vale-transporte apenas',
+            'Nada, é voluntário',
+        ],
+        resposta: '13º salário e férias',
     },
     {
-        pergunta: 'Prefere ambientes organizados ou criativos?',
-        opcoes: ['Organizados', 'Criativos'],
-        correta: 'Criativos',
+        pergunta: 'A partir de que idade é permitido ser jovem aprendiz no Brasil?',
+        opcoes: ['12 anos', '14 anos', '16 anos', '18 anos'],
+        resposta: '14 anos',
     },
     {
-        pergunta: 'Você se sente mais confortável em tarefas práticas ou teóricas?',
-        opcoes: ['Práticas', 'Teóricas'],
-        correta: 'Práticas',
+        pergunta: 'O contrato de aprendizagem pode durar no máximo:',
+        opcoes: ['6 meses', '1 ano', '2 anos', '4 anos'],
+        resposta: '2 anos',
     },
     {
-        pergunta: 'Você prefere trabalhar sozinho ou em equipe?',
-        opcoes: ['Sozinho', 'Em equipe'],
-        correta: 'Em equipe',
+        pergunta: 'A Lei da Aprendizagem foi criada em qual ano?',
+        opcoes: ['1998', '2000', '2005', '2010'],
+        resposta: '2000',
     },
+    {
+        pergunta: 'Jovem aprendiz tem direito a carteira assinada?',
+        opcoes: ['Sim, desde o primeiro dia', 'Apenas após 6 meses', 'Não', 'Só se for CLT'],
+        resposta: 'Sim, desde o primeiro dia',
+    },
+    {
+        pergunta: 'É obrigatório que o jovem aprendiz esteja:',
+        opcoes: ['No ensino médio ou em curso técnico', 'Empregado fixo', 'Disponível integralmente para o trabalho', 'Fazendo faculdade'],
+        resposta: 'No ensino médio ou em curso técnico',
+    },
+    {
+        pergunta: 'Durante o período de provas na escola, o jovem aprendiz:',
+        opcoes: ['Pode faltar no trabalho sem justificativa', 'Tem direito à dispensa para estudar', 'Precisa trabalhar dobrado', 'Perde o contrato se faltar'],
+        resposta: 'Tem direito à dispensa para estudar',
+    },
+    {
+        pergunta: 'O contrato de aprendizagem combina trabalho com:',
+        opcoes: ['Estudo teórico em instituição formadora', 'Estágio não remunerado', 'Voluntariado social', 'Serviço militar obrigatório'],
+        resposta: 'Estudo teórico em instituição formadora',
+    },
+    {
+        pergunta: 'Empresas de médio e grande porte são obrigadas a:',
+        opcoes: ['Contratar entre 5% e 15% de aprendizes', 'Ter ao menos 1 jovem aprendiz', 'Oferecer cursos gratuitos', 'Pagar salários acima do mínimo'],
+        resposta: 'Contratar entre 5% e 15% de aprendizes',
+    },
+
 ];
 
 export default function Quiz({ onComplete }) {
-    const [etapa, setEtapa] = useState(0);
-    const [tempo, setTempo] = useState(20);
-    const [pontos, setPontos] = useState(0);
+    const [indice, setIndice] = useState(0);
+    const [acertos, setAcertos] = useState(0);
+    const [respostaSelecionada, setRespostaSelecionada] = useState(null);
 
-    useEffect(() => {
-        if (etapa < perguntas.length) {
-            const timer = setInterval(() => {
-                setTempo((t) => {
-                    if (t === 1) {
-                        clearInterval(timer);
-                        setEtapa(etapa + 1);
-                        setTempo(20);
-                        return 20;
-                    }
-                    return t - 1;
-                });
-            }, 1000);
-            return () => clearInterval(timer);
-        }
-    }, [etapa]);
+    const perguntaAtual = perguntas[indice];
 
-    const responder = (resposta) => {
-        const correta = perguntas[etapa].correta;
-        let ganho = 0;
-        if (resposta === correta) {
-            ganho += 10;
-            if (tempo >= 10) ganho += 5;
+    const selecionarResposta = (opcao) => {
+        setRespostaSelecionada(opcao);
+
+        if (opcao === perguntaAtual.resposta) {
+            setAcertos(acertos + 1);
         }
-        setPontos((p) => p + ganho);
-        setEtapa((e) => e + 1);
-        setTempo(20);
+
+        setTimeout(() => {
+            setRespostaSelecionada(null);
+
+            if (indice + 1 < perguntas.length) {
+                setIndice(indice + 1);
+            } else {
+                onComplete(acertos + (opcao === perguntaAtual.resposta ? 1 : 0));
+            }
+        }, 800);
     };
 
-    if (etapa >= perguntas.length) {
-        return (
-            <div className="text-center">
-                <p className="text-lg mb-4">Você fez {pontos} pontos no Quiz!</p>
-                <button
-                    onClick={() => onComplete(pontos)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    Ir para a próxima fase
-                </button>
-            </div>
-        );
-    }
-
-    const atual = perguntas[etapa];
-
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold">Pergunta {etapa + 1} de {perguntas.length}</h3>
-                <span className="text-red-600 font-bold">{tempo}s</span>
-            </div>
-            <p className="text-gray-800">{atual.pergunta}</p>
-            <div className="flex flex-col gap-4">
-                {atual.opcoes.map((op, i) => (
+        <div className="max-w-xl mx-auto text-center">
+            <h3 className="text-xl font-semibold text-blue-600 mb-4">
+                {perguntaAtual.pergunta}
+            </h3>
+            <div className="grid gap-3">
+                {perguntaAtual.opcoes.map((opcao, idx) => (
                     <button
-                        key={i}
-                        onClick={() => responder(op)}
-                        className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition"
+                        key={idx}
+                        className={`px-4 py-2 rounded border text-sm transition
+              ${respostaSelecionada === null
+                                ? 'bg-white hover:bg-blue-100'
+                                : opcao === perguntaAtual.resposta
+                                    ? 'bg-green-200 border-green-400'
+                                    : opcao === respostaSelecionada
+                                        ? 'bg-red-200 border-red-400'
+                                        : 'bg-gray-100 border-gray-200'
+                            }`}
+                        onClick={() => selecionarResposta(opcao)}
+                        disabled={respostaSelecionada !== null}
                     >
-                        {op}
+                        {opcao}
                     </button>
                 ))}
             </div>
+            <p className="mt-4 text-gray-500 text-sm">
+                Pergunta {indice + 1} de {perguntas.length}
+            </p>
         </div>
     );
 }
