@@ -77,6 +77,7 @@ export default function Quiz({ onComplete }) {
     const [perguntas, setPerguntas] = useState([]);
     const [indice, setIndice] = useState(0);
     const [acertos, setAcertos] = useState(0);
+    const [tecladoAtivo, setTecladoAtivo] = useState(false);
     const [respostaSelecionada, setRespostaSelecionada] = useState(null);
     const [opcaoSelecionadaIndex, setOpcaoSelecionadaIndex] = useState(0);
 
@@ -125,6 +126,14 @@ export default function Quiz({ onComplete }) {
 
             const perguntaAtual = perguntas[indice];
 
+            // Ativa controle de teclado só na primeira tecla de navegação
+            if (!tecladoAtivo && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                setTecladoAtivo(true);
+                return; // não move ainda, só ativa o controle
+            }
+
+            if (!tecladoAtivo) return;
+
             if (e.key === 'ArrowUp') {
                 setOpcaoSelecionadaIndex((prev) =>
                     prev > 0 ? prev - 1 : perguntaAtual.opcoes.length - 1
@@ -144,7 +153,8 @@ export default function Quiz({ onComplete }) {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [respostaSelecionada, perguntas, indice, opcaoSelecionadaIndex, selecionarResposta]);
+    }, [respostaSelecionada, perguntas, indice, opcaoSelecionadaIndex, tecladoAtivo, selecionarResposta]);
+
 
     // ✅ Agora o return condicional está DEPOIS dos hooks
     if (!perguntas.length) {
@@ -176,7 +186,7 @@ export default function Quiz({ onComplete }) {
                     const isSelecionada = respostaSelecionada !== null;
                     const isCorreta = opcao === perguntaAtual.resposta;
                     const isErrada = opcao === respostaSelecionada && !isCorreta;
-                    const isFocus = idx === opcaoSelecionadaIndex && !isSelecionada;
+                    const isFocus = tecladoAtivo && idx === opcaoSelecionadaIndex && !isSelecionada;
 
                     let bgClass = 'bg-white hover:bg-blue-100';
                     if (isCorreta && isSelecionada) bgClass = 'bg-green-200 border-green-400';
