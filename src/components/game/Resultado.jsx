@@ -22,7 +22,7 @@ export default function Resultado({ reiniciar, acertosQuiz, acertosMemoria }) {
             <p className="mt-4">Quiz: <strong>{acertosQuiz}</strong>/10</p>
             <p className="">Memória: <strong>{acertosMemoria}</strong>/10</p>
             <p className="mt-4 text-xl font-semibold">
-                Pontuação Total: <strong>{total}</strong>/20
+                Pontuação Total: <strong>{total}</strong>/21
             </p>
             <button
                 onClick={reiniciar}
