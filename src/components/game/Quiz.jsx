@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { somAcerto, somErro, somVitoria } from '../../sounds/sounds.js';
 
-const perguntas = [
+const perguntasBase = [
     {
         pergunta: 'Qual é a carga horária máxima para um jovem aprendiz por dia?',
         opcoes: ['8 horas', '6 horas', '4 horas', '10 horas'],
@@ -39,8 +39,8 @@ const perguntas = [
     },
     {
         pergunta: 'É obrigatório que o jovem aprendiz esteja:',
-        opcoes: ['No ensino médio, em curso técnico ou concluído', 'Empregado fixo', 'Disponível integralmente para o trabalho', 'Fazendo faculdade'],
-        resposta: 'No ensino médio, em curso técnico ou concluído',
+        opcoes: ['Cursando ou concluído o ensino médio, ou curso técnico', 'Empregado fixo', 'Disponível integralmente para o trabalho', 'Fazendo faculdade'],
+        resposta: 'Cursando ou concluído o ensino médio, ou curso técnico',
     },
     {
         pergunta: 'Durante o período de provas na escola, o jovem aprendiz:',
@@ -60,23 +60,46 @@ const perguntas = [
     {
         pergunta: 'Qual é o número da Lei da Aprendizagem que regulamenta a contratação de jovens aprendizes no Brasil?',
         opcoes: ['Lei nº 10.097 / 2000', 'Lei nº 8.666 / 1993', 'Lei nº 11.494 / 2007', 'Lei nº 9.394 / 1996'],
-        resposta: 'Lei nº 10.097/2000',
+        resposta: 'Lei nº 10.097 / 2000',
     },
 
 ];
 
+
+function embaralharArray(array) {
+    return array
+        .map((item) => ({ item, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ item }) => item);
+}
+
 export default function Quiz({ onComplete }) {
+    const [perguntas, setPerguntas] = useState([]);
     const [indice, setIndice] = useState(0);
     const [acertos, setAcertos] = useState(0);
     const [respostaSelecionada, setRespostaSelecionada] = useState(null);
+    const [opcaoSelecionadaIndex, setOpcaoSelecionadaIndex] = useState(0);
 
-    const perguntaAtual = perguntas[indice];
+    // ✅ useEffect deve vir antes de qualquer return
+    useEffect(() => {
+        const perguntasEmbaralhadas = embaralharArray(
+            perguntasBase.map((p) => ({
+                ...p,
+                opcoes: embaralharArray([...p.opcoes]),
+            }))
+        );
+        setPerguntas(perguntasEmbaralhadas);
+    }, []);
 
-    const selecionarResposta = (opcao) => {
+    // ⚠️ useCallback também antes do return
+    const selecionarResposta = useCallback((opcao) => {
+        if (respostaSelecionada !== null) return;
+
         setRespostaSelecionada(opcao);
+        const acertou = opcao === perguntas[indice].resposta;
 
-        if (opcao === perguntaAtual.resposta) {
-            setAcertos(acertos + 1);
+        if (acertou) {
+            setAcertos((prev) => prev + 1);
             somAcerto.play();
         } else {
             somErro.play();
@@ -84,47 +107,99 @@ export default function Quiz({ onComplete }) {
 
         setTimeout(() => {
             setRespostaSelecionada(null);
+            setOpcaoSelecionadaIndex(0);
 
             if (indice + 1 < perguntas.length) {
                 setIndice(indice + 1);
             } else {
-                onComplete(acertos + (opcao === perguntaAtual.resposta ? 1 : 0));
+                onComplete(acertos + (acertou ? 1 : 0));
                 somVitoria.play();
-
             }
         }, 800);
-    };
+    }, [respostaSelecionada, perguntas, indice, acertos, onComplete]);
+
+    // ✅ teclado também aqui antes do return
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (respostaSelecionada !== null || !perguntas.length) return;
+
+            const perguntaAtual = perguntas[indice];
+
+            if (e.key === 'ArrowUp') {
+                setOpcaoSelecionadaIndex((prev) =>
+                    prev > 0 ? prev - 1 : perguntaAtual.opcoes.length - 1
+                );
+            }
+
+            if (e.key === 'ArrowDown') {
+                setOpcaoSelecionadaIndex((prev) =>
+                    prev < perguntaAtual.opcoes.length - 1 ? prev + 1 : 0
+                );
+            }
+
+            if (e.key === 'Enter') {
+                selecionarResposta(perguntaAtual.opcoes[opcaoSelecionadaIndex]);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [respostaSelecionada, perguntas, indice, opcaoSelecionadaIndex, selecionarResposta]);
+
+    // ✅ Agora o return condicional está DEPOIS dos hooks
+    if (!perguntas.length) {
+        return (
+            <div className="max-w-xl mx-auto text-center">
+                <p className="text-gray-600">Carregando perguntas...</p>
+            </div>
+        );
+    }
+
+    const perguntaAtual = perguntas[indice];
+    const progresso = ((indice + 1) / perguntas.length) * 100;
 
     return (
         <div className="max-w-xl mx-auto text-center">
+            <div className="w-full bg-gray-200 h-3 rounded mb-4 overflow-hidden">
+                <div
+                    className="bg-blue-500 h-full transition-all duration-300"
+                    style={{ width: `${progresso}%` }}
+                />
+            </div>
+
             <h3 className="text-xl font-semibold text-blue-600 mb-4">
                 {perguntaAtual.pergunta}
             </h3>
+
             <div className="grid gap-3">
-                {perguntaAtual.opcoes.map((opcao, idx) => (
-                    <button
-                        key={idx}
-                        className={`px-4 py-2 rounded border text-sm transition
-              ${respostaSelecionada === null
-                                ? 'bg-white hover:bg-blue-100'
-                                : opcao === perguntaAtual.resposta
-                                    ? 'bg-green-200 border-green-400'
-                                    : opcao === respostaSelecionada
-                                        ? 'bg-red-200 border-red-400'
-                                        : 'bg-gray-100 border-gray-200'
-                            }`}
-                        onClick={() => selecionarResposta(opcao)}
-                        disabled={respostaSelecionada !== null}
-                    >
-                        {opcao}
-                    </button>
-                ))}
+                {perguntaAtual.opcoes.map((opcao, idx) => {
+                    const isSelecionada = respostaSelecionada !== null;
+                    const isCorreta = opcao === perguntaAtual.resposta;
+                    const isErrada = opcao === respostaSelecionada && !isCorreta;
+                    const isFocus = idx === opcaoSelecionadaIndex && !isSelecionada;
+
+                    let bgClass = 'bg-white hover:bg-blue-100';
+                    if (isCorreta && isSelecionada) bgClass = 'bg-green-200 border-green-400';
+                    else if (isErrada && isSelecionada) bgClass = 'bg-red-200 border-red-400';
+                    else if (isFocus) bgClass = 'bg-blue-100 border-blue-300';
+
+                    return (
+                        <button
+                            key={idx}
+                            onClick={() => selecionarResposta(opcao)}
+                            disabled={isSelecionada}
+                            className={`px-4 py-2 rounded border text-sm transition-all duration-300 ${bgClass}`}
+                        >
+                            {opcao}
+                        </button>
+                    );
+                })}
             </div>
+
             <div className="mt-4 text-sm text-gray-600 flex justify-between">
                 <span>Pergunta {indice + 1} de {perguntas.length}</span>
                 <span>Acertos: {acertos}</span>
             </div>
-
         </div>
     );
 }
