@@ -35,18 +35,21 @@ export default function Resultado({ pontuacao, reiniciar, continuar }) {
                 {resultado.titulo}
             </h2>
             <p className="mb-6 text-gray-700">{resultado.mensagem}</p>
+            <div className="flex gap-10 justify-center mb-4">
+
             <button
                 onClick={reiniciar}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
+                >
                 Tentar novamente
             </button>
             <button
                 onClick={continuar}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
+                >
                 Continuar
             </button>
+                </div>
         </div>
     );
 }
