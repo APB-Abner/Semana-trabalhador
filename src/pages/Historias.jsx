@@ -1,10 +1,7 @@
-import { useState } from 'react';
 import Carousel from '../components/Carocel.jsx';
 
 
 export default function Historias   () {
-    const [mostraCuriosidade, setMostraCuriosidade] = useState(false);
-
     return (
         <div className="p-6 max-w-3xl mx-auto text-gray-800">
             <h1 className="text-4xl font-bold mb-6 text-center">📅 Dia do Trabalho no Brasil</h1>
