@@ -1,63 +1,92 @@
-import React from "react";
+import { useState } from 'react';
 
-export default function Historias() {
+export default function Historias   () {
+    const [mostraCuriosidade, setMostraCuriosidade] = useState(false);
+
     return (
-        <div className="p-6 space-y-8 max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold text-center">📜 História do Dia do Trabalho no Brasil</h1>
-            <p className="text-lg text-center text-muted-foreground">
-                Descubra como o 1º de maio deixou de ser apenas um dia de protestos e se transformou em símbolo nacional da classe trabalhadora.
-            </p>
+        <div className="p-6 max-w-3xl mx-auto text-gray-800">
+            <h1 className="text-4xl font-bold mb-6 text-center">📅 Dia do Trabalho no Brasil</h1>
 
-            <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">🔥 Das Ruas de Chicago ao Brasil</h2>
-                <ul className="list-disc list-inside space-y-2">
-                    <li><strong>1886 - EUA:</strong> Greve histórica em Chicago exigia jornada de 8h. Terminou com violência, prisões e mortes.</li>
-                    <li><strong>1889 - Paris:</strong> Congresso Socialista transforma o 1º de maio em símbolo mundial das lutas trabalhistas.</li>
-                    <li><strong>Fim do século XIX - Brasil:</strong> Trabalhadores imigrantes trazem o 1º de maio ao país, com greves e protestos em SP e RJ.</li>
-                </ul>
+            <section className="mb-6">
+                <h2 className="text-2xl font-semibold mb-2">1. Introdução</h2>
+                <p>
+                    O Dia do Trabalho, também chamado de Dia do Trabalhador, é comemorado em <strong>1º de maio</strong>.
+                    A data é reconhecida no mundo todo como um marco das lutas trabalhistas por melhores condições de trabalho e direitos sociais.
+                    No Brasil, além de ser feriado, a data tem uma história ligada às transformações políticas e sociais do século XX.
+                </p>
             </section>
 
-            <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">📅 Quando virou feriado?</h2>
-                <p><strong>1925 –</strong> Presidente <strong>Artur Bernardes</strong> oficializa o <strong>1º de maio</strong> como feriado nacional.</p>
-                <div className="bg-yellow-100 p-4 rounded-xl shadow-inner">
-                    🟨 <em>Curiosidade:</em> A oficialização ocorreu, mas as manifestações já aconteciam há mais de 30 anos!
-                </div>
+            <section className="mb-6">
+                <h2 className="text-2xl font-semibold mb-2">2. Origem do 1º de Maio (Contexto Internacional)</h2>
+                <p>
+                    O 1º de maio foi escolhido em homenagem à <strong>Greve de Chicago</strong>, nos Estados Unidos, em 1886,
+                    onde milhares de trabalhadores protestaram exigindo a <strong>redução da jornada para 8 horas</strong> diárias.
+                    A manifestação foi brutalmente reprimida, resultando em mortes e prisões.
+                    Em 1889, o Congresso Socialista de Paris escolheu o 1º de maio como símbolo mundial da luta dos trabalhadores.
+                </p>
             </section>
 
-            <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">🧓 Era Vargas: o 1º de Maio vira palco político</h2>
+            <section className="mb-6">
+                <h2 className="text-2xl font-semibold mb-2">3. Chegada do 1º de Maio ao Brasil</h2>
                 <p>
-                    A partir de 1930, <strong>Getúlio Vargas</strong> transforma a data em um evento oficial com <strong>discursos, festas e leis</strong>.
+                    A data começou a ser lembrada no Brasil no final do século XIX, principalmente entre <strong>trabalhadores imigrantes</strong>
+                    influenciados pelas ideias socialistas e anarquistas. As primeiras celebrações foram marcadas por greves e manifestações
+                    em cidades como São Paulo e Rio de Janeiro, exigindo <strong>melhores salários, redução de jornada e condições dignas</strong>.
                 </p>
-                <p>
-                    <strong>1943 –</strong> Em pleno 1º de maio, Vargas anuncia a criação da <strong>CLT</strong> (Consolidação das Leis do Trabalho), que garante direitos como:
-                </p>
-                <ul className="list-disc list-inside space-y-1">
-                    <li>Férias remuneradas</li>
-                    <li>Carteira assinada</li>
-                    <li>Jornada de trabalho de 8h</li>
-                </ul>
-                <div className="bg-green-100 p-4 rounded-xl shadow-inner">
-                    🟩 <em>Interativo:</em><br />
-                    💬 <strong>"Você sabia que muitos direitos que temos hoje foram anunciados num 1º de maio por Vargas? Se você vivesse naquela época, o que acharia disso?"</strong>
-                    <div className="mt-2">
-                        <input type="text" placeholder="Digite sua resposta..." className="w-full p-2 border border-gray-300 rounded-md" />
-                    </div>
-                </div>
             </section>
 
-            <section className="space-y-4">
-                <h2 className="text-2xl font-semibold">🎯 Conclusão: mais que um feriado</h2>
+            <section className="mb-6">
+                <h2 className="text-2xl font-semibold mb-2">4. Reconhecimento Oficial</h2>
                 <p>
-                    O Dia do Trabalho no Brasil mostra como uma data internacional se fundiu com a política nacional, criando uma tradição que mistura <strong>luta, conquista e propaganda</strong>.
+                    O feriado foi <strong>oficializado em 1925</strong> pelo presidente Artur Bernardes, mas ganhou força mesmo na <strong>Era Vargas</strong>,
+                    nos anos 1930.
                 </p>
-                <div className="bg-blue-100 p-4 rounded-xl shadow-inner">
-                    🔵 <em>Curiosidade:</em> Até hoje, muitos presidentes escolhem o 1º de maio para anunciar reajustes e programas voltados ao trabalhador.
+            </section>
+
+            <section className="mb-6">
+                <h2 className="text-2xl font-semibold mb-2">5. Era Vargas e o Uso Político da Data</h2>
+                <p>
+                    Getúlio Vargas usou o 1º de maio para <strong>reforçar sua imagem de aliado dos trabalhadores</strong>.
+                    Foi nessa data, em <strong>1943</strong>, que ele anunciou a criação da <strong>CLT (Consolidação das Leis do Trabalho)</strong>,
+                    garantindo direitos como férias, jornada regulada e carteira assinada. A data passou a ser marcada por anúncios de novas leis,
+                    festas públicas e discursos.
+                </p>
+            </section>
+
+            <section className="mb-6">
+                <h2 className="text-2xl font-semibold mb-2">6. Conclusão</h2>
+                <p>
+                    O Dia do Trabalho representa não só as <strong>lutas por direitos</strong>, mas também como o <strong>Estado brasileiro</strong>
+                    utilizou essa data para construir uma relação simbólica com os trabalhadores.
+                    Ele conecta o Brasil a uma luta global, mas com características próprias, marcadas pelo <strong>populismo e pela institucionalização</strong>
+                    na Era Vargas.
+                </p>
+            </section>
+
+            <section className="mb-6 border-t pt-6">
+                <h2 className="text-xl font-semibold mb-2">📌 Curiosidade</h2>
+                {mostraCuriosidade ? (
+                    <p>
+                        Sabia que a CLT criada em 1943 ainda é a principal base das leis trabalhistas no Brasil? Apesar de mudanças ao longo dos anos,
+                        ela continua protegendo milhões de trabalhadores até hoje.
+                    </p>
+                ) : (
+                    <button type="button" onClick={() => setMostraCuriosidade(true)}>
+                        Mostrar curiosidade sobre a CLT
+                    </button>
+                )}
+            </section>
+
+            <section className="mt-8">
+                <h2 className="text-xl font-semibold mb-2">🔁 O que você gostaria de fazer agora?</h2>
+                <div className="flex gap-4 flex-wrap">
+                    <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                        Voltar ao topo
+                    </button>
+                    <button type="button" onClick={() => alert('Essa função será implementada em breve.')}>Ir para Quiz</button>
+                    <button type="button" onClick={() => alert('Essa função será implementada em breve.')}>Voltar para o Jogo</button>
                 </div>
             </section>
         </div>
     );
 }
-
-
