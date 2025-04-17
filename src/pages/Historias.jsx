@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Carousel from '../components/Carocel.jsx';
+
 
 export default function Historias   () {
     const [mostraCuriosidade, setMostraCuriosidade] = useState(false);
@@ -65,16 +67,7 @@ export default function Historias   () {
 
             <section className="mb-6 border-t pt-6">
                 <h2 className="text-xl font-semibold mb-2">📌 Curiosidade</h2>
-                {mostraCuriosidade ? (
-                    <p>
-                        Sabia que a CLT criada em 1943 ainda é a principal base das leis trabalhistas no Brasil? Apesar de mudanças ao longo dos anos,
-                        ela continua protegendo milhões de trabalhadores até hoje.
-                    </p>
-                ) : (
-                    <button type="button" onClick={() => setMostraCuriosidade(true)}>
-                        Mostrar curiosidade sobre a CLT
-                    </button>
-                )}
+                <Carousel />
             </section>
 
             <section className="mt-8">
