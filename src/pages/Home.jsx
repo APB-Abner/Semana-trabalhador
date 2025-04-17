@@ -48,7 +48,7 @@ export default function Home() {
             <section className="section">
                 <h3 className="text-2xl font-semibold">💡 Dicas e Inspirações</h3>
                 <p className="text-gray-600 mt-2">Veja histórias reais de jovens e receba conselhos para sua carreira.</p>
-                <div className="bg-gray-200 h-32 mt-4 rounded-md flex items-center justify-center">[Cards com histórias em breve]</div>
+                <Link to="/historias" className="inline-block mt-4 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-green-700 transition">Ir Para Histórias</Link>
             </section>
 
             <section className="section">
