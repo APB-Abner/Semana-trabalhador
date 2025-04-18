@@ -41,7 +41,7 @@ export default function Dicas() {
             {/* Botão flutuante */}
             <button
                 onClick={toggleMenu}
-                className={`fixed z-50 left-5 transition-all duration-300 bg-white p-2 rounded-2xl ${isButtonFixed ? 'top-5' : 'top-[calc(5rem+1rem)]'} ${isMenuOpen ? 'hidden' : 'block'}`}
+                className={`fixed z-50 left-5 transition-all duration-300 bg-white dark:bg-zinc-900 p-2 rounded-2xl ${isButtonFixed ? 'top-5' : 'top-[calc(5rem+1rem)]'} ${isMenuOpen ? 'hidden' : 'block'}`}
                 aria-label="Abrir Menu"
             >
                 📋 Abrir Menu
