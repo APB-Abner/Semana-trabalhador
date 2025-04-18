@@ -1,4 +1,4 @@
-[
+const todasOportunidades = [
     {
         "nome": "AMERICANA - SP",
         "cidade": "AMERICANA",
@@ -84,7 +84,7 @@
         "nome": "CAÇAPAVA - SP",
         "cidade": "CAÇAPAVA",
         "endereco": "R. Tenente Mesquita, 211 – Vila Pantaleão, Caçapava – SP, 12280-048",
-        "horario":"Atendimento de Segunda a Sexta das 09:00 às 16:00",
+        "horario": "Atendimento de Segunda a Sexta das 09:00 às 16:00",
         "posicao": [
             -23.0943866,
             -45.7075883
@@ -94,7 +94,7 @@
         "nome": "CAIEIRAS - SP",
         "cidade": "CAIEIRAS",
         "endereco": "Av. Prof Carvalho Pinto, 207 – Jardim Santo Antônio, Caieiras – 0770-000",
-        "horario":"Atendimento de Segunda a Sexta das 09:00 às 16:00",
+        "horario": "Atendimento de Segunda a Sexta das 09:00 às 16:00",
         "posicao": [
             -23.3651656,
             -46.7496064
@@ -158,7 +158,7 @@
         "nome": "LORENA - SP",
         "cidade": "LORENA",
         "endereco": "UNISAL – Centro Salesiano Universitário de São Paulo – R. Dom Bôsco, 284 – Centro, Lorena – SP, 12600-100",
-        "horario":"Atendimento de Segunda a Sexta das 09:00 às 16:00",
+        "horario": "Atendimento de Segunda a Sexta das 09:00 às 16:00",
         "posicao": [
             -22.7330978,
             -45.1223783
@@ -241,7 +241,7 @@
         "nome": "OURINHOS - SP",
         "cidade": "OURINHOS",
         "endereco": "Avenida Dr. Altino Arantes, 131 – 3° andar, sala 33 – Centro CEP: 19.900-030",
-        "horario":"Horário de atendimento: 9h às 16h",
+        "horario": "Horário de atendimento: 9h às 16h",
         "posicao": [
             -22.9789946,
             -49.86780599999999
@@ -251,7 +251,7 @@
         "nome": "PIRACICABA - SP",
         "cidade": "PIRACICABA",
         "endereco": "Dentro do Edifício Liberty – Vila dos Frades – Av. Independência, 724 – loja 7 – Cidade Alta, Piracicaba – SP, 13419-160",
-        "horario":"Atendimento de Segunda a Sexta das 09:00 às 16:00",
+        "horario": "Atendimento de Segunda a Sexta das 09:00 às 16:00",
         "posicao": [
             -22.7368268,
             -47.6459938
@@ -261,7 +261,7 @@
         "nome": "GUARULHOS - SP",
         "cidade": "GUARULHOS",
         "endereco": "Localizado em: Faculdade Anhanguera – GuarulhosEndereço: Av. Papa Pio XII, 291 – Macedo, Guarulhos – SP, 07113-000",
-        "horario":"Atendimento de Segunda a Sexta das 09:00 às 16:00",
+        "horario": "Atendimento de Segunda a Sexta das 09:00 às 16:00",
         "posicao": [
             -23.4666486,
             -46.518311
@@ -271,7 +271,7 @@
         "nome": "JACAREÍ - SP",
         "cidade": "JACAREÍ",
         "endereco": "R. Barão de Jacareí, 839 – Centro, Jacareí – SP, 12308-270",
-        "horario":"Atendimento de Segunda a Sexta das 09:00 às 16:00",
+        "horario": "Atendimento de Segunda a Sexta das 09:00 às 16:00",
         "posicao": [
             -23.3016265,
             -45.9593157
@@ -837,4 +837,6 @@
             -55.516192
         ]
     }
-]
+];
+
+export default todasOportunidades;
