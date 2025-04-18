@@ -1,12 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
+import confetti from 'canvas-confetti'; 
+import { somAcerto, somErro, somVitoria } from '../../sounds/sounds.js';
+
+
 
 const cartasBase = [
+    '📦 Estoquista', '📦 Estoquista',
+    '💬 Atendente de SAC', '💬 Atendente de SAC',
     '🧑‍💼 Assistente Administrativo', '🧑‍💼 Assistente Administrativo',
     '🧑‍🍳 Auxiliar de Cozinha', '🧑‍🍳 Auxiliar de Cozinha',
     '👨‍💻 Suporte Técnico', '👨‍💻 Suporte Técnico',
     '🧑‍🔧 Auxiliar de Manutenção', '🧑‍🔧 Auxiliar de Manutenção',
-    '📦 Estoquista', '📦 Estoquista',
-    '💬 Atendente de SAC', '💬 Atendente de SAC',
 ];
 
 function embaralhar(array) {
@@ -25,66 +29,69 @@ export default function Memoria({ onComplete }) {
     const [tempoRestante, setTempoRestante] = useState(60);
     const timerRef = useRef(null);
 
-    const somAcerto = useRef(null);
-    const somErro = useRef(null);
-
+    // Timer regressivo
     useEffect(() => {
         timerRef.current = setInterval(() => {
             setTempoRestante((t) => {
                 if (t <= 1) {
                     clearInterval(timerRef.current);
                     finalizarJogo();
+                    return 0;
                 }
                 return t - 1;
             });
         }, 1000);
-
         return () => clearInterval(timerRef.current);
     }, []);
 
+    // Checa combinação
     useEffect(() => {
         if (selecionadas.length === 2) {
             const [a, b] = selecionadas;
             if (cartas[a] === cartas[b]) {
-                somAcerto.current?.play();
+                somAcerto.play();
                 setConcluidas((prev) => [...prev, a, b]);
                 setSelecionadas([]);
             } else {
-                somErro.current?.play();
-                setTimeout(() => setSelecionadas([]), 1000);
+                somErro.play();
+                setTimeout(() => setSelecionadas([]), 800);
             }
         }
     }, [selecionadas, cartas]);
 
+    // Finaliza quando completa
     useEffect(() => {
-        if (concluidas.length === cartas.length && cartas.length > 0) {
+        if (concluidas.length === cartas.length) {
             clearInterval(timerRef.current);
-            finalizarJogo();
+            setTimeout(() => {
+                confetti();
+                finalizarJogo();
+            }, 500);
         }
-    }, [concluidas]);
+    }, [concluidas, cartas.length]);
 
     const selecionar = (idx) => {
-        if (
-            selecionadas.includes(idx) ||
-            concluidas.includes(idx) ||
-            selecionadas.length === 2
-        )
-            return;
+        if (selecionadas.includes(idx) || concluidas.includes(idx) || selecionadas.length === 2) return;
         setSelecionadas((prev) => [...prev, idx]);
     };
 
     const finalizarJogo = () => {
-        const pontuacao = Math.round((concluidas.length / cartas.length) * 10);
-        onComplete(pontuacao);
+        const pont = Math.round((concluidas.length / cartas.length) * 10);
+        somVitoria.play();
+        onComplete(pont);
     };
 
     return (
         <div className="max-w-md mx-auto p-4">
-            <div className="flex justify-between items-center mb-4 text-lg font-medium">
-                <span>⏱️ Tempo: {tempoRestante}s</span>
+            {/* Barra de tempo */}
+            <div className={`w-full h-3 mb-3 rounded ${tempoRestante <= 10 ? 'bg-red-500' : 'bg-green-500'} transition-colors duration-300`}>
+                <div className="h-full bg-blue-500" style={{ width: `${(tempoRestante / 60) * 100}%` }} />
+            </div>
+            <div className="flex justify-between items-center text-sm mb-4">
+                <span>⏱️ {tempoRestante}s</span>
                 <span>✅ Pares: {concluidas.length / 2}</span>
             </div>
-
+            {/* Grid de cartas */}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                 {cartas.map((carta, idx) => {
                     const revelada = selecionadas.includes(idx) || concluidas.includes(idx);
@@ -92,25 +99,22 @@ export default function Memoria({ onComplete }) {
                         <div
                             key={idx}
                             onClick={() => selecionar(idx)}
-                            className={`
-                                h-24 sm:h-28 flex items-center justify-center 
-                                rounded-lg cursor-pointer transition-transform 
-                                duration-300 transform hover:scale-105 select-none
-                                border-2 text-sm text-center font-semibold px-1
-                                ${revelada
-                                    ? 'bg-blue-100 border-blue-400 text-blue-800'
-                                    : 'bg-gray-200 border-gray-300 text-gray-500'}
-                            `}
+                            className="relative w-full h-28 perspective cursor-pointer"
                         >
-                            {revelada ? carta : '❓'}
+                            <div className={`w-full h-full transition-transform duration-500 preserve-3d ${revelada ? 'rotate-y-180' : ''}`}>
+                                {/* Frente */}
+                                <div className="absolute w-full h-full backface-hidden bg-gray-200 dark:bg-zinc-700 border-2 border-gray-300 dark:border-zinc-600 rounded-lg flex items-center justify-center text-2xl text-gray-500 dark:text-gray-400">
+                                    ❓
+                                </div>
+                                {/* Verso */}
+                                <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-blue-100 dark:bg-blue-900 border-2 border-blue-400 dark:border-blue-700 rounded-lg flex items-center justify-center text-sm font-semibold text-blue-800 dark:text-blue-200 px-1 text-center">
+                                    {carta}
+                                </div>
+                            </div>
                         </div>
                     );
                 })}
             </div>
-
-            {/* Áudios */}
-            <audio ref={somAcerto} src="/sons/acerto.mp3" preload="auto" />
-            <audio ref={somErro} src="/sons/erro.mp3" preload="auto" />
         </div>
     );
 }

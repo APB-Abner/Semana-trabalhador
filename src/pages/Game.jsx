@@ -18,7 +18,7 @@ export default function Game() {
         <div className="p-6 max-w-xl mx-auto bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 transition-colors duration-300">
             <h2 className="text-2xl font-bold mb-6 text-center">🎮 Desafio Jovem Trabalhador</h2>
 
-            {fase === 'quiz' && <Quiz onComplete={continuarJogo} />}
+            {fase === 'quiz' && <Quiz onComplete={continuarJogo} />}            
             {fase === 'continuar' && <Continuar reiniciar={reiniciarJogo} pontuacao={acertos} continuar={irParaMemoria} />}
             {fase === 'memoria' && <Memoria onComplete={irParaResultado} />}
             {fase === 'resultado' && (
