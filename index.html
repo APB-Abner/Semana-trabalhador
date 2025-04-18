@@ -5,6 +5,13 @@
     <link rel="icon" type="image/svg+xml" href="/ciee.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Semana do Jovem Trabalhador</title>
+    <script>
+      if (localStorage.getItem('darkMode') === 'true' ||
+        (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+
   </head>
   <body>
     <div id="root"></div>

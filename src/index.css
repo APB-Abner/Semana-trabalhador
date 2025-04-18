@@ -34,3 +34,9 @@
 .text_truepurple-200 {
   color: var(--bg_color_truepurple)
 }
+.text_truepurple-100 {
+  color: var(--bg_color_truepurple_hover)
+}
+.text_truepurple-400 {
+  color: var(--bg_color_truepurple_current)
+}
