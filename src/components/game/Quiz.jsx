@@ -169,18 +169,21 @@ export default function Quiz({ onComplete }) {
     const progresso = ((indice + 1) / perguntas.length) * 100;
 
     return (
-        <div className="max-w-xl mx-auto text-center">
-            <div className="w-full bg-gray-200 h-3 rounded mb-4 overflow-hidden">
+        <div className="max-w-xl mx-auto text-center text-gray-900 dark:text-white">
+            {/* Barra de progresso */}
+            <div className="w-full bg-gray-200 dark:bg-zinc-700 h-3 rounded mb-4 overflow-hidden">
                 <div
                     className="bg-blue-500 h-full transition-all duration-300"
                     style={{ width: `${progresso}%` }}
                 />
             </div>
 
-            <h3 className="text-xl font-semibold text-blue-600 mb-4">
+            {/* Pergunta */}
+            <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4">
                 {perguntaAtual.pergunta}
             </h3>
 
+            {/* Opções */}
             <div className="grid gap-3">
                 {perguntaAtual.opcoes.map((opcao, idx) => {
                     const isSelecionada = respostaSelecionada !== null;
@@ -188,17 +191,17 @@ export default function Quiz({ onComplete }) {
                     const isErrada = opcao === respostaSelecionada && !isCorreta;
                     const isFocus = tecladoAtivo && idx === opcaoSelecionadaIndex && !isSelecionada;
 
-                    let bgClass = 'bg-white hover:bg-blue-100';
-                    if (isCorreta && isSelecionada) bgClass = 'bg-green-200 border-green-400';
-                    else if (isErrada && isSelecionada) bgClass = 'bg-red-200 border-red-400';
-                    else if (isFocus) bgClass = 'bg-blue-100 border-blue-300';
+                    let bgClass = 'bg-white dark:bg-zinc-800 hover:bg-blue-100 dark:hover:bg-blue-900 border';
+                    if (isCorreta && isSelecionada) bgClass = 'bg-green-200 border-green-400 dark:bg-green-600';
+                    else if (isErrada && isSelecionada) bgClass = 'bg-red-200 border-red-400 dark:bg-red-600';
+                    else if (isFocus) bgClass = 'bg-blue-100 border-blue-300 dark:bg-blue-800';
 
                     return (
                         <button
                             key={idx}
                             onClick={() => selecionarResposta(opcao)}
                             disabled={isSelecionada}
-                            className={`px-4 py-2 rounded border text-sm transition-all duration-300 ${bgClass}`}
+                            className={`px-4 py-2 rounded text-sm transition-all duration-300 ${bgClass}`}
                         >
                             {opcao}
                         </button>
@@ -206,7 +209,8 @@ export default function Quiz({ onComplete }) {
                 })}
             </div>
 
-            <div className="mt-4 text-sm text-gray-600 flex justify-between">
+            {/* Rodapé da pergunta */}
+            <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 flex justify-between">
                 <span>Pergunta {indice + 1} de {perguntas.length}</span>
                 <span>Acertos: {acertos}</span>
             </div>

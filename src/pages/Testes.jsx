@@ -95,11 +95,11 @@ export default function Testes() {
    const progresso = Math.round(((etapa + 1) / perguntas.length) * 100);
 
    return (
-      <div className="p-6 max-w-xl mx-auto">
+      <div className="p-6 max-w-xl mx-auto bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 transition-colors duration-300">
          <h2 className="text-2xl font-bold mb-4 text-center">🧭 Teste Vocacional Interativo</h2>
 
          {finalizado ? (
-            <div className="bg-green-100 text-green-800 p-6 rounded-lg shadow text-center animate-fade-in">
+            <div className="bg-green-100 dark:bg-green-700 text-green-800 dark:text-green-200 p-6 rounded-lg shadow text-center animate-fade-in">
                <h3 className="text-xl font-semibold mb-2">Resultado:</h3>
                <p className="text-lg">{calcularResultado()}</p>
                <button
@@ -114,15 +114,15 @@ export default function Testes() {
                </button>
             </div>
          ) : (
-            <div className="bg-white p-6 rounded-lg shadow animate-fade-in">
+            <div className="bg-white dark:bg-zinc-700 p-6 rounded-lg shadow animate-fade-in">
                {/* Progresso visual */}
                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
                      <span>Pergunta {etapa + 1} de {perguntas.length}</span>
                      <span>{progresso}%</span>
                   </div>
-                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                     <div className="h-full bg-blue-500 transition-all" style={{ width: `${progresso}%` }}></div>
+                  <div className="w-full h-2 bg-gray-200 dark:bg-zinc-600 rounded-full overflow-hidden">
+                     <div className="h-full bg-blue-500 dark:bg-blue-400 transition-all" style={{ width: `${progresso}%` }}></div>
                   </div>
                </div>
 
@@ -133,7 +133,7 @@ export default function Testes() {
                      <button
                         key={idx}
                         onClick={() => responder(opcao.areas)}
-                        className="block w-full text-left px-4 py-3 bg-blue-100 rounded-lg hover:bg-blue-200 transition-all"
+                        className="block w-full text-left px-4 py-3 bg-blue-100 dark:bg-zinc-600 rounded-lg hover:bg-blue-200 dark:hover:bg-zinc-500 transition-all"
                      >
                         {opcao.texto}
                      </button>
@@ -143,4 +143,5 @@ export default function Testes() {
          )}
       </div>
    );
+
 }

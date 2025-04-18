@@ -1,42 +1,142 @@
-from bs4 import BeautifulSoup
+import os
 
-# HTML de exemplo (você pode pegar esse HTML de um arquivo ou de uma requisição)
-html = '''
-<div class="eael-adv-accordion" id="eael-adv-accordion-75d2add" data-scroll-on-click="no" data-scroll-speed="300" data-accordion-id="75d2add" data-accordion-type="accordion" data-toogle-speed="300">
-    <div class="eael-accordion-list">
-        <div id="braslia-df" class="elementor-tab-title eael-accordion-header show-this active" tabindex="0" data-tab="1" aria-controls="elementor-tab-content-1231"><span class="eael-accordion-tab-title">BRASÍLIA - DF</span></div>
-        <div id="elementor-tab-content-1231" class="eael-accordion-content clearfix" data-tab="1" aria-labelledby="braslia-df">SHC/SW, EQSW 304/504 Edifício CIEE – Lote 02, St. Sudoeste, Brasília – DF, 70673-450</div>
+# List the integrated file for preview
+files = {
+    "src/components/Memoria.jsx": """import { useEffect, useState, useRef } from 'react';
+import confetti from 'canvas-confetti'; // npm install canvas-confetti
+
+const cartasBase = [
+  '📦 Estoquista', '📦 Estoquista',
+  '💬 Atendente de SAC', '💬 Atendente de SAC',
+  '🧑‍💼 Assistente Administrativo', '🧑‍💼 Assistente Administrativo',
+  '🧑‍🍳 Auxiliar de Cozinha', '🧑‍🍳 Auxiliar de Cozinha',
+  '👨‍💻 Suporte Técnico', '👨‍💻 Suporte Técnico',
+  '🧑‍🔧 Auxiliar de Manutenção', '🧑‍🔧 Auxiliar de Manutenção',
+];
+
+function embaralhar(array) {
+  const copia = [...array];
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+export default function Memoria({ onComplete }) {
+  const [cartas] = useState(() => embaralhar(cartasBase));
+  const [selecionadas, setSelecionadas] = useState([]);
+  const [concluidas, setConcluidas] = useState([]);
+  const [tempoRestante, setTempoRestante] = useState(60);
+  const timerRef = useRef(null);
+
+  const somAcerto = useRef(new Audio('/sons/acerto.mp3'));
+  const somErro = useRef(new Audio('/sons/erro.mp3'));
+
+  // Timer regressivo
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setTempoRestante((t) => {
+        if (t <= 1) {
+          clearInterval(timerRef.current);
+          finalizarJogo();
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  // Checa combinação
+  useEffect(() => {
+    if (selecionadas.length === 2) {
+      const [a, b] = selecionadas;
+      if (cartas[a] === cartas[b]) {
+        somAcerto.current.play();
+        setConcluidas((prev) => [...prev, a, b]);
+        setSelecionadas([]);
+      } else {
+        somErro.current.play();
+        setTimeout(() => setSelecionadas([]), 800);
+      }
+    }
+  }, [selecionadas, cartas]);
+
+  // Finaliza quando completa
+  useEffect(() => {
+    if (concluidas.length === cartas.length) {
+      clearInterval(timerRef.current);
+      setTimeout(() => {
+        confetti();
+        finalizarJogo();
+      }, 500);
+    }
+  }, [concluidas, cartas.length]);
+
+  const selecionar = (idx) => {
+    if (selecionadas.includes(idx) || concluidas.includes(idx) || selecionadas.length === 2) return;
+    setSelecionadas((prev) => [...prev, idx]);
+  };
+
+  const finalizarJogo = () => {
+    const pont = Math.round((concluidas.length / cartas.length) * 10);
+    onComplete(pont);
+  };
+
+  return (
+    <div className="max-w-md mx-auto p-4">
+      {/* Barra de tempo */}
+      <div className={`w-full h-3 mb-3 rounded ${tempoRestante <= 10 ? 'bg-red-500' : 'bg-green-500'} transition-colors duration-300`}>
+        <div className="h-full bg-blue-500" style={{ width: `${(tempoRestante / 60) * 100}%` }} />
+      </div>
+      <div className="flex justify-between items-center text-sm mb-4">
+        <span>⏱️ {tempoRestante}s</span>
+        <span>✅ Pares: {concluidas.length / 2}</span>
+      </div>
+      {/* Grid de cartas */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+        {cartas.map((carta, idx) => {
+          const revelada = selecionadas.includes(idx) || concluidas.includes(idx);
+          return (
+            <div
+              key={idx}
+              onClick={() => selecionar(idx)}
+              className="relative w-full h-28 perspective cursor-pointer"
+            >
+              <div className={`w-full h-full transition-transform duration-500 preserve-3d ${revelada ? 'rotate-y-180' : ''}`}>
+                {/* Frente */}
+                <div className="absolute w-full h-full backface-hidden bg-gray-200 dark:bg-zinc-700 border-2 border-gray-300 dark:border-zinc-600 rounded-lg flex items-center justify-center text-2xl text-gray-500 dark:text-gray-400">
+                  ❓
+                </div>
+                {/* Verso */}
+                <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-blue-100 dark:bg-blue-900 border-2 border-blue-400 dark:border-blue-700 rounded-lg flex items-center justify-center text-sm font-semibold text-blue-800 dark:text-blue-200 px-1 text-center">
+                  {carta}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
-    <div class="eael-accordion-list">
-        <div id="campo-grande-ms" class="elementor-tab-title eael-accordion-header" tabindex="0" data-tab="2" aria-controls="elementor-tab-content-1232"><span class="eael-accordion-tab-title">CAMPO GRANDE - MS</span></div>
-        <div id="elementor-tab-content-1232" class="eael-accordion-content clearfix" data-tab="2" aria-labelledby="campo-grande-ms">Rua Rio Grande do Sul, 210-220, Jd dos Estados, Campo Grande/MS – CEP:79020-010</div>
-    </div>
-    <div class="eael-accordion-list">
-        <div id="cuiab-mt" class="elementor-tab-title eael-accordion-header" tabindex="0" data-tab="3" aria-controls="elementor-tab-content-1233"><span class="eael-accordion-tab-title">CUIABÁ - MT</span></div>
-        <div id="elementor-tab-content-1233" class="eael-accordion-content clearfix" data-tab="3" aria-labelledby="cuiab-mt">Av. Mato Grosso, nº 226, Centro Norte, Cuiabá/MT. CEP 78.005-030</div>
-    </div>
-    <!-- Outras listas de endereços -->
-</div>
-'''
+  );
+}
+""",
+    "src/index.css": """@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-# Analisando o HTML
-soup = BeautifulSoup(html, 'html.parser')
+/* CSS para animação 3D das cartas */
+@layer utilities {
+  .perspective { perspective: 1000px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
+  .rotate-y-180 { transform: rotateY(180deg); }
+}
+"""
+}
 
-# Encontrando todas as listas de endereços
-enderecos = soup.find_all('div', class_='eael-accordion-list')
+import pandas as pd
+print("Arquivos Atualizados:")
+print(df.head())  # ou df.to_string() para ver tudo
 
-# Extraindo os nomes dos lugares e os endereços
-resultado = []
-for endereco in enderecos:
-    nome_lugar = endereco.find('span', class_='eael-accordion-tab-title').text.strip()
-    endereco_texto = endereco.find('div', class_='eael-accordion-content').text.strip()
-    resultado.append({
-        'nome': nome_lugar,
-        'endereco': endereco_texto
-    })
-
-# Exibindo o resultado
-for item in resultado:
-    print(f"Nome: {item['nome']}")
-    print(f"Endereço: {item['endereco']}")
-    print("-" * 40)

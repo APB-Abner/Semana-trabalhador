@@ -1,19 +1,60 @@
 @import "tailwindcss";
 
-@theme{
-  --bg_color_navbar: #472564;
-  --bg_color_navbar_current: #321A47;
-  --bg_color_navbar_hover: #693795;
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root{
+  --bg_color_truepurple: #472564;
+  --bg_color_truepurple_current: #321A47;
+  --bg_color_truepurple_hover: #693795;
 }
 
- .bg_navbar {
-  background-color: var(--bg_color_navbar)
+.bg_truepurple-200 {
+  background-color: var(--bg_color_truepurple)
 }
-.bg_navbar_current {
-  background-color: var(--bg_color_navbar_current)
+.bg_truepurple-400, .bg_footer {
+  background-color: var(--bg_color_truepurple_current)
 }
-.bg_navbar_hover {
-  background-color: var(--bg_color_navbar_hover)
+.bg_truepurple-100 {
+  background-color: var(--bg_color_truepurple_hover)
+}
+.hover\:text_truepurple_hover {
+  &:hover {
+      @media (hover: hover) {
+        color: var(--bg_color_truepurple_hover);
+      }
+    }
+}
+.focus\:text_truepurple_focus {
+  &:focus {
+    @media (focus: focus) {
+      color: var(--bg_color_truepurple_current);
+    }
+  }
+}
+.text_truepurple-200 {
+  color: var(--bg_color_truepurple)
+}
+.text_truepurple-100 {
+  color: var(--bg_color_truepurple_hover)
+}
+.text_truepurple-400 {
+  color: var(--bg_color_truepurple_current)
 }
 
+@layer utilities {
+  .perspective {
+    perspective: 1000px;
+  }
 
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+}
