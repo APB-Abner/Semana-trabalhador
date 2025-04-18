@@ -57,7 +57,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
                     {/* Card 1 */}
                     <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6">
-                        <img src="/path/to/image1.jpg" alt="Linha do Tempo" className="w-full h-40 object-cover rounded-t-lg" />
+                        <img src="/Contexto.jpg" alt="Linha do Tempo" className="w-full h-60 object-cover rounded-t-lg" />
                         <h4 className="mt-4 text-lg font-medium">Contexto Histórico</h4>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
                             Conheça a evolução dos direitos e oportunidades dos jovens no mercado de trabalho,
@@ -73,7 +73,7 @@ export default function Home() {
 
                     {/* Card 2 */}
                     <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6">
-                        <img src="/path/to/image2.jpg" alt="Dicas" className="w-full h-40 object-cover rounded-t-lg" />
+                        <img src="/Dicas.jpg" alt="Dicas" className="w-full h-60 object-cover rounded-t-lg" />
                         <h4 className="mt-4 text-lg font-medium">Dicas Práticas</h4>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
                             Explore dicas e orientações práticas para desenvolver suas habilidades e avançar na sua carreira.
@@ -89,7 +89,7 @@ export default function Home() {
 
                     {/* Card 3 */}
                     <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6">
-                        <img src="/path/to/image3.jpg" alt="Teste Rápido" className="w-full h-40 object-cover rounded-t-lg" />
+                        <img src="/Teste.jpg" alt="Teste Rápido" className="w-full h-60 object-cover object-top-right rounded-t-lg" />
                         <h4 className="mt-4 text-lg font-medium">Teste de Aptidão</h4>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
                             Descubra seu perfil de trabalhador com este teste rápido e entenda melhor seus pontos fortes e áreas de crescimento.
@@ -104,7 +104,7 @@ export default function Home() {
 
                     {/* Card 4 */}
                     <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6">
-                        <img src="/path/to/image4.jpg" alt="Mapa de Oportunidades" className="w-full h-40 object-cover rounded-t-lg" />
+                        <img src="/Mapa.jpg" alt="Mapa de Oportunidades" className="w-full h-60 object-cover rounded-t-lg" />
                         <h4 className="mt-4 text-lg font-medium">Mapa de Oportunidades</h4>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">
                             Explore os polos de atendimento do CIEE e encontre vagas e oportunidades de desenvolvimento profissional perto de você.
