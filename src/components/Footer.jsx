@@ -10,41 +10,41 @@ export default function Footer() {
                 <li>
                     <Typography
                         as="a"
-                        href="#"
+                        href="/game"
                         color="blue-gray"
                         className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
                     >
-                        About Us
+                        Games
                     </Typography>
                 </li>
                 <li>
                     <Typography
                         as="a"
-                        href="#"
+                        href="/historias"
                         color="blue-gray"
                         className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
                     >
-                        License
+                        História
                     </Typography>
                 </li>
                 <li>
                     <Typography
                         as="a"
-                        href="#"
+                        href="/mapa"
                         color="blue-gray"
                         className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
                     >
-                        Contribute
+                        Mapa
                     </Typography>
                 </li>
                 <li>
                     <Typography
                         as="a"
-                        href="#"
+                        href="/testes"
                         color="blue-gray"
                         className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
                     >
-                        Contact Us
+                        Teste
                     </Typography>
                 </li>
             </ul>
