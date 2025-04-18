@@ -12,7 +12,7 @@ export default function Footer() {
                         as="a"
                         href="#"
                         color="blue-gray"
-                        className="font-normal transition-colors hover:text_my_hover focus:text_my_focus"
+                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
                     >
                         About Us
                     </Typography>
@@ -22,7 +22,7 @@ export default function Footer() {
                         as="a"
                         href="#"
                         color="blue-gray"
-                        className="font-normal transition-colors hover:text_my_hover focus:text_my_focus"
+                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
                     >
                         License
                     </Typography>
@@ -32,7 +32,7 @@ export default function Footer() {
                         as="a"
                         href="#"
                         color="blue-gray"
-                        className="font-normal transition-colors hover:text_my_hover focus:text_my_focus"
+                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
                     >
                         Contribute
                     </Typography>
@@ -42,7 +42,7 @@ export default function Footer() {
                         as="a"
                         href="#"
                         color="blue-gray"
-                        className="font-normal transition-colors hover:text_my_hover focus:text_my_focus"
+                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
                     >
                         Contact Us
                     </Typography>

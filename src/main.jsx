@@ -9,7 +9,8 @@ import Testes from './pages/Testes.jsx'
 import Mapa from './pages/Mapa.jsx'
 import Historias from './pages/Historias.jsx'
 import Game from './pages/Game.jsx'
-import PageNotFound from './pages/PageNotFound.jsx'
+// import Page404 from './pages/404.jsx'
+import Page404 from './components/Dropdown.jsx'
 
 
 const router = createBrowserRouter([
@@ -22,7 +23,7 @@ const router = createBrowserRouter([
       { path: "/mapa", element: < Mapa /> },
       { path: "/historias", element: < Historias /> },
       { path: "/game", element: < Game /> },
-      { path: '*', element: <PageNotFound /> },
+      { path: '*', element: <Page404 /> },
       // { path: ':name', element: <ContentPage /> }
     ]
   }
