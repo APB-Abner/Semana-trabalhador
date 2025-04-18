@@ -47,6 +47,16 @@ export default function Footer() {
                         Teste
                     </Typography>
                 </li>
+                <li>
+                    <Typography
+                        as="a"
+                        href="/dicas"
+                        color="blue-gray"
+                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
+                    >
+                        Dicas
+                    </Typography>
+                </li>
             </ul>
         </footer>
     );
