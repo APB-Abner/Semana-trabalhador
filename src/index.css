@@ -1,31 +1,36 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root{
-  --bg_color_navbar: #472564;
-  --bg_color_navbar_current: #321A47;
-  --bg_color_navbar_hover: #693795;
+  --bg_color_truepurple: #472564;
+  --bg_color_truepurple_current: #321A47;
+  --bg_color_truepurple_hover: #693795;
 }
 
-.bg_navbar-200 {
-  background-color: var(--bg_color_navbar)
+.bg_truepurple-200 {
+  background-color: var(--bg_color_truepurple)
 }
-.bg_navbar-400, .bg_footer {
-  background-color: var(--bg_color_navbar_current)
+.bg_truepurple-400, .bg_footer {
+  background-color: var(--bg_color_truepurple_current)
 }
-.bg_navbar-100 {
-  background-color: var(--bg_color_navbar_hover)
+.bg_truepurple-100 {
+  background-color: var(--bg_color_truepurple_hover)
 }
-.hover\:text_my_hover {
+.hover\:text_truepurple_hover {
   &:hover {
       @media (hover: hover) {
-        color: var(--bg_color_navbar_hover);
+        color: var(--bg_color_truepurple_hover);
       }
     }
 }
-.focus\:text_my_focus {
+.focus\:text_truepurple_focus {
   &:focus {
     @media (focus: focus) {
-      color: var(--bg_color_navbar_current);
+      color: var(--bg_color_truepurple_current);
     }
   }
+}
+.text_truepurple-200 {
+  color: var(--bg_color_truepurple)
 }
