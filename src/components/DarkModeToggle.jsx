@@ -35,7 +35,7 @@ export default function DarkModeToggle() {
             )}
 
             {/* Ícones sobrepostos no hover */}
-            <div className="absolute inset-0 flex bg_truepurple-400 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-600">
+            <div className="absolute inset-0 flex rounded-full bg_truepurple-400 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-600">
                 <SunIcon className="w-6 h-6 absolute text-gray-50  dark:text-truepurple-100 transform scale-100 group-hover:rotate-[45deg] transition-transform duration-500 ease-out" />
                 <MoonIcon className="w-6 h-6 absolute rotate-0 text-white dark:text-truepurple-100 transform scale-100 group-hover:rotate-[-90deg] transition-transform duration-500 ease-out" />
             </div>

@@ -1,9 +1,8 @@
 import Carousel from '../components/Carocel.jsx';
 
-
-export default function Historias   () {
+export default function Historias() {
     return (
-        <div className="p-6 max-w-3xl mx-auto text-gray-800">
+        <div className="p-6 max-w-3xl mx-auto text-gray-800 dark:text-gray-100 bg-white dark:bg-zinc-900 transition-colors duration-300">
             <h1 className="text-4xl font-bold mb-6 text-center">📅 Dia do Trabalho no Brasil</h1>
 
             <section className="mb-6">
@@ -62,7 +61,7 @@ export default function Historias   () {
                 </p>
             </section>
 
-            <section className="mb-6 border-t pt-6">
+            <section className="mb-6 border-t border-gray-300 dark:border-gray-700 pt-6">
                 <h2 className="text-xl font-semibold mb-2">📌 Curiosidade</h2>
                 <Carousel />
             </section>
@@ -70,11 +69,27 @@ export default function Historias   () {
             <section className="mt-8">
                 <h2 className="text-xl font-semibold mb-2">🔁 O que você gostaria de fazer agora?</h2>
                 <div className="flex gap-4 flex-wrap">
-                    <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                    <button
+                        type="button"
+                        className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition"
+                        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    >
                         Voltar ao topo
                     </button>
-                    <button type="button" onClick={() => alert('Essa função será implementada em breve.')}>Ir para Quiz</button>
-                    <button type="button" onClick={() => alert('Essa função será implementada em breve.')}>Voltar para o Jogo</button>
+                    <button
+                        type="button"
+                        className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 transition"
+                        onClick={() => alert('Essa função será implementada em breve.')}
+                    >
+                        Ir para Quiz
+                    </button>
+                    <button
+                        type="button"
+                        className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 transition"
+                        onClick={() => alert('Essa função será implementada em breve.')}
+                    >
+                        Voltar para o Jogo
+                    </button>
                 </div>
             </section>
         </div>
