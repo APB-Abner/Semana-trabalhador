@@ -1,6 +1,5 @@
-// src/components/CuriosidadesCarousel.jsx
 import { useState } from 'react';
-import { curiosidades } from '../data/curiosidades';
+import { curiosidades } from '../content/curiosidades/index.js';
 
 export default function Carousel() {
     const [idx, setIdx] = useState(0);

@@ -1,33 +1,27 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import confetti from 'canvas-confetti'; 
+import { memoryGameCards } from '../../content/game/cards.js';
+import calculateMemoryScore from '../../features/memory-game/lib/calculateMemoryScore.js';
+import shuffleCards from '../../features/memory-game/lib/shuffleCards.js';
 import { somAcerto, somErro, somVitoria } from '../../sounds/sounds.js';
 
-
-
-const cartasBase = [
-    '📦 Estoquista', '📦 Estoquista',
-    '💬 Atendente de SAC', '💬 Atendente de SAC',
-    '🧑‍💼 Assistente Administrativo', '🧑‍💼 Assistente Administrativo',
-    '🧑‍🍳 Auxiliar de Cozinha', '🧑‍🍳 Auxiliar de Cozinha',
-    '👨‍💻 Suporte Técnico', '👨‍💻 Suporte Técnico',
-    '🧑‍🔧 Auxiliar de Manutenção', '🧑‍🔧 Auxiliar de Manutenção',
-];
-
-function embaralhar(array) {
-    const copia = [...array];
-    for (let i = copia.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copia[i], copia[j]] = [copia[j], copia[i]];
-    }
-    return copia;
-}
-
 export default function Memoria({ onComplete }) {
-    const [cartas] = useState(() => embaralhar(cartasBase));
+    const [cartas] = useState(() => shuffleCards(memoryGameCards));
     const [selecionadas, setSelecionadas] = useState([]);
     const [concluidas, setConcluidas] = useState([]);
     const [tempoRestante, setTempoRestante] = useState(60);
     const timerRef = useRef(null);
+    const concluidasRef = useRef([]);
+
+    useEffect(() => {
+        concluidasRef.current = concluidas;
+    }, [concluidas]);
+
+    const finalizarJogo = useCallback((totalConcluidas = concluidasRef.current.length) => {
+        const pont = calculateMemoryScore(totalConcluidas, cartas.length);
+        somVitoria.play();
+        onComplete(pont);
+    }, [cartas.length, onComplete]);
 
     // Timer regressivo
     useEffect(() => {
@@ -42,7 +36,7 @@ export default function Memoria({ onComplete }) {
             });
         }, 1000);
         return () => clearInterval(timerRef.current);
-    }, []);
+    }, [finalizarJogo]);
 
     // Checa combinação
     useEffect(() => {
@@ -65,20 +59,14 @@ export default function Memoria({ onComplete }) {
             clearInterval(timerRef.current);
             setTimeout(() => {
                 confetti();
-                finalizarJogo();
+                finalizarJogo(concluidas.length);
             }, 500);
         }
-    }, [concluidas, cartas.length]);
+    }, [concluidas, cartas.length, finalizarJogo]);
 
     const selecionar = (idx) => {
         if (selecionadas.includes(idx) || concluidas.includes(idx) || selecionadas.length === 2) return;
         setSelecionadas((prev) => [...prev, idx]);
-    };
-
-    const finalizarJogo = () => {
-        const pont = Math.round((concluidas.length / cartas.length) * 10);
-        somVitoria.play();
-        onComplete(pont);
     };
 
     return (

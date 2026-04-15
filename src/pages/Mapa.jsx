@@ -1,8 +1,9 @@
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import todasOportunidades from '../data/todasOportunidades.js';
+import useOpportunityFilters from '../features/opportunity-filters/model/useOpportunityFilters.js';
 
 // Configura ícones do Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -12,49 +13,20 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Lista única de estados
-const estados = ['Todos', ...new Set(
-    todasOportunidades.map(op => {
-        const match = op.nome?.match(/-\s*([A-Z]{2})$/);
-        return match ? match[1] : null;
-    }).filter(Boolean)
-)];
-
 export default function Mapa() {
-    const [filtroCidade, setFiltroCidade] = useState('Todas');
-    const [filtroEstado, setFiltroEstado] = useState('Todos');
-    const [cidadesDisponiveis, setCidadesDisponiveis] = useState(['Todas']);
+    const {
+        cidadesDisponiveis,
+        estados,
+        filtroCidade,
+        filtroEstado,
+        oportunidadesFiltradas,
+        setFiltroCidade,
+        setFiltroEstado,
+    } = useOpportunityFilters(todasOportunidades);
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
-
-    useEffect(() => {
-        if (filtroEstado === 'Todos') {
-            setCidadesDisponiveis(['Todas', ...new Set(todasOportunidades.map(op => op.cidade))]);
-        } else {
-            const cidadesFiltradas = todasOportunidades
-                .filter(op => {
-                    const estado = op.nome?.match(/-\s*([A-Z]{2})$/)?.[1];
-                    return estado === filtroEstado;
-                })
-                .map(op => op.cidade);
-            setCidadesDisponiveis(['Todas', ...new Set(cidadesFiltradas)]);
-        }
-
-        setFiltroCidade(prevCidade =>
-            prevCidade === 'Todas' || cidadesDisponiveis.includes(prevCidade)
-                ? prevCidade
-                : 'Todas'
-        );
-    }, [cidadesDisponiveis, filtroEstado]);
-
-    const oportunidadesFiltradas = todasOportunidades.filter(op => {
-        const cidadeMatch = filtroCidade === 'Todas' || op.cidade === filtroCidade;
-        const estado = op.nome?.match(/-\s*([A-Z]{2})$/)?.[1];
-        const estadoMatch = filtroEstado === 'Todos' || estado === filtroEstado;
-        return cidadeMatch && estadoMatch;
-    });
 
     return (
         <div className="p-6 bg-white text-black dark:bg-zinc-900 dark:text-white transition-colors duration-300">

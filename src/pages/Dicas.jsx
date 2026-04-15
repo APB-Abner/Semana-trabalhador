@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import dicas from '../data/Contenddicas';
+import dicas from '../content/dicas/index.js';
 import DicaSection from '../components/DicaSection';
 import ScrollSpyNav from '../components/ScrollSpyNav';
 

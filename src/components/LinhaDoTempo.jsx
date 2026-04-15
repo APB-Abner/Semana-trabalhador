@@ -1,13 +1,6 @@
-export default function LinhaDoTempo() {
-    const eventos = [
-        { ano: '1943', descricao: 'Criação da CLT – Consolidação das Leis do Trabalho no Brasil.' },
-        { ano: '1988', descricao: 'Nova Constituição garante direitos ampliados aos trabalhadores.' },
-        { ano: '1990s', descricao: 'Programas de estágio e jovem aprendiz ganham força.' },
-        { ano: '2000', descricao: 'Lei da Aprendizagem é criada (Lei 10.097).' },
-        { ano: '2014', descricao: 'Reformas no ensino médio fortalecem o ensino técnico.' },
-        { ano: '2023', descricao: 'Debates sobre o futuro do trabalho e inclusão digital.' },
-    ];
+import { timelineEvents } from '../content/timeline/events.js';
 
+export default function LinhaDoTempo() {
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-6 text-center">📅 Linha do Tempo do Jovem Trabalhador</h2>
@@ -17,7 +10,7 @@ export default function LinhaDoTempo() {
 
                 {/* Cards alternados */}
                 <div className="flex flex-col gap-16">
-                    {eventos.map((evento, idx) => {
+                    {timelineEvents.map((evento, idx) => {
                         const isRight = idx % 2 === 0;
                         return (
                             <div

@@ -2,7 +2,7 @@ import { useLocation } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import DarkModeToggle from './DarkModeToggle';
+import DarkModeToggle from '../features/theme-toggle/ui/DarkModeToggle.jsx';
 
 const navigation = [
     { name: 'Home', href: '/' },
@@ -72,7 +72,7 @@ export default function Navbar() {
 
                     {/* Dark Mode Toggle */}
                     <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                        <DarkModeToggle aria-hidden="true" className="h-6 w-6" />
+                        <DarkModeToggle />
                     </div>
                 </div>
             </div>
