@@ -1,35 +1,33 @@
-import { Typography } from "@material-tailwind/react";
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 const footerLinks = [
-    { label: 'Games', href: '/game' },
-    { label: 'Competição', href: '/competicao' },
-    { label: 'História', href: '/historias' },
     { label: 'Mapa', href: '/mapa' },
     { label: 'Teste', href: '/testes' },
+    { label: 'Game', href: '/game' },
+    { label: 'Competição', href: '/competicao' },
+    { label: 'Histórias', href: '/historias' },
     { label: 'Dicas', href: '/dicas' },
 ];
 
 export default function Footer() {
     return (
-        <footer className="flex w-full flex-row flex-wrap px-2 items-center justify-center gap-y-6 gap-x-12 bg_footer text-gray-400 py-6 text-center">
-            <Typography color="blue-gray" className="font-normal">
-                &copy; {new Date().getFullYear()} Aprendizes CIEE - Todos os direitos reservados
-            </Typography>
-            <ul className="flex flex-row w-2/3 items-center justify-center gap-y-3 gap-x-8">
-                {footerLinks.map((item) => (
-                    <li key={item.href}>
-                        <Typography
-                            as={Link}
+        <footer className="border-t border-gray-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 text-sm text-gray-600 dark:text-gray-300 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+                <p>
+                    &copy; {new Date().getFullYear()} Aprendizes CIEE. Todos os direitos reservados.
+                </p>
+                <nav aria-label="Rodapé" className="flex flex-wrap gap-x-5 gap-y-2">
+                    {footerLinks.map((item) => (
+                        <Link
+                            key={item.href}
                             to={item.href}
-                            color="blue-gray"
-                            className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
+                            className="font-semibold transition hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:hover:text-blue-300"
                         >
                             {item.label}
-                        </Typography>
-                    </li>
-                ))}
-            </ul>
+                        </Link>
+                    ))}
+                </nav>
+            </div>
         </footer>
     );
 }

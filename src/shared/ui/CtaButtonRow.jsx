@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom';
 
 const toneClasses = {
   blue: 'bg-blue-600 hover:bg-blue-700',
-  green: 'bg-green-600 hover:bg-green-700',
-  purple: 'bg-purple-600 hover:bg-purple-700',
-  gray: 'bg-gray-600 hover:bg-gray-700',
+  green: 'bg-emerald-600 hover:bg-emerald-700',
+  purple: 'bg-violet-600 hover:bg-violet-700',
+  gray: 'bg-gray-800 hover:bg-gray-950 dark:bg-zinc-700 dark:hover:bg-zinc-600',
 };
 
 function buttonClass(tone) {
-  return `rounded px-4 py-2 font-semibold text-white transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${toneClasses[tone] || toneClasses.blue}`;
+  return `inline-flex min-h-10 items-center justify-center rounded-md px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${toneClasses[tone] || toneClasses.blue}`;
 }
 
 export default function CtaButtonRow({ actions, className = '' }) {

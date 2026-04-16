@@ -3,6 +3,8 @@ import Quiz from '../components/game/Quiz';
 import Memoria from '../components/game/Memoria';
 import Resultado from '../components/game/Resultado';
 import Continuar from '../components/game/Continuar';
+import PageHeader from '../shared/ui/PageHeader.jsx';
+import PageShell from '../shared/ui/PageShell.jsx';
 
 export default function Game() {
     const [acertos, setAcertosQuiz] = useState(0);
@@ -15,19 +17,26 @@ export default function Game() {
     const continuarJogo = (pontuacao) => { setFase('continuar'); setAcertosQuiz(pontuacao); };
 
     return (
-        <div className="p-6 max-w-xl mx-auto bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 transition-colors duration-300">
-            <h2 className="text-2xl font-bold mb-6 text-center">🎮 Desafio Jovem Trabalhador</h2>
+        <PageShell size="default">
+            <PageHeader
+                eyebrow="Game"
+                title="Desafio Jovem Trabalhador"
+                description="Responda ao quiz, avance para a memória e veja seu resultado consolidado no final."
+                className="mx-auto text-center"
+            />
 
-            {fase === 'quiz' && <Quiz onComplete={continuarJogo} />}            
-            {fase === 'continuar' && <Continuar reiniciar={reiniciarJogo} pontuacao={acertos} continuar={irParaMemoria} />}
-            {fase === 'memoria' && <Memoria onComplete={irParaResultado} />}
-            {fase === 'resultado' && (
-                <Resultado
-                    reiniciar={reiniciarJogo}
-                    acertosQuiz={acertos}
-                    acertosMemoria={acertosMemoria}
-                />
-            )}
-        </div>
+            <div className="mx-auto max-w-xl">
+                {fase === 'quiz' && <Quiz onComplete={continuarJogo} />}
+                {fase === 'continuar' && <Continuar reiniciar={reiniciarJogo} pontuacao={acertos} continuar={irParaMemoria} />}
+                {fase === 'memoria' && <Memoria onComplete={irParaResultado} />}
+                {fase === 'resultado' && (
+                    <Resultado
+                        reiniciar={reiniciarJogo}
+                        acertosQuiz={acertos}
+                        acertosMemoria={acertosMemoria}
+                    />
+                )}
+            </div>
+        </PageShell>
     );
 }

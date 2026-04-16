@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import usePlayerRoom from '../features/live-quiz/model/usePlayerRoom';
 import PlayerJoinForm from '../features/live-quiz/ui/PlayerJoinForm.jsx';
 import FeedbackNotice from '../shared/ui/FeedbackNotice.jsx';
+import PageHeader from '../shared/ui/PageHeader.jsx';
+import PageShell from '../shared/ui/PageShell.jsx';
 
 export default function CompeticaoEntrar() {
   const navigate = useNavigate();
@@ -16,10 +18,15 @@ export default function CompeticaoEntrar() {
   };
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-10 text-gray-900 dark:text-white">
-      <h1 className="mb-6 text-center text-3xl font-black">Entrar na competição</h1>
+    <PageShell size="narrow" className="text-gray-900 dark:text-white">
+      <PageHeader
+        eyebrow="Jogador"
+        title="Entrar na competição"
+        description="Digite seu nome e o PIN informado pelo host para entrar no lobby em tempo real."
+        align="center"
+      />
       {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
       <PlayerJoinForm onJoin={handleJoin} />
-    </div>
+    </PageShell>
   );
 }

@@ -20,7 +20,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
         <ResultPanel tone="info">
           <p className="text-sm uppercase tracking-wide text-blue-700 dark:text-blue-200">PIN da sala</p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-            <p className="text-5xl font-black tracking-[0.2em] text-gray-900 dark:text-white">{state.pin}</p>
+            <p className="font-display text-5xl font-extrabold tracking-[0.2em] text-gray-950 dark:text-white">{state.pin}</p>
             <Badge tone="blue">
               {state.status === 'lobby' ? 'Lobby' : `${state.currentQuestionIndex + 1}/${state.totalQuestions}`}
             </Badge>
@@ -31,7 +31,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
 
         {state.status === 'lobby' && (
           <ResultPanel>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Sala pronta</h2>
+            <h2 className="text-xl font-bold text-gray-950 dark:text-white">Sala pronta</h2>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               Compartilhe o PIN com os jogadores. Quando todos estiverem no lobby, inicie a partida.
             </p>

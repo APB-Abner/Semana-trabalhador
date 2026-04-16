@@ -1,11 +1,15 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect } from 'react';
 import todasOportunidades from '../data/todasOportunidades.js';
 import useOpportunityFilters from '../features/opportunity-filters/model/useOpportunityFilters.js';
+import Badge from '../shared/ui/Badge.jsx';
+import FormSelect from '../shared/ui/FormSelect.jsx';
+import PageHeader from '../shared/ui/PageHeader.jsx';
+import PageShell from '../shared/ui/PageShell.jsx';
+import ResultPanel from '../shared/ui/ResultPanel.jsx';
 
-// Configura ícones do Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -29,72 +33,91 @@ export default function Mapa() {
     }, []);
 
     return (
-        <div className="p-6 bg-white text-black dark:bg-zinc-900 dark:text-white transition-colors duration-300">
-            <h2 className="text-2xl font-bold mb-2">🌍 Mapa de Unidades</h2>
-            <p className="mb-4 text-gray-700 dark:text-gray-300">
-                Explore locais com o CIEE mais próximo de você!
-            </p>
+        <PageShell>
+            <PageHeader
+                eyebrow="Mapa de unidades"
+                title="Encontre o CIEE mais próximo de você."
+                description="Filtre por estado e cidade para localizar unidades, polos e postos de atendimento disponíveis."
+            />
 
-            <div className="flex flex-col md:flex-row gap-4 mb-4">
-                <div>
-                    <label className="block text-sm font-medium dark:text-gray-200">Estado:</label>
-                    <select
-                        className="mt-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-800 text-black dark:text-white rounded px-3 py-1"
-                        value={filtroEstado}
-                        onChange={e => setFiltroEstado(e.target.value)}
-                        value={filtroEstado}
-                        onChange={e => setFiltroEstado(e.target.value)}
-                    >
-                        {estados.map((estado, idx) => (
-                            <option key={idx}>{estado}</option>
-                        ))}
-                    </select>
-                </div>
+            <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
+                <aside className="space-y-4">
+                    <ResultPanel>
+                        <h2 className="text-lg font-bold text-gray-950 dark:text-white">Filtros</h2>
+                        <div className="mt-5 space-y-4">
+                            <FormSelect
+                                id="map-state"
+                                label="Estado"
+                                value={filtroEstado}
+                                onChange={(event) => setFiltroEstado(event.target.value)}
+                            >
+                                {estados.map((estado) => (
+                                    <option key={estado}>{estado}</option>
+                                ))}
+                            </FormSelect>
 
-                <div>
-                    <label className="block text-sm font-medium dark:text-gray-200">Cidade:</label>
-                    <select
-                        className="mt-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-800 text-black dark:text-white rounded px-3 py-1"
-                        value={filtroCidade}
-                        onChange={e => setFiltroCidade(e.target.value)}
-                    >
-                        {cidadesDisponiveis.map((cidade, idx) => (
-                            <option key={idx}>{cidade}</option>
-                        ))}
-                    </select>
-                </div>
+                            <FormSelect
+                                id="map-city"
+                                label="Cidade"
+                                value={filtroCidade}
+                                onChange={(event) => setFiltroCidade(event.target.value)}
+                            >
+                                {cidadesDisponiveis.map((cidade) => (
+                                    <option key={cidade}>{cidade}</option>
+                                ))}
+                            </FormSelect>
+                        </div>
+                    </ResultPanel>
+
+                    <ResultPanel tone="info">
+                        <p className="text-sm uppercase tracking-wide text-blue-700 dark:text-blue-200">Resultado</p>
+                        <p className="font-display mt-2 text-3xl font-extrabold text-gray-950 dark:text-white">
+                            {oportunidadesFiltradas.length}
+                        </p>
+                        <p className="mt-1 text-sm text-blue-900 dark:text-blue-100">
+                            oportunidade(s) encontrada(s).
+                        </p>
+                    </ResultPanel>
+                </aside>
+
+                <section className="overflow-hidden rounded border border-gray-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-zinc-800">
+                        <div>
+                            <h2 className="font-bold text-gray-950 dark:text-white">Mapa de Unidades</h2>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Arraste o mapa para explorar outras regiões.
+                            </p>
+                        </div>
+                        <Badge tone="green">{filtroEstado}</Badge>
+                    </div>
+
+                    <div className="h-[32rem] overflow-hidden">
+                        <MapContainer
+                            center={[-15.7939, -47.8828]}
+                            zoom={4}
+                            scrollWheelZoom={false}
+                            className="h-full w-full"
+                        >
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            />
+                            {oportunidadesFiltradas.map((op, idx) =>
+                                op.posicao && Array.isArray(op.posicao) && op.posicao.length === 2 ? (
+                                    <Marker key={`${op.nome}-${idx}`} position={op.posicao}>
+                                        <Popup>
+                                            <strong>{op.nome}</strong><br />
+                                            📍 {op.cidade}<br />
+                                            🕒 {op.horario || 'Horário não informado'}<br />
+                                            <p className="mt-1 text-sm">{op.endereco}</p>
+                                        </Popup>
+                                    </Marker>
+                                ) : null
+                            )}
+                        </MapContainer>
+                    </div>
+                </section>
             </div>
-
-            <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
-                {oportunidadesFiltradas.length} oportunidade(s) encontrada(s).
-            </p>
-
-            <div className="h-[500px] rounded-xl overflow-hidden border border-gray-300 dark:border-gray-700 shadow">
-                <MapContainer center={[-15.7939, -47.8828]} zoom={4} scrollWheelZoom={false} className="h-full w-full">
-                    <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    {oportunidadesFiltradas.map((op, idx) =>
-                        op.posicao && Array.isArray(op.posicao) && op.posicao.length === 2 ? (
-                            <Marker key={idx} position={op.posicao}>
-                                <Popup>
-                                    <strong>{op.nome}</strong><br />
-                                    📍 {op.cidade}<br />
-                                    🕒 {op.horario || 'Horário não informado'}<br />
-                                    <p className="mt-1 text-sm">{op.endereco}</p>
-
-                                    <strong>{op.nome}</strong><br />
-                                    📍 {op.cidade}<br />
-                                    🕒 {op.horario || 'Horário não informado'}<br />
-                                    <p className="mt-1 text-sm">{op.endereco}</p>
-
-                                </Popup>
-                            </Marker>
-                        ) : null
-                    )}
-                </MapContainer>
-            </div>
-        </div>
+        </PageShell>
     );
 }

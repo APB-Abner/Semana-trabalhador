@@ -53,27 +53,27 @@ export default function ScrollSpyNav({ groups, menuOpen, setMenuOpen }) {
 
     return (
         <aside
-            className={`sticky top-0 h-[calc(100vh-1rem)] overflow-y-auto bg-white dark:bg-zinc-800 shadow-md border-r border-gray-200 dark:border-zinc-700 transition-transform duration-300 ease-in-out
+            className={`sticky top-0 h-[calc(100vh-1rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white/95 shadow-sm shadow-gray-200/50 transition-transform duration-300 ease-in-out dark:border-zinc-800 dark:bg-zinc-900/95 dark:shadow-none
                 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
             style={{ top: `${headerHeight}px`, height: `calc(100vh - ${headerHeight + 16}px)` }}
         >
             <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold">Navegação</h2>
+                    <h2 className="text-lg font-bold text-gray-950 dark:text-white">Conteúdos</h2>
                     <button
                         onClick={() => setMenuOpen(false)}
-                        className="w-fit p-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="rounded px-2 py-1 text-sm font-semibold text-gray-600 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:text-gray-300 dark:hover:bg-zinc-800"
                         aria-label="Fechar Menu"
                     >
-                        ✖️
+                        Fechar
                     </button>
                 </div>
 
-                <nav className="flex flex-col space-y-4 text-sm">
+                <nav className="flex flex-col space-y-4 text-sm" aria-label="Navegação de dicas">
                     {groups.map((group, i) => (
                         <div key={i}>
                             {group.title && (
-                                <p className="text-xs uppercase text-gray-400 mb-1">
+                                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
                                     {group.title}
                                 </p>
                             )}
@@ -83,12 +83,12 @@ export default function ScrollSpyNav({ groups, menuOpen, setMenuOpen }) {
                                     href={`#${item.id}`}
                                     onClick={(event) => handleNavClick(event, item.id)}
                                     aria-current={activeId === item.id ? 'true' : undefined}
-                                    className={`nav-link block px-2 py-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:hover:bg-zinc-700 ${activeId === item.id ? 'text-green-600 font-bold bg-green-50 dark:bg-zinc-700' : ''}`}
+                                    className={`nav-link block rounded-md px-3 py-2 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:hover:bg-zinc-800 ${activeId === item.id ? 'bg-blue-50 font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-200' : 'text-gray-700 dark:text-gray-300'}`}
                                 >
                                     {item.icon} {item.label}
                                 </a>
                             ))}
-                            <hr className="my-2 border-gray-300 dark:border-zinc-600" />
+                            <hr className="my-3 border-gray-200 dark:border-zinc-800" />
                         </div>
                     ))}
                 </nav>

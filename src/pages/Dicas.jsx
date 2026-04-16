@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import dicas from '../content/dicas/index.js';
 import DicaSection from '../components/DicaSection';
 import ScrollSpyNav from '../components/ScrollSpyNav';
+import PageHeader from '../shared/ui/PageHeader.jsx';
+import PageShell from '../shared/ui/PageShell.jsx';
 
 const groupedNav = Object.values(
     dicas.reduce((acc, dica) => {
@@ -17,7 +19,9 @@ const groupedNav = Object.values(
 );
 
 export default function Dicas() {
-    const [isMenuOpen, setIsMenuOpen] = useState(true);
+    const [isMenuOpen, setIsMenuOpen] = useState(() => (
+        typeof window === 'undefined' ? true : window.innerWidth >= 1024
+    ));
     const [isButtonFixed, setIsButtonFixed] = useState(false);
 
     const toggleMenu = () => setIsMenuOpen((prev) => !prev);
@@ -32,37 +36,34 @@ export default function Dicas() {
     }, []);
 
     return (
-        <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-center">Dicas para Iniciar sua Carreira</h2>
-            <p className="text-lg text-center text-gray-700 dark:text-gray-300">
-                Se você está começando sua jornada no mercado de trabalho, aqui estão algumas dicas valiosas para ajudá-lo a dar os primeiros passos com confiança!
-            </p>
+        <PageShell size="wide" className="text-gray-900 dark:text-white">
+            <PageHeader
+                eyebrow="Guia prático"
+                title="Dicas para Iniciar sua Carreira"
+                description="Orientações objetivas para entrevista, currículo, postura profissional e primeiros passos no mercado de trabalho."
+            />
 
-            {/* Botão flutuante */}
             <button
                 onClick={toggleMenu}
-                className={`fixed z-50 left-5 transition-all duration-300 bg-white dark:bg-zinc-900 p-2 rounded-2xl ${isButtonFixed ? 'top-5' : 'top-[calc(5rem+1rem)]'} ${isMenuOpen ? 'hidden' : 'block'}`}
+                className={`rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 shadow-sm transition-all duration-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 dark:hover:bg-zinc-800 ${isButtonFixed ? 'fixed left-5 top-5 z-50' : 'mb-6'} ${isMenuOpen ? 'hidden' : 'inline-flex'}`}
                 aria-label="Abrir Menu"
             >
-                📋 Abrir Menu
+                Abrir menu
             </button>
 
-            {/* Layout principal */}
-            <div className="flex relative gap-6">
-                {/* Sidebar */}
-                <div className={`${isMenuOpen ? 'w-64' : 'w-0'} transition-all duration-300`}>
+            <div className={`relative grid gap-8 ${isMenuOpen ? 'lg:grid-cols-[18rem_minmax(0,1fr)]' : 'lg:grid-cols-1'}`}>
+                <div className={`${isMenuOpen ? 'block' : 'hidden'} transition-all duration-300`}>
                     <ScrollSpyNav groups={groupedNav} menuOpen={isMenuOpen} setMenuOpen={setIsMenuOpen} />
                 </div>
 
-                {/* Conteúdo */}
-                <div className="flex-1 overflow-hidden">
+                <main className="min-w-0 space-y-8">
                     {dicas.map((dica) => (
                         <DicaSection key={dica.id} id={dica.id} title={dica.title} icon={dica.icon}>
                             {dica.content}
                         </DicaSection>
                     ))}
-                </div>
+                </main>
             </div>
-        </div>
+        </PageShell>
     );
 }

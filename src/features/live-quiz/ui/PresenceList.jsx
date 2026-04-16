@@ -13,7 +13,7 @@ export default function PresenceList({ players = [] }) {
         {players.length ? players.map((player) => (
           <div
             key={player.id}
-            className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
           >
             <span className="font-medium text-gray-800 dark:text-gray-100">{player.name}</span>
             <Badge tone={player.connected ? 'green' : 'gray'}>

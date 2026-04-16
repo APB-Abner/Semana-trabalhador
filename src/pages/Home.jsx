@@ -1,137 +1,141 @@
-
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
 import LinhaDoTempo from '../components/LinhaDoTempo';
+import Badge from '../shared/ui/Badge.jsx';
+import CtaButtonRow from '../shared/ui/CtaButtonRow.jsx';
+import PageShell from '../shared/ui/PageShell.jsx';
+import ResultPanel from '../shared/ui/ResultPanel.jsx';
 
-gsap.registerPlugin(ScrollTrigger);
+const experiences = [
+    {
+        title: 'Histórias',
+        text: 'Entenda marcos, lutas e conquistas que moldaram o trabalho no Brasil.',
+        image: '/Contexto.jpg',
+        href: '/historias',
+        cta: 'Ler histórias',
+    },
+    {
+        title: 'Dicas',
+        text: 'Prepare currículo, entrevista e postura profissional com orientações diretas.',
+        image: '/Dicas.jpg',
+        href: '/dicas',
+        cta: 'Ver dicas',
+    },
+    {
+        title: 'Teste vocacional',
+        text: 'Descubra áreas que combinam com seu perfil e receba próximos passos.',
+        image: '/Teste.jpg',
+        href: '/testes',
+        cta: 'Fazer teste',
+    },
+    {
+        title: 'Mapa',
+        text: 'Encontre unidades e polos de atendimento do CIEE por estado e cidade.',
+        image: '/Mapa.jpg',
+        href: '/mapa',
+        cta: 'Abrir mapa',
+    },
+];
 
 export default function Home() {
-    const containerRef = useRef(null);
-
-    useEffect(() => {
-        const sections = containerRef.current.querySelectorAll('.section');
-        sections.forEach((section, i) => {
-            gsap.fromTo(
-                section,
-                { opacity: 0, y: 50 },
-                {
-                    scrollTrigger: {
-                        trigger: section,
-                        start: 'top 80%',
-                        toggleActions: 'play none none none'
-                    },
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.8,
-                    delay: i * 0.2
-                }
-            );
-        });
-    }, []);
-
     return (
-        <div ref={containerRef} className="p-6 space-y-20 bg-white text-black dark:bg-zinc-900 dark:text-white transition-colors duration-300">
-            <section className="section text-center">
-                <h2 className="text-3xl font-bold">Bem-vindo à Semana do Jovem Trabalhador</h2>
-                <p className="mt-4 text-gray-700 dark:text-gray-300">
-                    Celebre conquistas, descubra oportunidades e trilhe novos caminhos!
-                </p>
-            </section>
-
-            <section className="section">
-                <h3 className="text-2xl font-semibold">📅 Linha do Tempo</h3>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
-                    Acompanhe a evolução dos direitos e oportunidades dos jovens no mercado de trabalho.
-                </p>
-                <LinhaDoTempo />
-            </section>
-
-            <section className="section">
-                <h3 className="text-2xl font-semibold">💡 Dicas e Inspirações</h3>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
-                    Receba conselhos práticos, histórias inspiradoras e estratégias para avançar na sua carreira.
-                    Conheça dicas valiosas para o seu desenvolvimento profissional.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-                    {/* Card 1 */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6">
-                        <img src="/Contexto.jpg" alt="Linha do Tempo" className="w-full h-80 object-cover rounded-t-lg" />
-                        <h4 className="mt-4 text-lg font-medium">Contexto Histórico</h4>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            Conheça a evolução dos direitos e oportunidades dos jovens no mercado de trabalho,
-                            com uma linha do tempo detalhada e cheia de marcos importantes.
+        <div className="bg-slate-50 text-gray-950 dark:bg-zinc-950 dark:text-white">
+            <section className="section relative isolate flex min-h-[calc(100svh-4rem)] items-end overflow-hidden">
+                <img
+                    src="/Contexto.jpg"
+                    alt="Jovens em ambiente profissional"
+                    className="absolute inset-0 -z-20 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/45 to-black/20" />
+                <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+                    <div className="max-w-3xl text-white">
+                        <Badge tone="green">Semana do Jovem Trabalhador</Badge>
+                        <h1 className="font-display mt-5 text-4xl font-extrabold leading-tight sm:text-6xl">
+                            Trabalho, escolhas e futuro em uma experiência só.
+                        </h1>
+                        <p className="mt-5 max-w-2xl text-lg leading-8 text-white/85">
+                            Explore direitos, oportunidades, orientação de carreira e desafios interativos para entrar no mundo do trabalho com mais clareza.
                         </p>
-                        <Link
-                            to="/historias"
-                            className="inline-block mt-4 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-green-700 transition-colors"
-                        >
-                            Ir Para Histórias
-                        </Link>
-                    </div>
-
-                    {/* Card 2 */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6">
-                        <img src="/Dicas.jpg" alt="Dicas" className="w-full h-80 object-cover rounded-t-lg" />
-                        <h4 className="mt-4 text-lg font-medium">Dicas Práticas</h4>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            Explore dicas e orientações práticas para desenvolver suas habilidades e avançar na sua carreira.
-                            Prepare-se para os desafios do mercado de trabalho com confiança.
-                        </p>
-                        <Link
-                            to="/dicas"
-                            className="inline-block mt-4 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-green-700 transition-colors"
-                        >
-                            Ir Para Dicas
-                        </Link>
-                    </div>
-
-                    {/* Card 3 */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6">
-                        <img src="/Teste.jpg" alt="Teste Rápido" className="w-full h-80 object-cover object-top-right rounded-t-lg" />
-                        <h4 className="mt-4 text-lg font-medium">Teste de Aptidão</h4>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            Descubra seu perfil de trabalhador com este teste rápido e entenda melhor seus pontos fortes e áreas de crescimento.
-                        </p>
-                        <Link
-                            to="/testes"
-                            className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                        >
-                            Fazer o Teste
-                        </Link>
-                    </div>
-
-                    {/* Card 4 */}
-                    <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6">
-                        <img src="/Mapa.jpg" alt="Mapa de Oportunidades" className="w-full h-80 object-cover rounded-t-lg" />
-                        <h4 className="mt-4 text-lg font-medium">Mapa de Oportunidades</h4>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">
-                            Explore os polos de atendimento do CIEE e encontre vagas e oportunidades de desenvolvimento profissional perto de você.
-                        </p>
-                        <Link
-                            to="/mapa"
-                            className="inline-block mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                        >
-                            Ver Mapa
-                        </Link>
+                        <CtaButtonRow
+                            className="mt-8 justify-start"
+                            actions={[
+                                { label: 'Começar pelo teste', href: '/testes', tone: 'blue' },
+                                { label: 'Ver competição ao vivo', href: '/competicao', tone: 'green' },
+                            ]}
+                        />
                     </div>
                 </div>
             </section>
 
-            <section className="section">
-                <h3 className="text-2xl font-semibold">🎮 Desafio Final</h3>
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
-                    Participe de um mini game e teste seus conhecimentos de maneira divertida!
-                    Responda perguntas e descubra o quanto você sabe sobre o mercado de trabalho e os direitos dos jovens.
-                </p>
-                <Link
-                    to="/game"
-                    className="inline-block mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
-                >
-                    Jogar Agora
-                </Link>
-            </section>
+            <PageShell className="space-y-16">
+                <section className="section">
+                    <div className="mb-6 max-w-3xl">
+                        <Badge tone="blue">Linha do tempo</Badge>
+                        <h2 className="font-display mt-3 text-3xl font-extrabold text-gray-950 dark:text-white">
+                            Direitos e oportunidades não surgiram por acaso.
+                        </h2>
+                        <p className="mt-3 text-gray-600 dark:text-gray-300">
+                            Acompanhe a evolução dos marcos que explicam o trabalho formal, a aprendizagem profissional e a proteção ao jovem.
+                        </p>
+                    </div>
+                    <LinhaDoTempo />
+                </section>
+
+                <section className="section">
+                    <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                        <div className="max-w-2xl">
+                            <Badge tone="purple">Experiências</Badge>
+                            <h2 className="font-display mt-3 text-3xl font-extrabold text-gray-950 dark:text-white">
+                                Escolha uma trilha para continuar.
+                            </h2>
+                        </div>
+                        <Link
+                            to="/game"
+                            className="font-semibold text-blue-700 transition hover:text-blue-900 dark:text-blue-300 dark:hover:text-blue-100"
+                        >
+                            Ir direto para o game
+                        </Link>
+                    </div>
+
+                    <div className="grid gap-5 md:grid-cols-2">
+                        {experiences.map((experience) => (
+                            <Link
+                                key={experience.href}
+                                to={experience.href}
+                                className="group grid overflow-hidden rounded border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-800 sm:grid-cols-[11rem_1fr]"
+                            >
+                                <img
+                                    src={experience.image}
+                                    alt=""
+                                    className="h-44 w-full object-cover sm:h-full"
+                                />
+                                <div className="p-5">
+                                    <h3 className="text-lg font-bold text-gray-950 dark:text-white">{experience.title}</h3>
+                                    <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">{experience.text}</p>
+                                    <p className="mt-4 text-sm font-semibold text-blue-700 group-hover:text-blue-900 dark:text-blue-300">
+                                        {experience.cta}
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+
+                <section className="section">
+                    <ResultPanel tone="info" className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 className="font-display text-2xl font-extrabold text-gray-950 dark:text-white">Desafio Jovem Trabalhador</h2>
+                            <p className="mt-2 max-w-2xl text-sm leading-6 text-blue-900 dark:text-blue-100">
+                                Teste seus conhecimentos no quiz, avance para o jogo da memória e compare seu desempenho no resultado final.
+                            </p>
+                        </div>
+                        <CtaButtonRow
+                            actions={[
+                                { label: 'Jogar agora', href: '/game', tone: 'purple' },
+                            ]}
+                        />
+                    </ResultPanel>
+                </section>
+            </PageShell>
         </div>
     );
 }

@@ -11,19 +11,14 @@ export default function DarkModeToggle({ className = '', ...props }) {
       aria-pressed={isDarkMode}
       aria-label="Alternar modo escuro"
       title="Alternar modo escuro"
-      className={`group relative inline-flex items-center justify-center w-14 h-14 rounded-full bg_truepurple-200 text-gray-300 dark:bg_truepurple-400 dark:text_truepurple-100 transition-all duration-300 ${className}`}
+      className={`group relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-zinc-800 dark:bg-zinc-900 dark:text-gray-100 dark:hover:bg-zinc-800 ${className}`}
       {...props}
     >
       {isDarkMode ? (
-        <MoonIcon className="w-6 h-6 transition-all duration-300 opacity-100 group-hover:opacity-0" />
+        <MoonIcon className="h-5 w-5 transition-all duration-300" />
       ) : (
-        <SunIcon className="w-6 h-6 transition-all duration-300 opacity-100 group-hover:opacity-0" />
+        <SunIcon className="h-5 w-5 transition-all duration-300" />
       )}
-
-      <div className="absolute inset-0 flex rounded-full bg_truepurple-400 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-600">
-        <SunIcon className="w-6 h-6 absolute text-gray-50 dark:text_truepurple-100 transform scale-100 group-hover:rotate-[45deg] transition-transform duration-500 ease-out" />
-        <MoonIcon className="w-6 h-6 absolute rotate-0 text-white dark:text_truepurple-100 transform scale-100 group-hover:rotate-[-90deg] transition-transform duration-500 ease-out" />
-      </div>
     </button>
   );
 }

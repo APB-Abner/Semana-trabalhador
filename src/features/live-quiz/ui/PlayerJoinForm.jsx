@@ -26,7 +26,7 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
             onChange={(event) => setName(event.target.value)}
             maxLength={32}
             required
-            className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
             placeholder="Seu nome no placar"
           />
         </div>
@@ -42,7 +42,7 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
             inputMode="numeric"
             pattern="[0-9]{6}"
             required
-            className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+            className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
             placeholder="000000"
           />
         </div>
@@ -50,7 +50,7 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-wait disabled:bg-blue-400 dark:focus:ring-offset-zinc-900"
+          className="w-full rounded-md bg-blue-600 px-4 py-2.5 font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-wait disabled:bg-blue-400 dark:focus:ring-offset-zinc-900"
         >
           {loading ? 'Entrando...' : 'Entrar na sala'}
         </button>

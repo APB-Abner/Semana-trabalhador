@@ -12,9 +12,9 @@ export default function MainLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-zinc-900 text-gray-900 dark:text-white transition-colors">
+    <div className="flex min-h-screen flex-col bg-slate-50 text-gray-950 transition-colors dark:bg-zinc-950 dark:text-white">
       <Navbar />
-      <main className="flex-1 p-4">
+      <main className="flex-1">
         <Outlet />
       </main>
       <Footer />

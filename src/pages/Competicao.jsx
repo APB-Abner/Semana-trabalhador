@@ -1,26 +1,28 @@
 import { Link } from 'react-router-dom';
-import Badge from '../shared/ui/Badge.jsx';
 import CtaButtonRow from '../shared/ui/CtaButtonRow.jsx';
+import PageHeader from '../shared/ui/PageHeader.jsx';
+import PageShell from '../shared/ui/PageShell.jsx';
 import ResultPanel from '../shared/ui/ResultPanel.jsx';
 
 export default function Competicao() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 text-gray-900 dark:text-white">
+    <PageShell size="default" className="text-gray-900 dark:text-white">
       <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         <div>
-          <Badge tone="blue">Socket.IO ao vivo</Badge>
-          <h1 className="mt-4 text-4xl font-black leading-tight sm:text-5xl">
-            Competição Jovem Trabalhador
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-gray-600 dark:text-gray-300">
-            Crie uma sala, compartilhe o PIN e conduza um quiz sincronizado com pontuação por acerto e velocidade.
-          </p>
-          <CtaButtonRow
-            className="mt-8 justify-start"
-            actions={[
-              { label: 'Criar sala como host', href: '/competicao/host', tone: 'green' },
-              { label: 'Entrar com PIN', href: '/competicao/entrar', tone: 'blue' },
-            ]}
+          <PageHeader
+            eyebrow="Socket.IO ao vivo"
+            title="Competição Jovem Trabalhador"
+            description="Crie uma sala, compartilhe o PIN e conduza um quiz sincronizado com pontuação por acerto e velocidade."
+            className="mb-0"
+            actions={(
+              <CtaButtonRow
+                className="justify-start"
+                actions={[
+                  { label: 'Criar sala como host', href: '/competicao/host', tone: 'green' },
+                  { label: 'Entrar com PIN', href: '/competicao/entrar', tone: 'blue' },
+                ]}
+              />
+            )}
           />
         </div>
 
@@ -40,6 +42,6 @@ export default function Competicao() {
           O modo clássico continua disponível.
         </Link>
       </div>
-    </div>
+    </PageShell>
   );
 }

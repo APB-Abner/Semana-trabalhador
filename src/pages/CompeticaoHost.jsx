@@ -4,6 +4,8 @@ import HostLobby from '../features/live-quiz/ui/HostLobby.jsx';
 import WaitingScreen from '../features/live-quiz/ui/WaitingScreen.jsx';
 import CtaButtonRow from '../shared/ui/CtaButtonRow.jsx';
 import FeedbackNotice from '../shared/ui/FeedbackNotice.jsx';
+import PageHeader from '../shared/ui/PageHeader.jsx';
+import PageShell from '../shared/ui/PageShell.jsx';
 import ResultPanel from '../shared/ui/ResultPanel.jsx';
 
 export default function CompeticaoHost() {
@@ -30,12 +32,15 @@ export default function CompeticaoHost() {
 
   if (!pin) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 text-gray-900 dark:text-white">
+      <PageShell size="narrow" className="text-gray-900 dark:text-white">
+        <PageHeader
+          eyebrow="Host"
+          title="Criar competição ao vivo"
+          description="O servidor cria uma sala em memória e retorna um PIN de seis dígitos para os jogadores."
+        />
         <ResultPanel>
-          <p className="text-sm uppercase tracking-wide text-blue-600 dark:text-blue-300">Host</p>
-          <h1 className="mt-2 text-3xl font-black">Criar competição ao vivo</h1>
-          <p className="mt-3 text-gray-600 dark:text-gray-300">
-            O servidor cria uma sala em memória e retorna um PIN para os jogadores.
+          <p className="text-gray-600 dark:text-gray-300">
+            Use esta tela no projetor ou na máquina do mediador. Depois de criar a sala, compartilhe o PIN com a turma.
           </p>
           {error && <FeedbackNotice tone="danger" className="mt-4">{error}</FeedbackNotice>}
           <CtaButtonRow
@@ -47,13 +52,13 @@ export default function CompeticaoHost() {
             }]}
           />
         </ResultPanel>
-      </div>
+      </PageShell>
     );
   }
 
   if (!hasHostToken && !state) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
+      <PageShell size="narrow">
         <FeedbackNotice tone="danger">
           Token de host não encontrado nesta aba. Crie uma nova sala para controlar uma partida.
         </FeedbackNotice>
@@ -61,26 +66,31 @@ export default function CompeticaoHost() {
           className="mt-6"
           actions={[{ label: 'Criar nova sala', href: '/competicao/host', tone: 'blue' }]}
         />
-      </div>
+      </PageShell>
     );
   }
 
   if (!connected && !state) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
+      <PageShell size="narrow">
         <WaitingScreen title="Conectando ao servidor" />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 text-gray-900 dark:text-white">
+    <PageShell size="wide" className="text-gray-900 dark:text-white">
+      <PageHeader
+        eyebrow="Painel do host"
+        title={pin ? `Sala ${pin}` : 'Sala ao vivo'}
+        description="Acompanhe presença, respostas recebidas e avanço das rodadas em tempo real."
+      />
       <HostLobby
         state={state}
         error={error}
         onStart={startGame}
         onNextRound={nextRound}
       />
-    </div>
+    </PageShell>
   );
 }

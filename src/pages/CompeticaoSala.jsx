@@ -7,6 +7,8 @@ import PresenceList from '../features/live-quiz/ui/PresenceList.jsx';
 import WaitingScreen from '../features/live-quiz/ui/WaitingScreen.jsx';
 import Badge from '../shared/ui/Badge.jsx';
 import FeedbackNotice from '../shared/ui/FeedbackNotice.jsx';
+import PageHeader from '../shared/ui/PageHeader.jsx';
+import PageShell from '../shared/ui/PageShell.jsx';
 
 export default function CompeticaoSala() {
   const { pin = '' } = useParams();
@@ -35,31 +37,35 @@ export default function CompeticaoSala() {
 
   if (!hasPlayerToken && !state) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-10 text-gray-900 dark:text-white">
-        <h1 className="mb-6 text-center text-3xl font-black">Entrar na sala</h1>
+      <PageShell size="narrow" className="text-gray-900 dark:text-white">
+        <PageHeader
+          eyebrow="Sala ao vivo"
+          title="Entrar na sala"
+          description="Informe seu nome para recuperar ou iniciar sua participação nesta sala."
+          align="center"
+        />
         {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
         <PlayerJoinForm initialPin={pin} onJoin={handleJoin} />
-      </div>
+      </PageShell>
     );
   }
 
   if (!connected && !state) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10">
+      <PageShell size="narrow">
         <WaitingScreen title="Reconectando à sala" />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 text-gray-900 dark:text-white">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-sm uppercase tracking-wide text-blue-600 dark:text-blue-300">Sala</p>
-          <h1 className="text-3xl font-black">{pin}</h1>
-        </div>
-        {state && <Badge tone="blue">{state.status}</Badge>}
-      </div>
+    <PageShell size="default" className="text-gray-900 dark:text-white">
+      <PageHeader
+        eyebrow="Sala"
+        title={pin}
+        description="Responda quando a pergunta abrir. O tempo e a pontuação seguem o relógio oficial do servidor."
+        actions={state && <Badge tone="blue">{state.status}</Badge>}
+      />
 
       {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
 
@@ -103,6 +109,6 @@ export default function CompeticaoSala() {
       {state?.status === 'finished' && (
         <LeaderboardPanel entries={state.finalRanking} title="Ranking final" />
       )}
-    </div>
+    </PageShell>
   );
 }
