@@ -44,16 +44,16 @@ http://localhost:4000/
 ## Scripts
 
 ```bash
-npm run dev        # servidor Vite
-npm run dev:server # servidor Express + Socket.IO
-npm run build      # build de produção
-npm run preview    # preview do build
+npm run dev          # servidor Vite
+npm run dev:server   # servidor Express + Socket.IO
+npm run build        # build de produção
+npm run preview      # preview do build
 npm run start:server # inicia o backend sem watch
-npm run lint       # ESLint
-npm run typecheck  # TypeScript sem emitir arquivos
-npm run test:unit  # testes unitários com Vitest
-npm run test:e2e   # testes E2E com Playwright
-npm run test       # unitários + E2E
+npm run lint         # ESLint
+npm run typecheck    # TypeScript sem emitir arquivos
+npm run test:unit    # testes unitários com Vitest
+npm run test:e2e     # testes E2E com Playwright
+npm run test         # unitários + E2E
 ```
 
 ## Estrutura
@@ -114,6 +114,49 @@ Variáveis opcionais:
 - `LIVE_QUIZ_ROUND_MS`: duração da rodada em milissegundos, padrão `20000`.
 - `VITE_SOCKET_URL`: URL do Socket.IO no frontend, padrão `http://localhost:4000`.
 
+## Deploy Produção
+
+O arranjo de produção usa o frontend na Vercel e o backend Socket.IO separado no Render:
+
+- Frontend: `https://semana-trabalhador.vercel.app`
+- Backend: `https://semana-trabalhador-live.onrender.com`
+- Health check: `https://semana-trabalhador-live.onrender.com/health`
+
+No Render, configure o backend como Web Service Node com:
+
+```txt
+Install command: npm install
+Start command: npm run start:server
+```
+
+Variáveis do backend no Render:
+
+```env
+CLIENT_ORIGIN=https://semana-trabalhador.vercel.app
+LIVE_QUIZ_ROUND_MS=20000
+```
+
+O `PORT` deve ficar a cargo do Render. O servidor já lê `process.env.PORT` e só usa `4000` como fallback local. Defina `PORT` manualmente apenas se o painel do Render exigir override.
+
+Na Vercel, configure a variável do frontend:
+
+```env
+VITE_SOCKET_URL=https://semana-trabalhador-live.onrender.com
+```
+
+Depois de alterar variáveis, faça redeploy dos dois serviços. O Vite injeta variáveis `VITE_*` no build, então mudar `VITE_SOCKET_URL` exige novo deploy do frontend.
+
+Checklist pós-deploy:
+
+- Abrir `https://semana-trabalhador-live.onrender.com/health` e confirmar `{ "ok": true }`.
+- Abrir `https://semana-trabalhador.vercel.app/competicao`.
+- Criar uma sala como host em `/competicao/host`.
+- Entrar com PIN e nome em outra aba por `/competicao/entrar`.
+- Iniciar uma rodada, responder uma vez, conferir leaderboard e ranking final.
+- Verificar no console do navegador se não há erro de CORS, WebSocket ou polling.
+
+Como as salas ficam em memória, rode o MVP com uma única instância do backend e evite suspensão do serviço durante partidas ativas. Não há suporte a previews da Vercel nesta configuração; o CORS aceita apenas `https://semana-trabalhador.vercel.app`.
+
 ## Persistência Local
 
 Os fluxos principais usam `localStorage` por meio de `features/persistence`:
@@ -124,6 +167,18 @@ Os fluxos principais usam `localStorage` por meio de `features/persistence`:
 - `stw.v1.analytics`: contadores locais de debug em ambiente de desenvolvimento.
 
 Dados ausentes ou inválidos caem em estado vazio sem quebrar a UI.
+
+## Validação
+
+Antes de publicar ou validar uma mudança maior, rode:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test:unit
+npm run build
+npm run test:e2e
+```
 
 ## Roadmap curto
 
