@@ -10,6 +10,13 @@ import FeedbackNotice from '../shared/ui/FeedbackNotice.jsx';
 import PageHeader from '../shared/ui/PageHeader.jsx';
 import PageShell from '../shared/ui/PageShell.jsx';
 
+const statusLabels = {
+  lobby: 'Lobby',
+  question: 'Pergunta aberta',
+  revealed: 'Rodada revelada',
+  finished: 'Finalizada',
+};
+
 export default function CompeticaoSala() {
   const { pin = '' } = useParams();
   const navigate = useNavigate();
@@ -64,7 +71,7 @@ export default function CompeticaoSala() {
         eyebrow="Sala"
         title={pin}
         description="Responda quando a pergunta abrir. O tempo e a pontuação seguem o relógio oficial do servidor."
-        actions={state && <Badge tone="blue">{state.status}</Badge>}
+        actions={state && <Badge tone="blue">{statusLabels[state.status] || state.status}</Badge>}
       />
 
       {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}

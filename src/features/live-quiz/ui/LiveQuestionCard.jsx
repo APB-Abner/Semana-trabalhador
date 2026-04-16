@@ -80,7 +80,7 @@ export default function LiveQuestionCard({
               disabled={disabled || hasSubmitted || showAnswer}
               onClick={() => onSubmit?.(option.id)}
               aria-pressed={selected}
-              className={`rounded border px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default dark:focus:ring-offset-zinc-900 ${optionClass}`}
+              className={`rounded-lg border px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default dark:focus:ring-offset-zinc-900 ${optionClass}`}
             >
               {option.text}
             </button>

@@ -21,9 +21,9 @@ export default function PresenceList({ players = [] }) {
             </Badge>
           </div>
         )) : (
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Nenhum jogador entrou ainda.
-          </p>
+          <div className="rounded-md border border-dashed border-gray-300 px-3 py-4 text-sm text-gray-600 dark:border-zinc-700 dark:text-gray-300">
+            Nenhum jogador entrou ainda. Compartilhe o PIN para preencher o lobby.
+          </div>
         )}
       </div>
     </ResultPanel>

@@ -7,6 +7,13 @@ import LiveQuestionCard from './LiveQuestionCard.jsx';
 import PresenceList from './PresenceList.jsx';
 import WaitingScreen from './WaitingScreen.jsx';
 
+const statusLabels = {
+  lobby: 'Lobby',
+  question: 'Pergunta aberta',
+  revealed: 'Rodada revelada',
+  finished: 'Finalizada',
+};
+
 export default function HostLobby({ state, error, onStart, onNextRound }) {
   if (!state) {
     return <WaitingScreen title="Conectando sala do host" />;
@@ -22,7 +29,9 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
           <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
             <p className="font-display text-5xl font-extrabold tracking-[0.2em] text-gray-950 dark:text-white">{state.pin}</p>
             <Badge tone="blue">
-              {state.status === 'lobby' ? 'Lobby' : `${state.currentQuestionIndex + 1}/${state.totalQuestions}`}
+              {state.status === 'lobby'
+                ? statusLabels[state.status]
+                : `${statusLabels[state.status] || state.status} ${state.currentQuestionIndex + 1}/${state.totalQuestions}`}
             </Badge>
           </div>
         </ResultPanel>
