@@ -26,7 +26,7 @@ export default function Navbar() {
     const currentPath = location.pathname;
 
     return (
-        <Disclosure as="nav" data-app-nav className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+        <Disclosure as="nav" data-app-nav className="sticky top-0 z-40 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-[#070a0f]/95">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-4">

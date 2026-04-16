@@ -12,9 +12,15 @@ export default function MainLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-gray-950 transition-colors dark:bg-zinc-950 dark:text-white">
+    <div className="flex min-h-screen flex-col bg-slate-50 text-gray-950 transition-colors dark:bg-[#070a0f] dark:text-white">
+      <a
+        href="#conteudo-principal"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+        Pular para o conteúdo
+      </a>
       <Navbar />
-      <main className="flex-1">
+      <main id="conteudo-principal" className="flex-1" tabIndex={-1}>
         <Outlet />
       </main>
       <Footer />

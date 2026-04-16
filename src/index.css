@@ -15,6 +15,10 @@
   color-scheme: dark;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   min-width: 320px;
   font-family: var(--font-sans);
@@ -25,7 +29,7 @@ body {
 }
 
 .dark body {
-  background: #09090b;
+  background: #070a0f;
 }
 
 h1,
@@ -36,6 +40,32 @@ h3 {
 
 .font-display {
   font-family: var(--font-display);
+}
+
+::selection {
+  background: #bfdbfe;
+  color: #0f172a;
+}
+
+.dark ::selection {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 .bg_truepurple-200 {

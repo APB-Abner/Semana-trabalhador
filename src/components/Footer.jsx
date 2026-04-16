@@ -11,7 +11,7 @@ const footerLinks = [
 
 export default function Footer() {
     return (
-        <footer className="border-t border-gray-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+        <footer className="border-t border-gray-200 bg-white dark:border-zinc-800 dark:bg-[#070a0f]">
             <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6 text-sm text-gray-600 dark:text-gray-300 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
                 <p>
                     &copy; {new Date().getFullYear()} Aprendizes CIEE. Todos os direitos reservados.
