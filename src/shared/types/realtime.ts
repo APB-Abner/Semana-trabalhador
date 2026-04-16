@@ -1,4 +1,4 @@
-export type LiveQuestionType = 'multiple_choice' | 'true_false';
+export type LiveQuestionType = 'multiple_choice' | 'true_false' | 'multiple_select';
 
 export type LiveQuestionOption = {
   id: string;
@@ -11,12 +11,14 @@ export type LiveQuestion = {
   topic: string;
   text: string;
   options: LiveQuestionOption[];
-  correctOptionId: string;
+  correctOptionId?: string;
+  correctOptionIds?: string[];
   explanation: string;
 };
 
-export type PublicLiveQuestion = Omit<LiveQuestion, 'correctOptionId' | 'explanation'> & {
+export type PublicLiveQuestion = Omit<LiveQuestion, 'correctOptionId' | 'correctOptionIds' | 'explanation'> & {
   correctOptionId?: string;
+  correctOptionIds?: string[];
   explanation?: string;
 };
 
@@ -78,11 +80,15 @@ export type HostActionPayload = {
   hostToken: string;
 };
 
-export type AnswerSubmitPayload = {
+export type LiveAnswerPayload = {
+  optionId?: string;
+  optionIds?: string[];
+};
+
+export type AnswerSubmitPayload = LiveAnswerPayload & {
   pin: string;
   playerToken: string;
   questionId: string;
-  optionId: string;
 };
 
 export type RoomLeavePayload = {

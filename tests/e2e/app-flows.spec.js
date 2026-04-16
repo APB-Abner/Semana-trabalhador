@@ -113,14 +113,15 @@ test('quiz shows feedback and waits for explicit next action', async ({ page }) 
 test('quiz keyboard navigation wraps options and submits with enter', async ({ page }) => {
   await page.goto('/game');
   const options = page.locator('main button[aria-pressed]');
-  const lastOptionText = await options.nth(3).textContent();
+  const lastOptionIndex = await options.count() - 1;
+  const lastOptionText = await options.nth(lastOptionIndex).textContent();
 
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('Enter');
 
-  await expect(options.nth(3)).toHaveAttribute('aria-pressed', 'true');
-  await expect(options.nth(3)).toHaveText(lastOptionText);
+  await expect(options.nth(lastOptionIndex)).toHaveAttribute('aria-pressed', 'true');
+  await expect(options.nth(lastOptionIndex)).toHaveText(lastOptionText);
   await expect(page.getByText(/Resposta correta/)).toBeVisible();
 });
 

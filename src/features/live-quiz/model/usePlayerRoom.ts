@@ -38,7 +38,7 @@ export default function usePlayerRoom(pin?: string) {
   const { connected, emitWithAck, socket } = useRoomSocket();
   const [state, setState] = useState<RoomState | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [submittedAnswers, setSubmittedAnswers] = useState<Record<string, string>>({});
+  const [submittedAnswers, setSubmittedAnswers] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     if (!socket) {
@@ -103,7 +103,7 @@ export default function usePlayerRoom(pin?: string) {
     return response;
   }, [emitWithAck]);
 
-  const submitAnswer = useCallback(async (optionId: string) => {
+  const submitAnswer = useCallback(async (optionIdsOrId: string | string[]) => {
     const currentQuestion = state?.currentQuestion;
 
     if (!pin || !currentQuestion) {
@@ -117,11 +117,14 @@ export default function usePlayerRoom(pin?: string) {
       return;
     }
 
+    const optionIds = Array.isArray(optionIdsOrId) ? optionIdsOrId : [optionIdsOrId];
     const payload: AnswerSubmitPayload = {
       pin,
       playerToken,
       questionId: currentQuestion.id,
-      optionId,
+      ...(currentQuestion.type === 'multiple_select'
+        ? { optionIds }
+        : { optionId: optionIds[0] }),
     };
     const response = await emitWithAck<BasicAck>('answer:submit', payload);
 
@@ -132,7 +135,7 @@ export default function usePlayerRoom(pin?: string) {
 
     setSubmittedAnswers((answers) => ({
       ...answers,
-      [currentQuestion.id]: optionId,
+      [currentQuestion.id]: optionIds,
     }));
     setState(response.state);
   }, [emitWithAck, pin, state?.currentQuestion]);

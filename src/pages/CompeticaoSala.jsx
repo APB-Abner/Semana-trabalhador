@@ -1,10 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import usePlayerRoom from '../features/live-quiz/model/usePlayerRoom';
-import LeaderboardPanel from '../features/live-quiz/ui/LeaderboardPanel.jsx';
 import LiveQuestionCard from '../features/live-quiz/ui/LiveQuestionCard.jsx';
 import PlayerJoinForm from '../features/live-quiz/ui/PlayerJoinForm.jsx';
 import PresenceList from '../features/live-quiz/ui/PresenceList.jsx';
 import WaitingScreen from '../features/live-quiz/ui/WaitingScreen.jsx';
+import CompetitiveResultView from '../features/live-quiz/ui/result-renderers/CompetitiveResultView.jsx';
 import Badge from '../shared/ui/Badge.jsx';
 import FeedbackNotice from '../shared/ui/FeedbackNotice.jsx';
 import PageHeader from '../shared/ui/PageHeader.jsx';
@@ -31,8 +31,8 @@ export default function CompeticaoSala() {
   } = usePlayerRoom(pin);
 
   const currentQuestionId = state?.currentQuestion?.id;
-  const selectedOptionId = currentQuestionId ? submittedAnswers[currentQuestionId] : undefined;
-  const hasSubmitted = Boolean(selectedOptionId);
+  const selectedOptionIds = currentQuestionId ? submittedAnswers[currentQuestionId] ?? [] : [];
+  const hasSubmitted = selectedOptionIds.length > 0;
 
   const handleJoin = async ({ roomPin, name }) => {
     const response = await joinRoom({ roomPin, name });
@@ -99,7 +99,7 @@ export default function CompeticaoSala() {
           startedAt={state.startedAt}
           closesAt={state.closesAt}
           serverNow={state.serverNow}
-          selectedOptionId={selectedOptionId}
+          selectedOptionIds={selectedOptionIds}
           hasSubmitted={hasSubmitted}
           onSubmit={submitAnswer}
         />
@@ -112,17 +112,17 @@ export default function CompeticaoSala() {
             startedAt={state.startedAt}
             closesAt={state.closesAt}
             serverNow={state.serverNow}
-            selectedOptionId={selectedOptionId}
+            selectedOptionIds={selectedOptionIds}
             hasSubmitted={hasSubmitted}
             showAnswer
           />
-          <LeaderboardPanel entries={state.leaderboard} title="Leaderboard da rodada" />
+          <CompetitiveResultView entries={state.leaderboard} title="Leaderboard da rodada" />
           <WaitingScreen title="Aguardando próxima rodada" />
         </div>
       )}
 
       {state?.status === 'finished' && (
-        <LeaderboardPanel entries={state.finalRanking} title="Ranking final" />
+        <CompetitiveResultView entries={state.finalRanking} title="Ranking final" />
       )}
     </PageShell>
   );
