@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoomStore, RoomStoreError, type RoomStore } from '../src/domain/roomStore.ts';
 import { liveQuestionsFixture } from './fixtures.ts';
 
@@ -17,6 +17,7 @@ describe('roomStore', () => {
 
   afterEach(() => {
     store.clearAllRooms();
+    vi.useRealTimers();
   });
 
   it('creates rooms with unique 6-digit PINs', () => {
@@ -37,6 +38,20 @@ describe('roomStore', () => {
     expect(player.state.players[0].name).toBe('Ana');
     expect(() => store.joinPlayer('000000', 'Bia')).toThrow(RoomStoreError);
     expect(() => store.joinPlayer(room.pin, '')).toThrow(RoomStoreError);
+  });
+
+  it('rejects duplicate player names with case and spacing normalization', () => {
+    const room = store.createRoom();
+
+    store.joinPlayer(room.pin, 'Ana Silva');
+
+    expect(() => store.joinPlayer(room.pin, '  ana   silva  ')).toThrow(RoomStoreError);
+  });
+
+  it('rejects starting a match without connected players', () => {
+    const room = store.createRoom();
+
+    expect(() => store.startGame(room.pin, room.hostToken)).toThrow(RoomStoreError);
   });
 
   it('starts the match and accepts a single answer per player per round', () => {
@@ -66,6 +81,50 @@ describe('roomStore', () => {
     )).toThrow(RoomStoreError);
   });
 
+  it('rejects late answers without changing score or answer count', () => {
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 20_001;
+
+    expect(() => store.submitAnswer(
+      room.pin,
+      player.playerToken,
+      liveQuestionsFixture[0].id,
+      liveQuestionsFixture[0].correctOptionId,
+    )).toThrow(RoomStoreError);
+
+    const state = store.getState(room.pin);
+    expect(state.answeredCount).toBe(0);
+    expect(state.players[0].score).toBe(0);
+  });
+
+  it('accepts answers exactly at the deadline', () => {
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 20_000;
+
+    const state = store.submitAnswer(
+      room.pin,
+      player.playerToken,
+      liveQuestionsFixture[0].id,
+      liveQuestionsFixture[0].correctOptionId,
+    );
+
+    expect(state.status).toBe('revealed');
+    expect(state.leaderboard[0].roundPoints).toBe(700);
+  });
+
+  it('includes server time and host connectivity in public room state', () => {
+    const room = store.createRoom();
+
+    expect(room.state.serverNow).toBe(currentTime);
+    expect(room.state.hostConnected).toBe(true);
+  });
+
   it('builds a round leaderboard and final ranking by score', () => {
     const room = store.createRoom();
     const ana = store.joinPlayer(room.pin, 'Ana');
@@ -89,5 +148,81 @@ describe('roomStore', () => {
 
     expect(finished.status).toBe('finished');
     expect(finished.finalRanking[0].score).toBeGreaterThanOrEqual(finished.finalRanking[1].score);
+  });
+
+  it('marks host disconnects, blocks host actions, and allows continuing after reconnect', () => {
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, player.playerToken, 'q1', 'q1-a');
+
+    const disconnected = store.leaveRoom(room.pin, room.hostToken);
+
+    expect(disconnected?.hostConnected).toBe(false);
+    expect(() => store.nextRound(room.pin, room.hostToken)).toThrow(RoomStoreError);
+
+    const reconnected = store.reconnectHost(room.pin, room.hostToken);
+    expect(reconnected.hostConnected).toBe(true);
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('question');
+  });
+
+  it('expires abandoned lobby rooms after the configured TTL', () => {
+    store.clearAllRooms();
+    vi.useFakeTimers();
+    store = createRoomStore({
+      questions: liveQuestionsFixture,
+      abandonedLobbyTtlMs: 1_000,
+      now: () => currentTime,
+    });
+
+    const room = store.createRoom();
+    store.leaveRoom(room.pin, room.hostToken);
+
+    vi.advanceTimersByTime(999);
+    expect(store.getState(room.pin).hostConnected).toBe(false);
+
+    vi.advanceTimersByTime(1);
+    expect(() => store.getState(room.pin)).toThrow(RoomStoreError);
+  });
+
+  it('cancels abandoned lobby expiration when the host reconnects', () => {
+    store.clearAllRooms();
+    vi.useFakeTimers();
+    store = createRoomStore({
+      questions: liveQuestionsFixture,
+      abandonedLobbyTtlMs: 1_000,
+      now: () => currentTime,
+    });
+
+    const room = store.createRoom();
+    store.leaveRoom(room.pin, room.hostToken);
+    vi.advanceTimersByTime(500);
+
+    store.reconnectHost(room.pin, room.hostToken);
+    vi.advanceTimersByTime(1_000);
+
+    expect(store.getState(room.pin).hostConnected).toBe(true);
+  });
+
+  it('expires finished rooms after the configured TTL', () => {
+    store.clearAllRooms();
+    vi.useFakeTimers();
+    store = createRoomStore({
+      questions: liveQuestionsFixture.slice(0, 1),
+      finishedRoomTtlMs: 1_000,
+      now: () => currentTime,
+    });
+
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    store.startGame(room.pin, room.hostToken);
+    store.submitAnswer(room.pin, player.playerToken, 'q1', 'q1-a');
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('finished');
+
+    vi.advanceTimersByTime(1_000);
+    expect(() => store.getState(room.pin)).toThrow(RoomStoreError);
   });
 });

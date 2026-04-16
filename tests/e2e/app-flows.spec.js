@@ -4,7 +4,9 @@ const nextQuizButton = /Pr.{0,3}xima|Ver revis/i;
 
 async function answerQuizQuestion(page, optionIndex = 0) {
   const questionBefore = await page.locator('main h3').first().textContent();
-  await page.locator('main button[aria-pressed]').nth(optionIndex).click();
+  const options = page.locator('main button[aria-pressed]');
+  const optionCount = await options.count();
+  await options.nth(Math.min(optionIndex, optionCount - 1)).click();
   await expect(page.getByText(/Resposta correta/)).toBeVisible();
   await expect(page.locator('main h3').first()).toHaveText(questionBefore);
 

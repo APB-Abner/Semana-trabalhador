@@ -43,6 +43,10 @@ function attachSocketToRoom(socket: Socket, pin: string, data: SocketData) {
   socket.data.playerToken = data.playerToken;
 }
 
+function emitLeaveState(io: Server, pin: string, state: RoomState, isHost: boolean) {
+  emitRoom(io, pin, isHost ? ServerEvents.ROOM_STATE : ServerEvents.PRESENCE_UPDATE, state);
+}
+
 export function registerSocketHandlers(io: Server, store: RoomStore) {
   io.on('connection', (socket) => {
     socket.on(ClientEvents.ROOM_CREATE, (_payload: unknown, ack: Ack<RoomCreateAck>) => {
@@ -127,23 +131,24 @@ export function registerSocketHandlers(io: Server, store: RoomStore) {
       const state = store.leaveRoom(payload.pin, token);
 
       if (state) {
-        emitRoom(io, payload.pin, ServerEvents.PRESENCE_UPDATE, state);
+        emitLeaveState(io, payload.pin, state, Boolean(payload.hostToken));
       }
 
       socket.leave(payload.pin);
     });
 
     socket.on('disconnect', () => {
-      const { pin, playerToken } = socket.data as SocketData;
+      const { pin, hostToken, playerToken } = socket.data as SocketData;
+      const token = playerToken ?? hostToken;
 
-      if (!pin || !playerToken) {
+      if (!pin || !token) {
         return;
       }
 
-      const state = store.leaveRoom(pin, playerToken);
+      const state = store.leaveRoom(pin, token);
 
       if (state) {
-        emitRoom(io, pin, ServerEvents.PRESENCE_UPDATE, state);
+        emitLeaveState(io, pin, state, Boolean(hostToken));
       }
     });
   });

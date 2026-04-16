@@ -76,6 +76,12 @@ export default function CompeticaoSala() {
 
       {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
 
+      {state && !state.hostConnected && state.status !== 'finished' && (
+        <FeedbackNotice tone="info" className="mb-4">
+          Host desconectado. Aguarde a reconexão para continuar.
+        </FeedbackNotice>
+      )}
+
       {!state && <WaitingScreen title="Carregando sala" />}
 
       {state?.status === 'lobby' && (
@@ -92,6 +98,7 @@ export default function CompeticaoSala() {
           question={state.currentQuestion}
           startedAt={state.startedAt}
           closesAt={state.closesAt}
+          serverNow={state.serverNow}
           selectedOptionId={selectedOptionId}
           hasSubmitted={hasSubmitted}
           onSubmit={submitAnswer}
@@ -104,6 +111,7 @@ export default function CompeticaoSala() {
             question={state.currentQuestion}
             startedAt={state.startedAt}
             closesAt={state.closesAt}
+            serverNow={state.serverNow}
             selectedOptionId={selectedOptionId}
             hasSubmitted={hasSubmitted}
             showAnswer

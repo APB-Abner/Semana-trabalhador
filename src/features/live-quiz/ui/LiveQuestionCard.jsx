@@ -4,6 +4,10 @@ import FeedbackNotice from '../../../shared/ui/FeedbackNotice.jsx';
 import ProgressBar from '../../../shared/ui/ProgressBar.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 
+function getClockOffset(serverNow) {
+  return Number.isFinite(serverNow) ? serverNow - Date.now() : 0;
+}
+
 export default function LiveQuestionCard({
   question,
   startedAt,
@@ -12,14 +16,23 @@ export default function LiveQuestionCard({
   hasSubmitted = false,
   onSubmit,
   selectedOptionId,
+  serverNow,
   showAnswer = false,
 }) {
-  const [now, setNow] = useState(Date.now());
+  const [clockOffset, setClockOffset] = useState(() => getClockOffset(serverNow));
+  const [now, setNow] = useState(() => Date.now() + clockOffset);
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 250);
+    setClockOffset(getClockOffset(serverNow));
+  }, [closesAt, serverNow, startedAt]);
+
+  useEffect(() => {
+    const updateNow = () => setNow(Date.now() + clockOffset);
+
+    updateNow();
+    const timer = setInterval(updateNow, 250);
     return () => clearInterval(timer);
-  }, []);
+  }, [clockOffset]);
 
   const remainingMs = closesAt ? Math.max(0, closesAt - now) : 0;
   const totalMs = useMemo(

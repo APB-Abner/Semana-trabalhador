@@ -42,6 +42,8 @@ export type LiveRoomStatus = 'lobby' | 'question' | 'revealed' | 'finished';
 export type RoomState = {
   pin: string;
   status: LiveRoomStatus;
+  hostConnected: boolean;
+  serverNow: number;
   players: LivePlayer[];
   currentQuestionIndex: number;
   totalQuestions: number;

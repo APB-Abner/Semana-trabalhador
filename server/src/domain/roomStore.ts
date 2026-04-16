@@ -13,6 +13,8 @@ import type {
 type RoomStoreOptions = {
   questions: LiveQuestion[];
   roundMs?: number;
+  abandonedLobbyTtlMs?: number;
+  finishedRoomTtlMs?: number;
   now?: () => number;
   onRoomEvent?: (event: RoomEvent) => void;
 };
@@ -35,6 +37,9 @@ export class RoomStoreError extends Error {
     this.name = 'RoomStoreError';
   }
 }
+
+const DEFAULT_ABANDONED_LOBBY_TTL_MS = 15 * 60 * 1000;
+const DEFAULT_FINISHED_ROOM_TTL_MS = 10 * 60 * 1000;
 
 function assertQuestions(questions: LiveQuestion[]) {
   if (!questions.length) {
@@ -79,6 +84,8 @@ function toPublicQuestion(question: LiveQuestion | null, revealAnswer: boolean) 
 export function createRoomStore({
   questions,
   roundMs = 20_000,
+  abandonedLobbyTtlMs = DEFAULT_ABANDONED_LOBBY_TTL_MS,
+  finishedRoomTtlMs = DEFAULT_FINISHED_ROOM_TTL_MS,
   now = () => Date.now(),
   onRoomEvent,
 }: RoomStoreOptions) {
@@ -96,9 +103,17 @@ export function createRoomStore({
     return room;
   }
 
-  function requireHost(room: LiveRoomInternal, hostToken: string) {
+  function requireHostToken(room: LiveRoomInternal, hostToken: string) {
     if (!hostToken || room.hostToken !== hostToken) {
       throw new RoomStoreError('Host inválido para esta sala.');
+    }
+  }
+
+  function requireConnectedHost(room: LiveRoomInternal, hostToken: string) {
+    requireHostToken(room, hostToken);
+
+    if (!room.hostConnected) {
+      throw new RoomStoreError('Host desconectado desta sala.');
     }
   }
 
@@ -109,6 +124,8 @@ export function createRoomStore({
     return {
       pin: room.pin,
       status: room.status,
+      hostConnected: room.hostConnected,
+      serverNow: now(),
       players: [...room.players.values()].map(({ token: _token, ...player }) => player),
       currentQuestionIndex: room.currentQuestionIndex,
       totalQuestions: room.questions.length,
@@ -134,6 +151,56 @@ export function createRoomStore({
       clearTimeout(room.roundTimer);
       room.roundTimer = null;
     }
+  }
+
+  function clearLobbyExpirationTimer(room: LiveRoomInternal) {
+    if (room.lobbyExpirationTimer) {
+      clearTimeout(room.lobbyExpirationTimer);
+      room.lobbyExpirationTimer = null;
+    }
+  }
+
+  function clearFinishedExpirationTimer(room: LiveRoomInternal) {
+    if (room.finishedExpirationTimer) {
+      clearTimeout(room.finishedExpirationTimer);
+      room.finishedExpirationTimer = null;
+    }
+  }
+
+  function clearRoomTimers(room: LiveRoomInternal) {
+    clearRoundTimer(room);
+    clearLobbyExpirationTimer(room);
+    clearFinishedExpirationTimer(room);
+  }
+
+  function deleteRoom(pin: string) {
+    const room = rooms.get(pin);
+
+    if (!room) {
+      return;
+    }
+
+    clearRoomTimers(room);
+    rooms.delete(pin);
+  }
+
+  function scheduleLobbyExpiration(room: LiveRoomInternal) {
+    clearLobbyExpirationTimer(room);
+
+    if (room.status !== 'lobby' || room.hostConnected) {
+      return;
+    }
+
+    room.lobbyExpirationTimer = setTimeout(() => {
+      deleteRoom(room.pin);
+    }, abandonedLobbyTtlMs);
+  }
+
+  function scheduleFinishedExpiration(room: LiveRoomInternal) {
+    clearFinishedExpirationTimer(room);
+    room.finishedExpirationTimer = setTimeout(() => {
+      deleteRoom(room.pin);
+    }, finishedRoomTtlMs);
   }
 
   function createRoundLeaderboard(room: LiveRoomInternal): LeaderboardEntry[] {
@@ -165,6 +232,7 @@ export function createRoomStore({
     room.finalRanking = sortRanking(createRoundLeaderboard(room));
     room.leaderboard = room.finalRanking;
     emit(room, 'game:finished');
+    scheduleFinishedExpiration(room);
   }
 
   function revealRound(room: LiveRoomInternal) {
@@ -212,6 +280,19 @@ export function createRoomStore({
     return [...room.players.values()].filter((player) => player.connected);
   }
 
+  function normalizePlayerName(name: string) {
+    return name.trim().replace(/\s+/g, ' ');
+  }
+
+  function toComparableName(name: string) {
+    return normalizePlayerName(name).toLocaleLowerCase('pt-BR');
+  }
+
+  function hasDuplicatePlayerName(room: LiveRoomInternal, name: string) {
+    const comparableName = toComparableName(name);
+    return [...room.players.values()].some((player) => toComparableName(player.name) === comparableName);
+  }
+
   function maybeRevealWhenAllAnswered(room: LiveRoomInternal) {
     const players = activePlayers(room);
 
@@ -226,6 +307,7 @@ export function createRoomStore({
     const room: LiveRoomInternal = {
       pin,
       hostToken,
+      hostConnected: true,
       status: 'lobby',
       players: new Map(),
       questions,
@@ -234,6 +316,8 @@ export function createRoomStore({
       leaderboard: [],
       finalRanking: [],
       roundTimer: null,
+      lobbyExpirationTimer: null,
+      finishedExpirationTimer: null,
     };
 
     rooms.set(pin, room);
@@ -248,7 +332,7 @@ export function createRoomStore({
 
   function joinPlayer(pin: string, name: string): JoinPlayerResult {
     const room = requireRoom(pin);
-    const cleanName = name.trim();
+    const cleanName = normalizePlayerName(name);
 
     if (room.status !== 'lobby') {
       throw new RoomStoreError('A partida já começou. Só é possível reconectar jogadores existentes.');
@@ -256,6 +340,10 @@ export function createRoomStore({
 
     if (!cleanName || cleanName.length > 32) {
       throw new RoomStoreError('Informe um nome entre 1 e 32 caracteres.');
+    }
+
+    if (hasDuplicatePlayerName(room, cleanName)) {
+      throw new RoomStoreError('Este nome já está em uso nesta sala.');
     }
 
     const playerToken = createToken();
@@ -280,7 +368,10 @@ export function createRoomStore({
 
   function reconnectHost(pin: string, hostToken: string) {
     const room = requireRoom(pin);
-    requireHost(room, hostToken);
+    requireHostToken(room, hostToken);
+    room.hostConnected = true;
+    clearLobbyExpirationTimer(room);
+    emit(room, 'room:state');
     return sanitizeRoom(room);
   }
 
@@ -299,10 +390,14 @@ export function createRoomStore({
 
   function startGame(pin: string, hostToken: string) {
     const room = requireRoom(pin);
-    requireHost(room, hostToken);
+    requireConnectedHost(room, hostToken);
 
     if (room.status !== 'lobby') {
       throw new RoomStoreError('A partida já foi iniciada.');
+    }
+
+    if (activePlayers(room).length < 1) {
+      throw new RoomStoreError('Adicione pelo menos 1 jogador para iniciar.');
     }
 
     openRound(room, 0);
@@ -311,7 +406,7 @@ export function createRoomStore({
 
   function nextRound(pin: string, hostToken: string) {
     const room = requireRoom(pin);
-    requireHost(room, hostToken);
+    requireConnectedHost(room, hostToken);
 
     if (room.status === 'finished') {
       return sanitizeRoom(room);
@@ -358,7 +453,12 @@ export function createRoomStore({
       throw new RoomStoreError('Opção inválida para esta pergunta.');
     }
 
-    const submittedAt = Math.min(now(), room.round.closesAt);
+    const submittedAt = now();
+
+    if (submittedAt > room.round.closesAt) {
+      throw new RoomStoreError('O tempo da rodada já acabou.');
+    }
+
     const responseMs = Math.max(0, submittedAt - room.round.startedAt);
     const isCorrect = optionId === question.correctOptionId;
     const points = calculateLiveScore({
@@ -388,6 +488,13 @@ export function createRoomStore({
       return null;
     }
 
+    if (token === room.hostToken) {
+      room.hostConnected = false;
+      scheduleLobbyExpiration(room);
+      emit(room, 'room:state');
+      return sanitizeRoom(room);
+    }
+
     const player = [...room.players.values()].find((candidate) => candidate.token === token);
 
     if (player) {
@@ -403,7 +510,7 @@ export function createRoomStore({
   }
 
   function clearAllRooms() {
-    rooms.forEach(clearRoundTimer);
+    rooms.forEach(clearRoomTimers);
     rooms.clear();
   }
 

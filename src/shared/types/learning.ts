@@ -1,4 +1,7 @@
+import type { LiveQuestionType } from './realtime';
+
 export type QuizQuestion = {
+  tipo?: LiveQuestionType;
   tema: string;
   pergunta: string;
   opcoes: string[];

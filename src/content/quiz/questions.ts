@@ -43,9 +43,10 @@ export const quizQuestions: QuizQuestion[] = [
   },
   {
     tema: 'Registro formal',
-    pergunta: 'Jovem aprendiz tem direito a carteira assinada?',
-    opcoes: ['Sim, desde o primeiro dia como CLT', 'Apenas após 6 meses', 'Não', 'Só após 2 anos'],
-    resposta: 'Sim, desde o primeiro dia como CLT',
+    tipo: 'true_false',
+    pergunta: 'Jovem aprendiz tem direito a carteira assinada desde o primeiro dia de contrato?',
+    opcoes: ['Verdadeiro', 'Falso'],
+    resposta: 'Verdadeiro',
     explicacao: 'O vínculo de aprendizagem deve ser registrado em carteira desde o início do contrato.',
   },
   {

@@ -57,6 +57,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
               question={state.currentQuestion}
               startedAt={state.startedAt}
               closesAt={state.closesAt}
+              serverNow={state.serverNow}
               disabled
             />
             <ResultPanel>
@@ -73,6 +74,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
               question={state.currentQuestion}
               startedAt={state.startedAt}
               closesAt={state.closesAt}
+              serverNow={state.serverNow}
               disabled
               showAnswer
             />

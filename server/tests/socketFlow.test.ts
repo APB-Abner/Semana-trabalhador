@@ -21,7 +21,7 @@ describe('socket live quiz flow', () => {
   beforeEach(async () => {
     const app = createRealtimeApp({
       questions: liveQuestionsFixture.slice(0, 1),
-      roundMs: 5_000,
+      roundMs: 1_000,
     });
     httpServer = app.httpServer;
     ioServer = app.io;
@@ -79,6 +79,7 @@ describe('socket live quiz flow', () => {
     expect(startAck.ok).toBe(true);
     const opened = await openedPromise;
     expect(opened.status).toBe('question');
+    expect(opened.serverNow).toEqual(expect.any(Number));
     expect(opened.currentQuestion?.correctOptionId).toBeUndefined();
 
     const revealedPromise = once<RoomState>(host, 'round:revealed');
@@ -96,8 +97,29 @@ describe('socket live quiz flow', () => {
     expect(revealed.currentQuestion?.correctOptionId).toBe(liveQuestionsFixture[0].correctOptionId);
     expect(leaderboard.leaderboard[0].name).toBe('Ana');
 
+    const hostDisconnectedPromise = once<RoomState>(player, 'room:state');
+    host.disconnect();
+    const hostDisconnected = await hostDisconnectedPromise;
+    expect(hostDisconnected.hostConnected).toBe(false);
+
+    const blockedHost = await connectClient();
+    const blockedAck = await emitAck<BasicAck>(blockedHost, 'round:next', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    expect(blockedAck.ok).toBe(false);
+
+    const reconnected = await emitAck<RoomJoinAck>(blockedHost, 'room:join', {
+      pin: created.pin,
+      role: 'host',
+      hostToken: created.hostToken,
+    });
+    expect(reconnected.ok).toBe(true);
+    if (!reconnected.ok) return;
+    expect(reconnected.state.hostConnected).toBe(true);
+
     const finishedPromise = once<RoomState>(player, 'game:finished');
-    const nextAck = await emitAck<BasicAck>(host, 'round:next', {
+    const nextAck = await emitAck<BasicAck>(blockedHost, 'round:next', {
       pin: created.pin,
       hostToken: created.hostToken,
     });
@@ -106,5 +128,41 @@ describe('socket live quiz flow', () => {
     const finished = await finishedPromise;
     expect(finished.status).toBe('finished');
     expect(finished.finalRanking[0].name).toBe('Ana');
+  });
+
+  it('returns an error when a player submits after the round has closed', async () => {
+    const host = await connectClient();
+    const player = await connectClient();
+    const created = await emitAck<RoomCreateAck>(host, 'room:create');
+
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const joined = await emitAck<RoomJoinAck>(player, 'room:join', {
+      pin: created.pin,
+      role: 'player',
+      name: 'Ana',
+    });
+
+    expect(joined.ok).toBe(true);
+    if (!joined.ok) return;
+
+    const openedPromise = once<RoomState>(player, 'round:opened');
+    await emitAck<BasicAck>(host, 'game:start', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    const opened = await openedPromise;
+
+    await new Promise((resolve) => setTimeout(resolve, 1_100));
+
+    const answerAck = await emitAck<BasicAck>(player, 'answer:submit', {
+      pin: created.pin,
+      playerToken: joined.playerToken,
+      questionId: opened.currentQuestion?.id,
+      optionId: opened.currentQuestion?.options[0].id,
+    });
+
+    expect(answerAck.ok).toBe(false);
   });
 });

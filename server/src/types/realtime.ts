@@ -46,6 +46,7 @@ export type LiveRound = {
 export type LiveRoomInternal = {
   pin: string;
   hostToken: string;
+  hostConnected: boolean;
   status: RoomState['status'];
   players: Map<string, LivePlayerInternal>;
   questions: LiveQuestion[];
@@ -54,6 +55,8 @@ export type LiveRoomInternal = {
   leaderboard: LeaderboardEntry[];
   finalRanking: LeaderboardEntry[];
   roundTimer: NodeJS.Timeout | null;
+  lobbyExpirationTimer: NodeJS.Timeout | null;
+  finishedExpirationTimer: NodeJS.Timeout | null;
 };
 
 export type RoomEventName =
