@@ -27,7 +27,7 @@ function avaliarPontuacao(total) {
             rank: 'Prata',
             tone: 'purple',
             titulo: 'Jornada prata',
-            mensagem: 'Você tem uma base boa e já consegue reconhecer muitos conceitos importantes.',
+            mensagem: 'Você tem uma boa base e já reconhece muitos conceitos importantes.',
         };
     }
 
@@ -56,38 +56,38 @@ export default function Resultado({ reiniciar, acertosQuiz, acertosMemoria }) {
     const resultado = avaliarPontuacao(total);
 
     return (
-        <div className="text-center p-6 max-w-xl mx-auto bg-white dark:bg-zinc-900 rounded-lg shadow animate-fade-in">
+        <ResultPanel className="animate-fade-in text-center">
             <div className="flex justify-center">
                 <Badge tone={resultado.tone}>{resultado.rank}</Badge>
             </div>
 
-            <h2 className="mt-3 text-3xl font-bold text-blue-600 dark:text-blue-300">
+            <h2 className="mt-4 text-3xl font-bold text-gray-950 dark:text-white">
                 {resultado.titulo}
             </h2>
 
-            <p className="mt-3 text-gray-700 dark:text-gray-300">{resultado.mensagem}</p>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{principalForca(acertosQuiz, acertosMemoria)}</p>
+            <p className="mx-auto mt-3 max-w-xl text-gray-700 dark:text-gray-300">{resultado.mensagem}</p>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-gray-600 dark:text-gray-400">
+                {principalForca(acertosQuiz, acertosMemoria)}
+            </p>
 
-            <ResultPanel className="mt-6 text-left">
-                <div className="space-y-4">
-                    <div>
-                        <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            <span>Quiz</span>
-                            <span>{acertosQuiz} / 11</span>
-                        </div>
-                        <ProgressBar value={acertosQuiz} max={11} className="mt-2 h-2" />
+            <div className="mt-7 grid gap-4 text-left sm:grid-cols-2">
+                <ResultPanel>
+                    <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        <span>Quiz</span>
+                        <span>{acertosQuiz} / 11</span>
                     </div>
-                    <div>
-                        <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            <span>Memória</span>
-                            <span>{acertosMemoria} / 10</span>
-                        </div>
-                        <ProgressBar value={acertosMemoria} max={10} className="mt-2 h-2" barClassName="bg-green-500" />
+                    <ProgressBar value={acertosQuiz} max={11} className="mt-3 h-2" />
+                </ResultPanel>
+                <ResultPanel>
+                    <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        <span>Memória</span>
+                        <span>{acertosMemoria} / 10</span>
                     </div>
-                </div>
-            </ResultPanel>
+                    <ProgressBar value={acertosMemoria} max={10} className="mt-3 h-2" barClassName="bg-green-500" />
+                </ResultPanel>
+            </div>
 
-            <p className="mt-6 text-xl font-semibold text-blue-600 dark:text-blue-400">
+            <p className="mt-7 text-2xl font-bold text-blue-600 dark:text-blue-300">
                 Pontuação total: <strong>{total}</strong> / 21
             </p>
 
@@ -97,6 +97,6 @@ export default function Resultado({ reiniciar, acertosQuiz, acertosMemoria }) {
                     { label: 'Tentar novamente', onClick: reiniciar, tone: 'blue' },
                 ]}
             />
-        </div>
+        </ResultPanel>
     );
 }

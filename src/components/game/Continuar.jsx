@@ -1,55 +1,75 @@
+import Badge from '../../shared/ui/Badge.jsx';
+import CtaButtonRow from '../../shared/ui/CtaButtonRow.jsx';
+import ProgressBar from '../../shared/ui/ProgressBar.jsx';
+import ResultPanel from '../../shared/ui/ResultPanel.jsx';
+
 function avaliarPontuacao(pontos) {
     if (pontos === 10) {
         return {
-            titulo: '💼 Jovem Mestre!',
-            mensagem: 'Você dominou o jogo! Está pronto para qualquer desafio no mundo do trabalho!',
-            cor: 'text-green-600'
-        };
-    } else if (pontos >= 7) {
-        return {
-            titulo: '🚀 Mandou bem!',
-            mensagem: 'Você está no caminho certo. Continue aprendendo e se desenvolvendo!',
-            cor: 'text-blue-600'
-        };
-    } else if (pontos >= 4) {
-        return {
-            titulo: '🛠️ Em construção...',
-            mensagem: 'Você tem uma boa base, mas pode melhorar. Que tal rever alguns conteúdos?',
-            cor: 'text-yellow-600'
-        };
-    } else {
-        return {
-            titulo: '📚 Vamos tentar de novo?',
-            mensagem: 'Todo mundo começa de algum lugar. Continue tentando e aprendendo!',
-            cor: 'text-red-600'
+            rank: 'Mestre',
+            tone: 'green',
+            titulo: 'Quiz dominado',
+            mensagem: 'Você acertou tudo e chega ao desafio de memória com vantagem máxima.',
         };
     }
+
+    if (pontos >= 7) {
+        return {
+            rank: 'Forte',
+            tone: 'blue',
+            titulo: 'Bom domínio do conteúdo',
+            mensagem: 'Você está no caminho certo. Agora vale manter o foco no jogo da memória.',
+        };
+    }
+
+    if (pontos >= 4) {
+        return {
+            rank: 'Em evolução',
+            tone: 'amber',
+            titulo: 'Base em construção',
+            mensagem: 'Você já reconhece pontos importantes, mas ainda tem espaço para revisar os direitos do aprendiz.',
+        };
+    }
+
+    return {
+        rank: 'Revisão',
+        tone: 'red',
+        titulo: 'Hora de reforçar',
+        mensagem: 'Use a próxima etapa para recuperar pontos e depois tente o quiz novamente.',
+    };
 }
 
-export default function Resultado({ pontuacao, reiniciar, continuar }) {
+export default function Continuar({ pontuacao, reiniciar, continuar }) {
     const resultado = avaliarPontuacao(pontuacao);
 
     return (
-        <div className="text-center p-6 max-w-xl mx-auto bg-white dark:bg-zinc-900 rounded-lg shadow animate-fade-in">
-            <h2 className={`text-3xl font-bold mb-4 ${resultado.cor}`}>
+        <ResultPanel className="animate-fade-in text-center">
+            <div className="flex justify-center">
+                <Badge tone={resultado.tone}>{resultado.rank}</Badge>
+            </div>
+
+            <h2 className="mt-4 text-3xl font-bold text-gray-950 dark:text-white">
                 {resultado.titulo}
             </h2>
-            <p className="mb-6 text-gray-700 dark:text-gray-300">{resultado.mensagem}</p>
-            <div className="flex gap-10 justify-center mb-4">
+            <p className="mx-auto mt-3 max-w-xl text-gray-700 dark:text-gray-300">
+                {resultado.mensagem}
+            </p>
 
-                <button
-                    onClick={reiniciar}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-all"
-                >
-                    Tentar novamente
-                </button>
-            <button
-                onClick={continuar}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-all"
-                >
-                Continuar
-            </button>
+            <div className="mx-auto mt-6 max-w-md text-left">
+                <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    <span>Resultado do quiz</span>
+                    <span>{pontuacao} / 11</span>
+                </div>
+                <ProgressBar value={pontuacao} max={11} className="mt-2 h-2" />
             </div>
-        </div>
+
+            <CtaButtonRow
+                className="mt-7"
+                actions={[
+                    { label: 'Tentar novamente', onClick: reiniciar, tone: 'gray' },
+                    { label: 'Continuar', onClick: continuar, tone: 'blue' },
+                ]}
+            />
+        </ResultPanel>
     );
 }
