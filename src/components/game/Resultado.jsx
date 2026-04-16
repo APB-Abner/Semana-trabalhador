@@ -9,7 +9,7 @@ function avaliarPontuacao(total) {
             rank: 'Mestre',
             tone: 'green',
             titulo: 'Jornada mestre',
-            mensagem: 'VocÃª combinou conhecimento, atenÃ§Ã£o e tomada de decisÃ£o com consistÃªncia.',
+            mensagem: 'Você combinou conhecimento, atenção e tomada de decisão com consistência.',
         };
     }
 
@@ -27,7 +27,7 @@ function avaliarPontuacao(total) {
             rank: 'Prata',
             tone: 'purple',
             titulo: 'Jornada prata',
-            mensagem: 'VocÃª tem uma base boa e jÃ¡ consegue reconhecer muitos conceitos importantes.',
+            mensagem: 'Você tem uma base boa e já consegue reconhecer muitos conceitos importantes.',
         };
     }
 
@@ -35,7 +35,7 @@ function avaliarPontuacao(total) {
         rank: 'Bronze',
         tone: 'gray',
         titulo: 'Jornada bronze',
-        mensagem: 'Use o replay para fortalecer os direitos do jovem aprendiz e treinar memÃ³ria.',
+        mensagem: 'Use o replay para fortalecer os direitos do jovem aprendiz e treinar memória.',
     };
 }
 
@@ -45,10 +45,10 @@ function principalForca(acertosQuiz, acertosMemoria) {
     }
 
     if (acertosMemoria > acertosQuiz) {
-        return 'Seu ponto mais forte foi memÃ³ria visual e atenÃ§Ã£o aos pares.';
+        return 'Seu ponto mais forte foi memória visual e atenção aos pares.';
     }
 
-    return 'Seu resultado ficou equilibrado entre conhecimento e memÃ³ria.';
+    return 'Seu resultado ficou equilibrado entre conhecimento e memória.';
 }
 
 export default function Resultado({ reiniciar, acertosQuiz, acertosMemoria }) {
@@ -79,7 +79,7 @@ export default function Resultado({ reiniciar, acertosQuiz, acertosMemoria }) {
                     </div>
                     <div>
                         <div className="flex justify-between text-sm font-semibold text-gray-700 dark:text-gray-200">
-                            <span>MemÃ³ria</span>
+                            <span>Memória</span>
                             <span>{acertosMemoria} / 10</span>
                         </div>
                         <ProgressBar value={acertosMemoria} max={10} className="mt-2 h-2" barClassName="bg-green-500" />
@@ -88,7 +88,7 @@ export default function Resultado({ reiniciar, acertosQuiz, acertosMemoria }) {
             </ResultPanel>
 
             <p className="mt-6 text-xl font-semibold text-blue-600 dark:text-blue-400">
-                PontuaÃ§Ã£o total: <strong>{total}</strong> / 21
+                Pontuação total: <strong>{total}</strong> / 21
             </p>
 
             <CtaButtonRow

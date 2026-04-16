@@ -75,10 +75,10 @@ export default function Quiz({ onComplete }) {
         return (
             <div className="max-w-xl mx-auto text-gray-900 dark:text-white">
                 <div className="text-center">
-                    <p className="text-sm uppercase tracking-wide text-blue-600 dark:text-blue-300">RevisÃ£o do quiz</p>
-                    <h3 className="mt-2 text-2xl font-bold">VocÃª acertou {score} de {preparedQuestions.length}</h3>
+                    <p className="text-sm uppercase tracking-wide text-blue-600 dark:text-blue-300">Revisão do quiz</p>
+                    <h3 className="mt-2 text-2xl font-bold">Você acertou {score} de {preparedQuestions.length}</h3>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        Melhor sequÃªncia: {bestStreak} acerto(s) seguido(s).
+                        Melhor sequência: {bestStreak} acerto(s) seguido(s).
                     </p>
                 </div>
 
@@ -99,16 +99,16 @@ export default function Quiz({ onComplete }) {
                         </>
                     ) : (
                         <div className="text-center">
-                            <h4 className="font-semibold text-green-700 dark:text-green-300">VocÃª acertou tudo.</h4>
+                            <h4 className="font-semibold text-green-700 dark:text-green-300">Você acertou tudo.</h4>
                             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                Continue para o prÃ³ximo desafio e tente manter o desempenho.
+                                Continue para o próximo desafio e tente manter o desempenho.
                             </p>
                         </div>
                     )}
                 </ResultPanel>
 
                 <ResultPanel tone="info" className="mt-4 text-sm">
-                    HistÃ³rico salvo: Ãºltimo score {history.lastScore}/{preparedQuestions.length}, {history.wrongCount} erro(s), melhor sequÃªncia {history.bestStreak}.
+                    Histórico salvo: último score {history.lastScore}/{preparedQuestions.length}, {history.wrongCount} erro(s), melhor sequência {history.bestStreak}.
                 </ResultPanel>
 
                 <button
@@ -116,7 +116,7 @@ export default function Quiz({ onComplete }) {
                     onClick={() => onComplete(score)}
                     className="mt-6 w-full rounded bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
                 >
-                    Continuar para o desafio da memÃ³ria
+                    Continuar para o desafio da memória
                 </button>
             </div>
         );
@@ -131,7 +131,7 @@ export default function Quiz({ onComplete }) {
                 <ResultPanel tone="info" className="mb-4 text-left text-sm">
                     <p className="font-semibold text-blue-700 dark:text-blue-200">Resumo salvo do quiz</p>
                     <p className="mt-1 text-blue-800 dark:text-blue-100">
-                        Ãšltimo score: {history.lastScore}/{preparedQuestions.length} Â· Erros: {history.wrongCount} Â· Melhor sequÃªncia: {history.bestStreak}
+                        Último score: {history.lastScore}/{preparedQuestions.length} · Erros: {history.wrongCount} · Melhor sequência: {history.bestStreak}
                     </p>
                 </ResultPanel>
             )}
@@ -140,7 +140,7 @@ export default function Quiz({ onComplete }) {
 
             <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
                 <Badge tone="blue">{currentQuestion.tema}</Badge>
-                <Badge tone="gray">SequÃªncia: {currentStreak}</Badge>
+                <Badge tone="gray">Sequência: {currentStreak}</Badge>
             </div>
 
             <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4">
@@ -182,7 +182,7 @@ export default function Quiz({ onComplete }) {
                         onClick={goToNextQuestion}
                         className="mt-4 rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
                     >
-                        {isLastQuestion ? 'Ver revisÃ£o' : 'PrÃ³xima'}
+                        {isLastQuestion ? 'Ver revisão' : 'Próxima'}
                     </button>
                 </FeedbackNotice>
             )}

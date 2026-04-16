@@ -57,7 +57,7 @@ export default function Memoria({ onComplete }) {
             <div className="max-w-md mx-auto p-4 text-center">
                 <h3 className="text-xl font-bold text-blue-600 dark:text-blue-300">Escolha a dificuldade</h3>
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                    A rodada comeÃ§a com uma prÃ©via rÃ¡pida das cartas.
+                    A rodada começa com uma prévia rápida das cartas.
                 </p>
                 <div className="mt-6 grid gap-3">
                     {difficultyOptions.map((option) => {
@@ -72,7 +72,7 @@ export default function Memoria({ onComplete }) {
                             >
                                 <span className="block font-semibold text-gray-900 dark:text-white">{option.label}</span>
                                 <span className="text-sm text-gray-600 dark:text-gray-300">
-                                    {option.pairCount} pares Â· {option.timeLimit}s Â· prÃ©via de {option.previewSeconds}s
+                                    {option.pairCount} pares · {option.timeLimit}s · prévia de {option.previewSeconds}s
                                 </span>
                                 <span className="mt-2 block text-xs font-semibold text-blue-700 dark:text-blue-300">
                                     {record ? `Recorde: ${record.bestScore}/10 com ${record.bestPairs} pares` : 'Sem recorde ainda'}
@@ -92,16 +92,16 @@ export default function Memoria({ onComplete }) {
             <div className="max-w-md mx-auto p-4 text-center">
                 <ResultPanel tone={won ? 'success' : 'danger'}>
                     <p className="text-sm uppercase tracking-wide text-gray-600 dark:text-gray-300">
-                        Resultado da memÃ³ria
+                        Resultado da memória
                     </p>
                     <h3 className={`mt-2 text-2xl font-bold ${won ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
-                        {won ? 'VitÃ³ria no jogo da memÃ³ria' : 'Tempo esgotado'}
+                        {won ? 'Vitória no jogo da memória' : 'Tempo esgotado'}
                     </h3>
                     <p className="mt-2 text-gray-700 dark:text-gray-200">
-                        VocÃª encontrou {paresConcluidos} de {totalPares} pares no modo {difficulty?.label}.
+                        Você encontrou {paresConcluidos} de {totalPares} pares no modo {difficulty?.label}.
                     </p>
                     <p className="mt-4 text-xl font-semibold text-blue-600 dark:text-blue-300">
-                        PontuaÃ§Ã£o: {pontuacao} / 10
+                        Pontuação: {pontuacao} / 10
                     </p>
                 </ResultPanel>
 
@@ -152,7 +152,7 @@ export default function Memoria({ onComplete }) {
                         >
                             <span className={`block w-full h-full transition-transform duration-500 preserve-3d ${revelada ? 'rotate-y-180' : ''}`}>
                                 <span className="absolute w-full h-full backface-hidden bg-gray-200 dark:bg-zinc-700 border-2 border-gray-300 dark:border-zinc-600 rounded-lg flex items-center justify-center text-2xl text-gray-500 dark:text-gray-400">
-                                    â“
+                                    ❓
                                 </span>
                                 <span className="absolute w-full h-full backface-hidden rotate-y-180 bg-blue-100 dark:bg-blue-900 border-2 border-blue-400 dark:border-blue-700 rounded-lg flex items-center justify-center text-sm font-semibold text-blue-800 dark:text-blue-200 px-1 text-center">
                                     {carta.label}
