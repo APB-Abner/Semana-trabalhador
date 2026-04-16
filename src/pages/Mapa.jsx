@@ -32,6 +32,11 @@ export default function Mapa() {
         window.scrollTo(0, 0);
     }, []);
 
+    const oportunidadesComCoordenadas = oportunidadesFiltradas.filter((op) => (
+        op.posicao && Array.isArray(op.posicao) && op.posicao.length === 2
+    ));
+    const oportunidadesListadas = oportunidadesFiltradas.slice(0, 6);
+
     return (
         <PageShell>
             <PageHeader
@@ -75,12 +80,39 @@ export default function Mapa() {
                             {oportunidadesFiltradas.length}
                         </p>
                         <p className="mt-1 text-sm text-blue-900 dark:text-blue-100">
-                            oportunidade(s) encontrada(s).
+                            unidade(s) encontrada(s), com {oportunidadesComCoordenadas.length} ponto(s) no mapa.
                         </p>
+                    </ResultPanel>
+
+                    <ResultPanel>
+                        <div className="flex items-center justify-between gap-3">
+                            <h2 className="text-lg font-bold text-gray-950 dark:text-white">Unidades listadas</h2>
+                            <Badge tone="gray">{filtroCidade}</Badge>
+                        </div>
+                        <div className="mt-4 space-y-3">
+                            {oportunidadesListadas.length ? oportunidadesListadas.map((op, index) => (
+                                <article key={`${op.nome}-${index}`} className="border-t border-gray-200 pt-3 first:border-t-0 first:pt-0 dark:border-zinc-800">
+                                    <h3 className="text-sm font-bold text-gray-950 dark:text-white">{op.nome}</h3>
+                                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">{op.cidade}</p>
+                                    {op.horario && (
+                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{op.horario}</p>
+                                    )}
+                                </article>
+                            )) : (
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                    Nenhuma unidade encontrada com os filtros atuais.
+                                </p>
+                            )}
+                        </div>
+                        {oportunidadesFiltradas.length > oportunidadesListadas.length && (
+                            <p className="mt-4 text-xs font-semibold text-blue-700 dark:text-blue-300">
+                                Mostrando 6 de {oportunidadesFiltradas.length}. Refine por cidade para reduzir a lista.
+                            </p>
+                        )}
                     </ResultPanel>
                 </aside>
 
-                <section className="overflow-hidden rounded border border-gray-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-zinc-800">
                         <div>
                             <h2 className="font-bold text-gray-950 dark:text-white">Mapa de Unidades</h2>
@@ -102,18 +134,16 @@ export default function Mapa() {
                                 attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
-                            {oportunidadesFiltradas.map((op, idx) =>
-                                op.posicao && Array.isArray(op.posicao) && op.posicao.length === 2 ? (
-                                    <Marker key={`${op.nome}-${idx}`} position={op.posicao}>
-                                        <Popup>
-                                            <strong>{op.nome}</strong><br />
-                                            📍 {op.cidade}<br />
-                                            🕒 {op.horario || 'Horário não informado'}<br />
-                                            <p className="mt-1 text-sm">{op.endereco}</p>
-                                        </Popup>
-                                    </Marker>
-                                ) : null
-                            )}
+                            {oportunidadesComCoordenadas.map((op, idx) => (
+                                <Marker key={`${op.nome}-${idx}`} position={op.posicao}>
+                                    <Popup>
+                                        <strong>{op.nome}</strong><br />
+                                        Cidade: {op.cidade}<br />
+                                        Horário: {op.horario || 'Horário não informado'}<br />
+                                        <p className="mt-1 text-sm">{op.endereco}</p>
+                                    </Popup>
+                                </Marker>
+                            ))}
                         </MapContainer>
                     </div>
                 </section>
