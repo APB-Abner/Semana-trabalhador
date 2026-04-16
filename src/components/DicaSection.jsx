@@ -22,11 +22,12 @@ function DicaSection({ id, title, icon, children }) {
                         <div key={index} className="accordion-item">
                             <h2 className="accordion-header">
                                 <button
+                                    id={`${id}-heading-${index}`}
                                     onClick={() => toggleAccordion(index)}
                                     className={`accordion-button w-full p-4 text-left ${openItems[index]
                                             ? "bg-gray-200 dark:bg-zinc-800"
                                             : "bg-gray-100 dark:bg-zinc-700"
-                                    } hover:bg-gray-300 dark:hover:bg-zinc-600 flex items-center justify-between`}
+                                    } hover:bg-gray-300 dark:hover:bg-zinc-600 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-inset`}
                                     type="button"
                                     aria-expanded={openItems[index] ? "true" : "false"}
                                     aria-controls={`${id}-collapse-${index}`}
@@ -40,6 +41,7 @@ function DicaSection({ id, title, icon, children }) {
 
                             <div
                                 id={`${id}-collapse-${index}`}
+                                aria-labelledby={`${id}-heading-${index}`}
                                 className={`accordion-collapse transition-all duration-300 ease-in-out ${openItems[index] ? "max-h-screen p-4" : "max-h-0 overflow-hidden"
                                     }`}
                             >

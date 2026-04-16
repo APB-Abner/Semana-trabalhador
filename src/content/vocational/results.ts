@@ -1,4 +1,6 @@
-export const vocationalResults = {
+import type { VocationalProfile } from '../../shared/types/learning';
+
+export const vocationalResults: Record<string, VocationalProfile> = {
   saude: {
     title: 'Saúde e Cuidado',
     summary: 'Você demonstra empatia, atenção às pessoas e interesse por bem-estar.',

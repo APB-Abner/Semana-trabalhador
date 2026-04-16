@@ -1,4 +1,6 @@
-export const memoryGameCards = [
+import type { MemoryCardPair, MemoryDifficulty } from '../../shared/types/learning';
+
+export const memoryGameCards: MemoryCardPair[] = [
   { id: 'estoquista', label: '📦 Estoquista' },
   { id: 'sac', label: '💬 Atendente de SAC' },
   { id: 'administrativo', label: '🧑‍💼 Assistente Administrativo' },
@@ -9,7 +11,7 @@ export const memoryGameCards = [
   { id: 'marketing', label: '📣 Assistente de Marketing' },
 ];
 
-export const memoryGameDifficulties = {
+export const memoryGameDifficulties: Record<MemoryDifficulty['id'], MemoryDifficulty> = {
   facil: {
     id: 'facil',
     label: 'Fácil',

@@ -1,19 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import prepareQuizQuestions from '../lib/prepareQuizQuestions.js';
+import type { QuizAnswerReview, QuizQuestion } from '../../../shared/types/learning';
 
-export default function useQuizSession(questions, { onCorrect, onWrong, onReviewReady } = {}) {
-  const [preparedQuestions, setPreparedQuestions] = useState([]);
+type QuizSessionOptions = {
+  onCorrect?: () => void;
+  onWrong?: () => void;
+  onReviewReady?: () => void;
+};
+
+type QuizMode = 'question' | 'review';
+
+export default function useQuizSession(
+  questions: QuizQuestion[],
+  { onCorrect, onWrong, onReviewReady }: QuizSessionOptions = {},
+) {
+  const [preparedQuestions, setPreparedQuestions] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [focusedOptionIndex, setFocusedOptionIndex] = useState(0);
   const [keyboardActive, setKeyboardActive] = useState(false);
-  const [answeredQuestions, setAnsweredQuestions] = useState([]);
+  const [answeredQuestions, setAnsweredQuestions] = useState<QuizAnswerReview[]>([]);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
-  const [mode, setMode] = useState('question');
+  const [mode, setMode] = useState<QuizMode>('question');
 
   useEffect(() => {
-    setPreparedQuestions(prepareQuizQuestions(questions));
+    setPreparedQuestions(prepareQuizQuestions(questions) as QuizQuestion[]);
   }, [questions]);
 
   const currentQuestion = preparedQuestions[currentIndex];
@@ -26,7 +38,7 @@ export default function useQuizSession(questions, { onCorrect, onWrong, onReview
     [answeredQuestions],
   );
 
-  const answerCurrentQuestion = useCallback((answer) => {
+  const answerCurrentQuestion = useCallback((answer: string) => {
     if (!currentQuestion || selectedAnswer !== null || mode !== 'question') return;
 
     const isCorrect = answer === currentQuestion.resposta;
@@ -68,7 +80,7 @@ export default function useQuizSession(questions, { onCorrect, onWrong, onReview
   }, [currentIndex, currentQuestion, onReviewReady, preparedQuestions.length, selectedAnswer]);
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (!currentQuestion || mode !== 'question') return;
 
       if (selectedAnswer !== null) {

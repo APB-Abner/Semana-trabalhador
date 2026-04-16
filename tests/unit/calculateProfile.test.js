@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import calculateProfile from '../../src/features/vocational-test/lib/calculateProfile.js';
-import { vocationalResults } from '../../src/content/vocational/results.js';
+import calculateProfile from '../../src/features/vocational-test/lib/calculateProfile.ts';
+import { vocationalResults } from '../../src/content/vocational/results.ts';
 
 describe('calculateProfile', () => {
   it('returns top 3 ranked profiles with percentages', () => {

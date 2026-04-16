@@ -1,9 +1,21 @@
-import { quizQuestions } from '../../content/quiz/questions.js';
-import useQuizSession from '../../features/quiz-session/model/useQuizSession.js';
+import { useEffect, useRef, useState } from 'react';
+import { quizQuestions } from '../../content/quiz/questions.ts';
+import { trackQuizAbandoned, trackQuizCompleted } from '../../features/analytics/lib/analytics.js';
+import { readQuizProgress, saveQuizProgress } from '../../features/persistence/lib/quizProgress.js';
+import useQuizSession from '../../features/quiz-session/model/useQuizSession.ts';
 import { somAcerto, somErro, somVitoria } from '../../sounds/sounds.js';
+import Badge from '../../shared/ui/Badge.jsx';
+import FeedbackNotice from '../../shared/ui/FeedbackNotice.jsx';
+import ProgressBar from '../../shared/ui/ProgressBar.jsx';
+import ResultPanel from '../../shared/ui/ResultPanel.jsx';
 
 export default function Quiz({ onComplete }) {
+    const [history, setHistory] = useState(() => readQuizProgress());
+    const completedRef = useRef(false);
+    const answeredCountRef = useRef(0);
+
     const {
+        answeredQuestions,
         bestStreak,
         currentIndex,
         currentQuestion,
@@ -25,6 +37,32 @@ export default function Quiz({ onComplete }) {
         onReviewReady: () => somVitoria.play(),
     });
 
+    useEffect(() => {
+        answeredCountRef.current = answeredQuestions.length;
+    }, [answeredQuestions.length]);
+
+    useEffect(() => {
+        if (!isFinished || completedRef.current) {
+            return;
+        }
+
+        const nextHistory = saveQuizProgress({
+            lastScore: score,
+            bestStreak,
+            wrongCount: wrongAnswers.length,
+        });
+
+        setHistory(nextHistory);
+        trackQuizCompleted();
+        completedRef.current = true;
+    }, [bestStreak, isFinished, score, wrongAnswers.length]);
+
+    useEffect(() => () => {
+        if (answeredCountRef.current > 0 && !completedRef.current) {
+            trackQuizAbandoned();
+        }
+    }, []);
+
     if (!preparedQuestions.length || !currentQuestion) {
         return (
             <div className="max-w-xl mx-auto text-center">
@@ -37,14 +75,14 @@ export default function Quiz({ onComplete }) {
         return (
             <div className="max-w-xl mx-auto text-gray-900 dark:text-white">
                 <div className="text-center">
-                    <p className="text-sm uppercase tracking-wide text-blue-600 dark:text-blue-300">Revisão do quiz</p>
-                    <h3 className="mt-2 text-2xl font-bold">Você acertou {score} de {preparedQuestions.length}</h3>
+                    <p className="text-sm uppercase tracking-wide text-blue-600 dark:text-blue-300">RevisÃ£o do quiz</p>
+                    <h3 className="mt-2 text-2xl font-bold">VocÃª acertou {score} de {preparedQuestions.length}</h3>
                     <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                        Melhor sequência: {bestStreak} acerto(s) seguido(s).
+                        Melhor sequÃªncia: {bestStreak} acerto(s) seguido(s).
                     </p>
                 </div>
 
-                <div className="mt-6 rounded border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4">
+                <ResultPanel className="mt-6">
                     {wrongAnswers.length ? (
                         <>
                             <h4 className="font-semibold text-red-600 dark:text-red-300">Respostas para revisar</h4>
@@ -61,20 +99,24 @@ export default function Quiz({ onComplete }) {
                         </>
                     ) : (
                         <div className="text-center">
-                            <h4 className="font-semibold text-green-700 dark:text-green-300">Você acertou tudo.</h4>
+                            <h4 className="font-semibold text-green-700 dark:text-green-300">VocÃª acertou tudo.</h4>
                             <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                                Continue para o próximo desafio e tente manter o desempenho.
+                                Continue para o prÃ³ximo desafio e tente manter o desempenho.
                             </p>
                         </div>
                     )}
-                </div>
+                </ResultPanel>
+
+                <ResultPanel tone="info" className="mt-4 text-sm">
+                    HistÃ³rico salvo: Ãºltimo score {history.lastScore}/{preparedQuestions.length}, {history.wrongCount} erro(s), melhor sequÃªncia {history.bestStreak}.
+                </ResultPanel>
 
                 <button
                     type="button"
                     onClick={() => onComplete(score)}
                     className="mt-6 w-full rounded bg-blue-600 px-4 py-3 font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
                 >
-                    Continuar para o desafio da memória
+                    Continuar para o desafio da memÃ³ria
                 </button>
             </div>
         );
@@ -85,20 +127,20 @@ export default function Quiz({ onComplete }) {
 
     return (
         <div className="max-w-xl mx-auto text-center text-gray-900 dark:text-white">
-            <div className="w-full bg-gray-200 dark:bg-zinc-700 h-3 rounded mb-4 overflow-hidden">
-                <div
-                    className="bg-blue-500 h-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
-                />
-            </div>
+            {history.completedAt && (
+                <ResultPanel tone="info" className="mb-4 text-left text-sm">
+                    <p className="font-semibold text-blue-700 dark:text-blue-200">Resumo salvo do quiz</p>
+                    <p className="mt-1 text-blue-800 dark:text-blue-100">
+                        Ãšltimo score: {history.lastScore}/{preparedQuestions.length} Â· Erros: {history.wrongCount} Â· Melhor sequÃªncia: {history.bestStreak}
+                    </p>
+                </ResultPanel>
+            )}
 
-            <div className="mb-3 flex flex-wrap items-center justify-center gap-2 text-xs">
-                <span className="rounded-full bg-blue-100 px-3 py-1 font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                    {currentQuestion.tema}
-                </span>
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-600 dark:bg-zinc-700 dark:text-gray-300">
-                    Sequência: {currentStreak}
-                </span>
+            <ProgressBar value={progress} className="mb-4" />
+
+            <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
+                <Badge tone="blue">{currentQuestion.tema}</Badge>
+                <Badge tone="gray">SequÃªncia: {currentStreak}</Badge>
             </div>
 
             <h3 className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4">
@@ -122,7 +164,8 @@ export default function Quiz({ onComplete }) {
                             type="button"
                             onClick={() => answerCurrentQuestion(opcao)}
                             disabled={feedbackIsVisible}
-                            className={`px-4 py-2 rounded text-sm transition-all duration-300 ${bgClass}`}
+                            aria-pressed={selectedAnswer === opcao}
+                            className={`rounded px-4 py-2 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default dark:focus:ring-offset-zinc-900 ${bgClass}`}
                         >
                             {opcao}
                         </button>
@@ -131,7 +174,7 @@ export default function Quiz({ onComplete }) {
             </div>
 
             {feedbackIsVisible && (
-                <div className={`mt-4 rounded border p-4 text-left ${answeredCorrectly ? 'border-green-300 bg-green-50 text-green-800 dark:border-green-700 dark:bg-green-950 dark:text-green-100' : 'border-red-300 bg-red-50 text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-100'}`}>
+                <FeedbackNotice tone={answeredCorrectly ? 'success' : 'danger'} className="mt-4 text-left">
                     <p className="font-semibold">{answeredCorrectly ? 'Resposta correta.' : `Resposta correta: ${currentQuestion.resposta}`}</p>
                     <p className="mt-1 text-sm">{currentQuestion.explicacao}</p>
                     <button
@@ -139,9 +182,9 @@ export default function Quiz({ onComplete }) {
                         onClick={goToNextQuestion}
                         className="mt-4 rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
                     >
-                        {isLastQuestion ? 'Ver revisão' : 'Próxima'}
+                        {isLastQuestion ? 'Ver revisÃ£o' : 'PrÃ³xima'}
                     </button>
-                </div>
+                </FeedbackNotice>
             )}
 
             <div className="mt-4 text-sm text-gray-600 dark:text-gray-300 flex justify-between">

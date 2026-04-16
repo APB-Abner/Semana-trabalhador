@@ -1,4 +1,6 @@
-export const quizQuestions = [
+import type { QuizQuestion } from '../../shared/types/learning';
+
+export const quizQuestions: QuizQuestion[] = [
   {
     tema: 'Jornada',
     pergunta: 'Qual é a carga horária máxima para um jovem aprendiz por dia?',

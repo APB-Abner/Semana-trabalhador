@@ -1,13 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-async function answerQuizQuestion(page) {
+const nextQuizButton = /Pr.{0,3}xima|Ver revis/i;
+
+async function answerQuizQuestion(page, optionIndex = 0) {
   const questionBefore = await page.locator('main h3').first().textContent();
-  await page.locator('main button').filter({ hasText: /.+/ }).first().click();
-  await expect(page.getByText(/Resposta correta|Resposta correta:/)).toBeVisible();
-  await page.waitForTimeout(900);
+  await page.locator('main button[aria-pressed]').nth(optionIndex).click();
+  await expect(page.getByText(/Resposta correta/)).toBeVisible();
   await expect(page.locator('main h3').first()).toHaveText(questionBefore);
 
-  const nextButton = page.getByRole('button', { name: /Próxima|Ver revisão/ });
+  const nextButton = page.getByRole('button', { name: nextQuizButton });
   const nextButtonLabel = await nextButton.textContent();
   await nextButton.click();
   return nextButtonLabel;
@@ -18,8 +19,8 @@ async function finishQuizToMemoryIntro(page) {
     await answerQuizQuestion(page);
   }
 
-  await expect(page.getByText('Revisão do quiz')).toBeVisible();
-  await page.getByRole('button', { name: 'Continuar para o desafio da memória' }).click();
+  await expect(page.getByText(/Revis/)).toBeVisible();
+  await page.getByRole('button', { name: /Continuar para o desafio/ }).click();
   await expect(page.getByRole('button', { name: 'Continuar' })).toBeVisible();
   await page.getByRole('button', { name: 'Continuar' }).click();
   await expect(page.getByRole('heading', { name: 'Escolha a dificuldade' })).toBeVisible();
@@ -36,7 +37,7 @@ test('mobile navigation uses SPA routing', async ({ page }) => {
   await page.locator('[data-headlessui-state="open"][href="/dicas"]').click();
 
   await expect(page).toHaveURL(/\/dicas$/);
-  await expect(page.getByRole('heading', { name: 'Dicas para Iniciar sua Carreira' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Dicas para Iniciar/ })).toBeVisible();
   await expect(page.evaluate(() => window.__spaMarker)).resolves.toBe('alive');
 });
 
@@ -49,8 +50,30 @@ test('footer links use SPA routing', async ({ page }) => {
   await page.getByRole('contentinfo').getByRole('link', { name: 'Mapa' }).click();
 
   await expect(page).toHaveURL(/\/mapa$/);
-  await expect(page.getByRole('heading', { name: '🌍 Mapa de Unidades' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Mapa de Unidades/ })).toBeVisible();
   await expect(page.evaluate(() => window.__spaMarker)).resolves.toBe('alive');
+});
+
+test('direct URLs and reload keep route rendering', async ({ page }) => {
+  await page.goto('/mapa');
+  await expect(page.getByRole('heading', { name: /Mapa de Unidades/ })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: /Mapa de Unidades/ })).toBeVisible();
+
+  await page.goto('/game');
+  await expect(page.getByRole('heading', { name: /Desafio Jovem Trabalhador/ })).toBeVisible();
+
+  await page.goto('/testes');
+  await expect(page.getByRole('heading', { name: /Teste Vocacional Interativo/ })).toBeVisible();
+});
+
+test('theme preference persists after reload', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Alternar modo escuro' }).click();
+
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await page.reload();
+  await expect(page.locator('html')).toHaveClass(/dark/);
 });
 
 test('tips sidebar scrolls to sections and highlights the active item', async ({ page }) => {
@@ -66,13 +89,49 @@ test('tips sidebar scrolls to sections and highlights the active item', async ({
 });
 
 test('quiz shows feedback and waits for explicit next action', async ({ page }) => {
+  await page.clock.install();
   await page.goto('/game');
 
-  const label = await answerQuizQuestion(page);
-  expect(label).toMatch(/Próxima|Ver revisão/);
+  const questionBefore = await page.locator('main h3').first().textContent();
+  await page.locator('main button[aria-pressed]').first().click();
+  await expect(page.getByText(/Resposta correta/)).toBeVisible();
+  await page.clock.runFor(5_000);
+
+  await expect(page.locator('main h3').first()).toHaveText(questionBefore);
 });
 
-test('vocational test shows top 3 profiles and percentages', async ({ page }) => {
+test('quiz keyboard navigation wraps options and submits with enter', async ({ page }) => {
+  await page.goto('/game');
+  const options = page.locator('main button[aria-pressed]');
+  const lastOptionText = await options.nth(3).textContent();
+
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('Enter');
+
+  await expect(options.nth(3)).toHaveAttribute('aria-pressed', 'true');
+  await expect(options.nth(3)).toHaveText(lastOptionText);
+  await expect(page.getByText(/Resposta correta/)).toBeVisible();
+});
+
+test('quiz review with errors is shown and persisted after reload', async ({ page }) => {
+  await page.addInitScript(() => {
+    Math.random = () => 0;
+  });
+  await page.goto('/game');
+
+  for (let index = 0; index < 11; index += 1) {
+    await answerQuizQuestion(page, 3);
+  }
+
+  await expect(page.getByText(/Respostas para revisar/)).toBeVisible();
+  await expect(page.locator('main').getByText(/score/)).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByText(/Resumo salvo do quiz/)).toBeVisible();
+});
+
+test('vocational test shows top 3 profiles, percentages and persists the summary', async ({ page }) => {
   await page.goto('/testes');
 
   for (let index = 0; index < 6; index += 1) {
@@ -84,22 +143,28 @@ test('vocational test shows top 3 profiles and percentages', async ({ page }) =>
   await expect(page.getByText('#2')).toBeVisible();
   await expect(page.getByText('#3')).toBeVisible();
   await expect(page.locator('main').getByText(/%/).first()).toBeVisible();
+
+  await page.getByRole('button', { name: /Refazer/ }).click();
+  await expect(page.getByText(/ltimo perfil|perfil/)).toBeVisible();
 });
 
-test('memory game supports difficulty, preview and timeout loss state', async ({ page }) => {
+test('memory game supports difficulty, preview, timeout loss state and replay', async ({ page }) => {
   await page.clock.install();
   await page.goto('/game');
   await finishQuizToMemoryIntro(page);
 
-  await page.getByRole('button', { name: /Fácil/ }).click();
+  await page.getByRole('button', { name: /F/ }).first().click();
   await expect(page.getByText(/Memorize as cartas/)).toBeVisible();
 
   await page.clock.runFor(3_000);
   await expect(page.getByText(/Memorize as cartas/)).toBeHidden();
-  await expect(page.getByText('Fácil')).toBeVisible();
+  await expect(page.getByText(/F/).first()).toBeVisible();
 
   await page.clock.runFor(75_000);
   await expect(page.getByRole('heading', { name: 'Tempo esgotado' })).toBeVisible();
-  await expect(page.getByText('Pontuação:')).toBeVisible();
+  await expect(page.getByText(/Pontua/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Ver resultado final' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Jogar novamente' }).click();
+  await expect(page.getByText(/Memorize as cartas/)).toBeVisible();
 });

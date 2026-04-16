@@ -1,7 +1,15 @@
-export default function calculateProfile(answers, results) {
+import type {
+  VocationalProfile,
+  VocationalResult,
+} from '../../../shared/types/learning';
+
+export default function calculateProfile(
+  answers: string[],
+  results: Record<string, VocationalProfile>,
+): VocationalResult {
   const totalAnswers = answers.length;
   const resultEntries = Object.entries(results);
-  const scoreByArea = answers.reduce((scores, area) => {
+  const scoreByArea = answers.reduce<Record<string, number>>((scores, area) => {
     scores[area] = (scores[area] || 0) + 1;
     return scores;
   }, {});

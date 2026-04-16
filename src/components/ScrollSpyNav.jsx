@@ -62,7 +62,7 @@ export default function ScrollSpyNav({ groups, menuOpen, setMenuOpen }) {
                     <h2 className="text-xl font-bold">Navegação</h2>
                     <button
                         onClick={() => setMenuOpen(false)}
-                        className="w-fit p-1 rounded"
+                        className="w-fit p-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                         aria-label="Fechar Menu"
                     >
                         ✖️
@@ -83,7 +83,7 @@ export default function ScrollSpyNav({ groups, menuOpen, setMenuOpen }) {
                                     href={`#${item.id}`}
                                     onClick={(event) => handleNavClick(event, item.id)}
                                     aria-current={activeId === item.id ? 'true' : undefined}
-                                    className={`nav-link block px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ${activeId === item.id ? 'text-green-600 font-bold bg-green-50 dark:bg-zinc-700' : ''}`}
+                                    className={`nav-link block px-2 py-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:hover:bg-zinc-700 ${activeId === item.id ? 'text-green-600 font-bold bg-green-50 dark:bg-zinc-700' : ''}`}
                                 >
                                     {item.icon} {item.label}
                                 </a>

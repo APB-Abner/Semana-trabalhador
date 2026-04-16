@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { quizQuestions } from '../../src/content/quiz/questions.js';
+import { quizQuestions } from '../../src/content/quiz/questions.ts';
 import prepareQuizQuestions from '../../src/features/quiz-session/lib/prepareQuizQuestions.js';
 
 describe('prepareQuizQuestions', () => {
