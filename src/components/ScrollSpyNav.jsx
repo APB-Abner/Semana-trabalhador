@@ -1,47 +1,61 @@
 import { useEffect, useState } from 'react';
 
 export default function ScrollSpyNav({ groups, menuOpen, setMenuOpen }) {
+    const firstItemId = groups[0]?.items[0]?.id || '';
+    const [activeId, setActiveId] = useState(firstItemId);
+    const [headerHeight, setHeaderHeight] = useState(0);
+
     useEffect(() => {
-        const sections = document.querySelectorAll('.section'); // Certifique-se que suas seções tenham essa classe
-        const navLinks = document.querySelectorAll('.nav-link');
+        const updateHeaderHeight = () => {
+            const appNav = document.querySelector('[data-app-nav]');
+            setHeaderHeight(appNav?.offsetHeight || 0);
+        };
+
+        updateHeaderHeight();
+        window.addEventListener('resize', updateHeaderHeight);
+        return () => window.removeEventListener('resize', updateHeaderHeight);
+    }, []);
+
+    useEffect(() => {
+        const sections = document.querySelectorAll('[data-scroll-section]');
+        if (!sections.length) return undefined;
 
         const observer = new IntersectionObserver(
             (entries) => {
-                entries.forEach((entry) => {
-                    const id = entry.target.id;
-                    const navLink = document.querySelector(`.nav-link[href="#${id}"]`);
-                    if (entry.isIntersecting) {
-                        navLinks.forEach((link) => {
-                            link.classList.remove('text-green-600', 'font-bold');
-                        });
-                        if (navLink) {
-                            navLink.classList.add('text-green-600', 'font-bold');
-                        }
-                    }
-                });
+                const visibleEntry = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+                if (visibleEntry?.target.id) {
+                    setActiveId(visibleEntry.target.id);
+                }
             },
             {
-                rootMargin: '0px 0px -70% 0px', // dispara um pouco antes do topo
-                threshold: 0.3,
+                rootMargin: `-${headerHeight + 12}px 0px -65% 0px`,
+                threshold: [0.2, 0.4, 0.6],
             }
         );
 
         sections.forEach((section) => observer.observe(section));
         return () => observer.disconnect();
-    }, []);
+    }, [headerHeight]);
 
-    const [headerHeight, setHeaderHeight] = useState(0);
+    const handleNavClick = (event, id) => {
+        event.preventDefault();
+        const section = document.getElementById(id);
+        if (!section) return;
 
-    useEffect(() => {
-        const header = document.querySelector('header');
-        if (header) setHeaderHeight(header.offsetHeight);
-    }, []);
+        const top = section.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+        setActiveId(id);
+        window.history.replaceState(null, '', `#${id}`);
+        window.scrollTo({ top, behavior: 'smooth' });
+    };
 
     return (
         <aside
             className={`sticky top-0 h-[calc(100vh-1rem)] overflow-y-auto bg-white dark:bg-zinc-800 shadow-md border-r border-gray-200 dark:border-zinc-700 transition-transform duration-300 ease-in-out
                 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
-            style={{ marginTop: `${headerHeight}px` }}
+            style={{ top: `${headerHeight}px`, height: `calc(100vh - ${headerHeight + 16}px)` }}
         >
             <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between mb-4">
@@ -67,7 +81,9 @@ export default function ScrollSpyNav({ groups, menuOpen, setMenuOpen }) {
                                 <a
                                     key={item.id}
                                     href={`#${item.id}`}
-                                    className="nav-link block px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700"
+                                    onClick={(event) => handleNavClick(event, item.id)}
+                                    aria-current={activeId === item.id ? 'true' : undefined}
+                                    className={`nav-link block px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-700 ${activeId === item.id ? 'text-green-600 font-bold bg-green-50 dark:bg-zinc-700' : ''}`}
                                 >
                                     {item.icon} {item.label}
                                 </a>

@@ -1,105 +1,224 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
-import confetti from 'canvas-confetti'; 
-import { memoryGameCards } from '../../content/game/cards.js';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import confetti from 'canvas-confetti';
+import { memoryGameCards, memoryGameDifficulties } from '../../content/game/cards.js';
 import calculateMemoryScore from '../../features/memory-game/lib/calculateMemoryScore.js';
-import shuffleCards from '../../features/memory-game/lib/shuffleCards.js';
+import createMemoryDeck from '../../features/memory-game/lib/createMemoryDeck.js';
 import { somAcerto, somErro, somVitoria } from '../../sounds/sounds.js';
 
+const difficultyOptions = Object.values(memoryGameDifficulties);
+
 export default function Memoria({ onComplete }) {
-    const [cartas] = useState(() => shuffleCards(memoryGameCards));
+    const [status, setStatus] = useState('selectingDifficulty');
+    const [difficulty, setDifficulty] = useState(null);
+    const [cartas, setCartas] = useState([]);
     const [selecionadas, setSelecionadas] = useState([]);
     const [concluidas, setConcluidas] = useState([]);
-    const [tempoRestante, setTempoRestante] = useState(60);
-    const timerRef = useRef(null);
-    const concluidasRef = useRef([]);
+    const [tempoRestante, setTempoRestante] = useState(0);
+    const [previewRestante, setPreviewRestante] = useState(0);
+    const concluIdasRef = useRef([]);
 
     useEffect(() => {
-        concluidasRef.current = concluidas;
+        concluIdasRef.current = concluidas;
     }, [concluidas]);
 
-    const finalizarJogo = useCallback((totalConcluidas = concluidasRef.current.length) => {
-        const pont = calculateMemoryScore(totalConcluidas, cartas.length);
-        somVitoria.play();
-        onComplete(pont);
-    }, [cartas.length, onComplete]);
+    const startGame = useCallback((selectedDifficulty) => {
+        setDifficulty(selectedDifficulty);
+        setCartas(createMemoryDeck(memoryGameCards, selectedDifficulty.pairCount));
+        setSelecionadas([]);
+        setConcluidas([]);
+        setTempoRestante(selectedDifficulty.timeLimit);
+        setPreviewRestante(selectedDifficulty.previewSeconds);
+        setStatus('preview');
+    }, []);
 
-    // Timer regressivo
+    const finishGame = useCallback((nextStatus) => {
+        setStatus(nextStatus);
+        setSelecionadas([]);
+
+        if (nextStatus === 'won') {
+            somVitoria.play();
+            confetti();
+        }
+    }, []);
+
     useEffect(() => {
-        timerRef.current = setInterval(() => {
-            setTempoRestante((t) => {
-                if (t <= 1) {
-                    clearInterval(timerRef.current);
-                    finalizarJogo();
+        if (status !== 'preview') return undefined;
+
+        const timer = setInterval(() => {
+            setPreviewRestante((current) => {
+                if (current <= 1) {
+                    clearInterval(timer);
+                    setStatus('playing');
                     return 0;
                 }
-                return t - 1;
+
+                return current - 1;
             });
         }, 1000);
-        return () => clearInterval(timerRef.current);
-    }, [finalizarJogo]);
 
-    // Checa combinação
-    useEffect(() => {
-        if (selecionadas.length === 2) {
-            const [a, b] = selecionadas;
-            if (cartas[a] === cartas[b]) {
-                somAcerto.play();
-                setConcluidas((prev) => [...prev, a, b]);
-                setSelecionadas([]);
-            } else {
-                somErro.play();
-                setTimeout(() => setSelecionadas([]), 800);
-            }
-        }
-    }, [selecionadas, cartas]);
+        return () => clearInterval(timer);
+    }, [status]);
 
-    // Finaliza quando completa
     useEffect(() => {
-        if (concluidas.length === cartas.length) {
-            clearInterval(timerRef.current);
-            setTimeout(() => {
-                confetti();
-                finalizarJogo(concluidas.length);
-            }, 500);
+        if (status !== 'playing') return undefined;
+
+        const timer = setInterval(() => {
+            setTempoRestante((current) => {
+                if (current <= 1) {
+                    clearInterval(timer);
+                    finishGame('lost');
+                    return 0;
+                }
+
+                return current - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [finishGame, status]);
+
+    useEffect(() => {
+        if (status === 'playing' && cartas.length && concluidas.length === cartas.length) {
+            finishGame('won');
         }
-    }, [concluidas, cartas.length, finalizarJogo]);
+    }, [cartas.length, concluidas.length, finishGame, status]);
+
+    useEffect(() => {
+        if (selecionadas.length !== 2) return;
+
+        const [firstIndex, secondIndex] = selecionadas;
+        const firstCard = cartas[firstIndex];
+        const secondCard = cartas[secondIndex];
+
+        if (firstCard.id === secondCard.id) {
+            somAcerto.play();
+            setConcluidas((current) => [...current, firstIndex, secondIndex]);
+            setSelecionadas([]);
+            return;
+        }
+
+        somErro.play();
+        const timer = setTimeout(() => setSelecionadas([]), 800);
+        return () => clearTimeout(timer);
+    }, [cartas, selecionadas]);
 
     const selecionar = (idx) => {
-        if (selecionadas.includes(idx) || concluidas.includes(idx) || selecionadas.length === 2) return;
-        setSelecionadas((prev) => [...prev, idx]);
+        if (
+            status !== 'playing' ||
+            selecionadas.includes(idx) ||
+            concluidas.includes(idx) ||
+            selecionadas.length === 2
+        ) {
+            return;
+        }
+
+        setSelecionadas((current) => [...current, idx]);
     };
+
+    const paresConcluidos = Math.floor(concluidas.length / 2);
+    const totalPares = Math.floor(cartas.length / 2);
+    const pontuacao = calculateMemoryScore(concluidas.length, cartas.length);
+    const shouldRevealAll = status === 'preview' || status === 'won' || status === 'lost';
+
+    if (status === 'selectingDifficulty') {
+        return (
+            <div className="max-w-md mx-auto p-4 text-center">
+                <h3 className="text-xl font-bold text-blue-600 dark:text-blue-300">Escolha a dificuldade</h3>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                    A rodada começa com uma prévia rápida das cartas.
+                </p>
+                <div className="mt-6 grid gap-3">
+                    {difficultyOptions.map((option) => (
+                        <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => startGame(option)}
+                            className="rounded border border-blue-200 bg-white px-4 py-3 text-left transition hover:bg-blue-50 dark:border-zinc-600 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+                        >
+                            <span className="block font-semibold text-gray-900 dark:text-white">{option.label}</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-300">
+                                {option.pairCount} pares · {option.timeLimit}s · prévia de {option.previewSeconds}s
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (status === 'won' || status === 'lost') {
+        const won = status === 'won';
+
+        return (
+            <div className="max-w-md mx-auto p-4 text-center">
+                <h3 className={`text-2xl font-bold ${won ? 'text-green-600 dark:text-green-300' : 'text-red-600 dark:text-red-300'}`}>
+                    {won ? 'Vitória no jogo da memória' : 'Tempo esgotado'}
+                </h3>
+                <p className="mt-2 text-gray-700 dark:text-gray-200">
+                    Você encontrou {paresConcluidos} de {totalPares} pares no modo {difficulty?.label}.
+                </p>
+                <p className="mt-4 text-xl font-semibold text-blue-600 dark:text-blue-300">
+                    Pontuação: {pontuacao} / 10
+                </p>
+
+                <div className="mt-6 flex flex-wrap justify-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => startGame(difficulty)}
+                        className="rounded bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
+                    >
+                        Jogar novamente
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onComplete(pontuacao)}
+                        className="rounded bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700"
+                    >
+                        Ver resultado final
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-md mx-auto p-4">
-            {/* Barra de tempo */}
             <div className={`w-full h-3 mb-3 rounded ${tempoRestante <= 10 ? 'bg-red-500' : 'bg-green-500'} transition-colors duration-300`}>
-                <div className="h-full bg-blue-500" style={{ width: `${(tempoRestante / 60) * 100}%` }} />
+                <div className="h-full bg-blue-500" style={{ width: `${(tempoRestante / difficulty.timeLimit) * 100}%` }} />
             </div>
+
             <div className="flex justify-between items-center text-sm mb-4">
                 <span>⏱️ {tempoRestante}s</span>
-                <span>✅ Pares: {concluidas.length / 2}</span>
+                <span>{difficulty.label}</span>
+                <span>✅ Pares: {paresConcluidos} / {totalPares}</span>
             </div>
-            {/* Grid de cartas */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+
+            {status === 'preview' && (
+                <div className="mb-4 rounded bg-blue-50 p-3 text-center text-sm font-semibold text-blue-700 dark:bg-blue-950 dark:text-blue-100">
+                    Memorize as cartas: {previewRestante}s
+                </div>
+            )}
+
+            <div className={`grid gap-4 ${cartas.length > 12 ? 'grid-cols-4' : 'grid-cols-3 sm:grid-cols-4'}`}>
                 {cartas.map((carta, idx) => {
-                    const revelada = selecionadas.includes(idx) || concluidas.includes(idx);
+                    const revelada = shouldRevealAll || selecionadas.includes(idx) || concluidas.includes(idx);
                     return (
-                        <div
-                            key={idx}
+                        <button
+                            type="button"
+                            key={carta.instanceId}
                             onClick={() => selecionar(idx)}
-                            className="relative w-full h-28 perspective cursor-pointer"
+                            className="relative w-full h-28 perspective cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+                            aria-label={revelada ? carta.label : 'Carta virada'}
                         >
-                            <div className={`w-full h-full transition-transform duration-500 preserve-3d ${revelada ? 'rotate-y-180' : ''}`}>
-                                {/* Frente */}
-                                <div className="absolute w-full h-full backface-hidden bg-gray-200 dark:bg-zinc-700 border-2 border-gray-300 dark:border-zinc-600 rounded-lg flex items-center justify-center text-2xl text-gray-500 dark:text-gray-400">
+                            <span className={`block w-full h-full transition-transform duration-500 preserve-3d ${revelada ? 'rotate-y-180' : ''}`}>
+                                <span className="absolute w-full h-full backface-hidden bg-gray-200 dark:bg-zinc-700 border-2 border-gray-300 dark:border-zinc-600 rounded-lg flex items-center justify-center text-2xl text-gray-500 dark:text-gray-400">
                                     ❓
-                                </div>
-                                {/* Verso */}
-                                <div className="absolute w-full h-full backface-hidden rotate-y-180 bg-blue-100 dark:bg-blue-900 border-2 border-blue-400 dark:border-blue-700 rounded-lg flex items-center justify-center text-sm font-semibold text-blue-800 dark:text-blue-200 px-1 text-center">
-                                    {carta}
-                                </div>
-                            </div>
-                        </div>
+                                </span>
+                                <span className="absolute w-full h-full backface-hidden rotate-y-180 bg-blue-100 dark:bg-blue-900 border-2 border-blue-400 dark:border-blue-700 rounded-lg flex items-center justify-center text-sm font-semibold text-blue-800 dark:text-blue-200 px-1 text-center">
+                                    {carta.label}
+                                </span>
+                            </span>
+                        </button>
                     );
                 })}
             </div>

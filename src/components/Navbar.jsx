@@ -22,7 +22,7 @@ export default function Navbar() {
     const currentPath = location.pathname;
 
     return (
-        <Disclosure as="nav" className="bg_truepurple-200 dark:bg-zinc-900">
+        <Disclosure as="nav" data-app-nav className="bg_truepurple-200 dark:bg-zinc-900">
             <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                 <div className="relative flex h-16 items-center justify-between">
                     {/* Menu button for mobile */}
@@ -85,8 +85,8 @@ export default function Navbar() {
                         return (
                             <DisclosureButton
                                 key={item.name}
-                                as="a"
-                                href={item.href}
+                                as={Link}
+                                to={item.href}
                                 aria-current={isCurrent ? 'page' : undefined}
                                 className={classNames(
                                     isCurrent

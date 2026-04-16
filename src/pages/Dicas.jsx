@@ -24,7 +24,7 @@ export default function Dicas() {
 
     useEffect(() => {
         const handleScroll = () => {
-            const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+            const headerHeight = document.querySelector('[data-app-nav]')?.offsetHeight || 0;
             setIsButtonFixed(window.scrollY > headerHeight);
         };
         window.addEventListener('scroll', handleScroll);

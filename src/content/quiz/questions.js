@@ -1,10 +1,13 @@
 export const quizQuestions = [
   {
+    tema: 'Jornada',
     pergunta: 'Qual é a carga horária máxima para um jovem aprendiz por dia?',
     opcoes: ['8 horas', '6 horas', '4 horas', '10 horas'],
     resposta: '8 horas',
+    explicacao: 'A jornada pode chegar a 8 horas diárias quando inclui atividades teóricas e práticas e o jovem já concluiu o ensino fundamental.',
   },
   {
+    tema: 'Direitos',
     pergunta: 'Jovens aprendizes têm direito a:',
     opcoes: [
       '13º salário e férias',
@@ -13,28 +16,38 @@ export const quizQuestions = [
       'Nada, é voluntário',
     ],
     resposta: '13º salário e férias',
+    explicacao: 'O contrato de aprendizagem é formal e garante direitos trabalhistas como férias, 13º salário e FGTS.',
   },
   {
+    tema: 'Idade mínima',
     pergunta: 'A partir de que idade é permitido ser jovem aprendiz no Brasil?',
     opcoes: ['12 anos', '14 anos', '16 anos', '18 anos'],
     resposta: '14 anos',
+    explicacao: 'A aprendizagem profissional é permitida a partir dos 14 anos, respeitando regras específicas de proteção ao jovem.',
   },
   {
+    tema: 'Contrato',
     pergunta: 'O contrato de aprendizagem pode durar no máximo:',
     opcoes: ['6 meses', '1 ano', '2 anos', '4 anos'],
     resposta: '2 anos',
+    explicacao: 'Em regra, o contrato de aprendizagem tem duração máxima de 2 anos, salvo situações específicas previstas em lei.',
   },
   {
+    tema: 'Lei da Aprendizagem',
     pergunta: 'A Lei da Aprendizagem foi criada em qual ano?',
     opcoes: ['1998', '2000', '2005', '2010'],
     resposta: '2000',
+    explicacao: 'A Lei nº 10.097, conhecida como Lei da Aprendizagem, foi publicada no ano 2000.',
   },
   {
+    tema: 'Registro formal',
     pergunta: 'Jovem aprendiz tem direito a carteira assinada?',
     opcoes: ['Sim, desde o primeiro dia como CLT', 'Apenas após 6 meses', 'Não', 'Só após 2 anos'],
     resposta: 'Sim, desde o primeiro dia como CLT',
+    explicacao: 'O vínculo de aprendizagem deve ser registrado em carteira desde o início do contrato.',
   },
   {
+    tema: 'Educação',
     pergunta: 'É obrigatório que o jovem aprendiz esteja:',
     opcoes: [
       'Cursando ou concluído o ensino médio, ou curso técnico',
@@ -43,8 +56,10 @@ export const quizQuestions = [
       'Fazendo faculdade',
     ],
     resposta: 'Cursando ou concluído o ensino médio, ou curso técnico',
+    explicacao: 'A aprendizagem combina trabalho com formação e exige vínculo com a educação básica ou formação técnica, conforme o caso.',
   },
   {
+    tema: 'Escola e trabalho',
     pergunta: 'Durante o período de provas na escola, o jovem aprendiz:',
     opcoes: [
       'Pode faltar no trabalho sem justificativa',
@@ -53,8 +68,10 @@ export const quizQuestions = [
       'Perde o contrato se faltar',
     ],
     resposta: 'Tem direito à dispensa para estudar',
+    explicacao: 'A rotina do aprendiz deve respeitar sua formação escolar; o desempenho nos estudos continua sendo prioridade.',
   },
   {
+    tema: 'Formação',
     pergunta: 'O contrato de aprendizagem combina trabalho com:',
     opcoes: [
       'Estudo teórico em instituição formadora',
@@ -63,8 +80,10 @@ export const quizQuestions = [
       'Serviço militar obrigatório',
     ],
     resposta: 'Estudo teórico em instituição formadora',
+    explicacao: 'O programa de aprendizagem une prática profissional na empresa e formação teórica em entidade qualificadora.',
   },
   {
+    tema: 'Cotas',
     pergunta: 'Empresas de médio e grande porte são obrigadas a:',
     opcoes: [
       'Contratar entre 5% e 15% de aprendizes',
@@ -73,10 +92,13 @@ export const quizQuestions = [
       'Pagar salários acima do mínimo',
     ],
     resposta: 'Contratar entre 5% e 15% de aprendizes',
+    explicacao: 'Empresas enquadradas na regra devem reservar uma cota de 5% a 15% das funções que demandam formação profissional.',
   },
   {
+    tema: 'Lei da Aprendizagem',
     pergunta: 'Qual é o número da Lei da Aprendizagem que regulamenta a contratação de jovens aprendizes no Brasil?',
     opcoes: ['Lei nº 10.097 / 2000', 'Lei nº 8.666 / 1993', 'Lei nº 11.494 / 2007', 'Lei nº 9.394 / 1996'],
     resposta: 'Lei nº 10.097 / 2000',
+    explicacao: 'A Lei nº 10.097/2000 alterou regras da CLT para regulamentar a contratação de aprendizes.',
   },
 ];

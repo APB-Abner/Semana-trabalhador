@@ -1,4 +1,13 @@
 import { Typography } from "@material-tailwind/react";
+import { Link } from "react-router-dom";
+
+const footerLinks = [
+    { label: 'Games', href: '/game' },
+    { label: 'História', href: '/historias' },
+    { label: 'Mapa', href: '/mapa' },
+    { label: 'Teste', href: '/testes' },
+    { label: 'Dicas', href: '/dicas' },
+];
 
 export default function Footer() {
     return (
@@ -7,56 +16,18 @@ export default function Footer() {
                 &copy; {new Date().getFullYear()} Aprendizes CIEE - Todos os direitos reservados
             </Typography>
             <ul className="flex flex-row w-2/3 items-center justify-center gap-y-3 gap-x-8">
-                <li>
-                    <Typography
-                        as="a"
-                        href="/game"
-                        color="blue-gray"
-                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
-                    >
-                        Games
-                    </Typography>
-                </li>
-                <li>
-                    <Typography
-                        as="a"
-                        href="/historias"
-                        color="blue-gray"
-                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
-                    >
-                        História
-                    </Typography>
-                </li>
-                <li>
-                    <Typography
-                        as="a"
-                        href="/mapa"
-                        color="blue-gray"
-                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
-                    >
-                        Mapa
-                    </Typography>
-                </li>
-                <li>
-                    <Typography
-                        as="a"
-                        href="/testes"
-                        color="blue-gray"
-                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
-                    >
-                        Teste
-                    </Typography>
-                </li>
-                <li>
-                    <Typography
-                        as="a"
-                        href="/dicas"
-                        color="blue-gray"
-                        className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
-                    >
-                        Dicas
-                    </Typography>
-                </li>
+                {footerLinks.map((item) => (
+                    <li key={item.href}>
+                        <Typography
+                            as={Link}
+                            to={item.href}
+                            color="blue-gray"
+                            className="font-normal transition-colors hover:text_truepurple_hover focus:text_truepurple_focus"
+                        >
+                            {item.label}
+                        </Typography>
+                    </li>
+                ))}
             </ul>
         </footer>
     );

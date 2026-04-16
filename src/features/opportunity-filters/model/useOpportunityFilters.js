@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import filterOpportunities from '../lib/filterOpportunities.js';
 import getAvailableCities, { ALL_CITIES_OPTION } from '../lib/getAvailableCities.js';
 import getOpportunityStates, { ALL_STATES_OPTION } from '../lib/getOpportunityStates.js';
+import resolveSelectedCity from '../lib/resolveSelectedCity.js';
 
 export default function useOpportunityFilters(opportunities) {
   const [filtroCidade, setFiltroCidade] = useState(ALL_CITIES_OPTION);
@@ -14,11 +15,7 @@ export default function useOpportunityFilters(opportunities) {
   );
 
   useEffect(() => {
-    setFiltroCidade((currentCity) =>
-      currentCity === ALL_CITIES_OPTION || cidadesDisponiveis.includes(currentCity)
-        ? currentCity
-        : ALL_CITIES_OPTION,
-    );
+    setFiltroCidade((currentCity) => resolveSelectedCity(currentCity, cidadesDisponiveis));
   }, [cidadesDisponiveis]);
 
   const oportunidadesFiltradas = useMemo(
