@@ -114,7 +114,10 @@ export function registerSocketHandlers(io: Server, store: RoomStore) {
           payload.pin,
           payload.playerToken,
           payload.questionId,
-          payload.optionId,
+          {
+            optionId: payload.optionId,
+            optionIds: payload.optionIds,
+          },
         );
         ackSuccess(ack, state);
 

@@ -114,6 +114,18 @@ Variáveis opcionais:
 - `LIVE_QUIZ_ROUND_MS`: duração da rodada em milissegundos, padrão `20000`.
 - `VITE_SOCKET_URL`: URL do Socket.IO no frontend, padrão `http://localhost:4000`.
 
+Tipos de pergunta ao vivo:
+
+- `multiple_choice`: uma alternativa correta, pontuação por acerto e velocidade.
+- `true_false`: duas alternativas, mesma pontuação competitiva da múltipla escolha.
+- `multiple_select`: múltiplas alternativas corretas, envio explícito por botão e pontuação apenas quando o conjunto marcado é exatamente igual ao conjunto correto.
+
+Limitações desta fase:
+
+- As salas continuam em memória; reiniciar o backend apaga partidas abertas.
+- `multiple_select` existe apenas no modo ao vivo e não altera o quiz normal em `/game`.
+- O backend segue pensado para uma instância única enquanto não houver Redis, banco ou coordenação entre processos.
+
 ## Deploy Produção
 
 O arranjo de produção usa o frontend na Vercel e o backend Socket.IO separado no Render:

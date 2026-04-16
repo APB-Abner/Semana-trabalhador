@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adaptQuizQuestion, adaptQuizQuestions } from '../src/domain/questions.ts';
+import { adaptQuizQuestion, adaptQuizQuestions, getLiveQuestions } from '../src/domain/questions.ts';
 import type { QuizQuestion } from '../../src/shared/types/learning.ts';
 
 const baseQuestion: QuizQuestion = {
@@ -55,5 +55,13 @@ describe('live quiz question adapter', () => {
     const adapted = adaptQuizQuestions();
 
     expect(adapted.some((question) => question.type === 'true_false')).toBe(true);
+  });
+
+  it('adds a live-only multiple_select question to the live question set', () => {
+    const liveQuestions = getLiveQuestions();
+    const multipleSelectQuestion = liveQuestions.find((question) => question.type === 'multiple_select');
+
+    expect(multipleSelectQuestion).toBeTruthy();
+    expect(multipleSelectQuestion?.correctOptionIds).toHaveLength(3);
   });
 });

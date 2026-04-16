@@ -2,7 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
-import { adaptQuizQuestions } from './domain/questions.ts';
+import { getLiveQuestions } from './domain/questions.ts';
 import { createRoomStore, type RoomStore } from './domain/roomStore.ts';
 import { registerSocketHandlers } from './socket/registerSocketHandlers.ts';
 import type { LiveQuestion, RoomEvent } from './types/realtime.ts';
@@ -16,7 +16,7 @@ export type CreateRealtimeAppOptions = {
 
 export function createRealtimeApp({
   clientOrigin = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
-  questions = adaptQuizQuestions(),
+  questions = getLiveQuestions(),
   roundMs = Number(process.env.LIVE_QUIZ_ROUND_MS ?? 20_000),
   roomStore,
 }: CreateRealtimeAppOptions = {}) {

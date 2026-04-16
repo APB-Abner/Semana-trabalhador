@@ -1,5 +1,6 @@
 import type {
   LeaderboardEntry,
+  LiveAnswerPayload,
   LivePlayer,
   LiveQuestion,
   RoomState,
@@ -11,6 +12,7 @@ export type {
   ClientRole,
   HostActionPayload,
   LeaderboardEntry,
+  LiveAnswerPayload,
   LivePlayer,
   LiveQuestion,
   LiveQuestionOption,
@@ -26,6 +28,7 @@ export type {
 
 export type PlayerAnswer = {
   optionId: string;
+  optionIds: string[];
   submittedAt: number;
   responseMs: number;
   isCorrect: boolean;

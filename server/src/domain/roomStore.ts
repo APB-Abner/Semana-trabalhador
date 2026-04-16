@@ -1,7 +1,13 @@
 import { createPin, createToken } from './pin.ts';
 import { calculateLiveScore } from './scoring.ts';
+import {
+  isLiveAnswerCorrect,
+  normalizeLiveAnswer,
+  validateLiveQuestion,
+} from './question-handlers/index.ts';
 import type {
   LeaderboardEntry,
+  LiveAnswerPayload,
   LiveQuestion,
   LiveRoomInternal,
   PlayerAnswer,
@@ -45,6 +51,8 @@ function assertQuestions(questions: LiveQuestion[]) {
   if (!questions.length) {
     throw new RoomStoreError('Nenhuma pergunta disponível para a competição.');
   }
+
+  questions.forEach(validateLiveQuestion);
 }
 
 function sortRanking(entries: LeaderboardEntry[]): LeaderboardEntry[] {
@@ -77,8 +85,13 @@ function toPublicQuestion(question: LiveQuestion | null, revealAnswer: boolean) 
   return {
     ...publicQuestion,
     correctOptionId: question.correctOptionId,
+    correctOptionIds: question.correctOptionIds,
     explanation: question.explanation,
   };
+}
+
+function toAnswerPayload(answer: string | LiveAnswerPayload): LiveAnswerPayload {
+  return typeof answer === 'string' ? { optionId: answer } : answer;
 }
 
 export function createRoomStore({
@@ -427,7 +440,12 @@ export function createRoomStore({
     return sanitizeRoom(room);
   }
 
-  function submitAnswer(pin: string, playerToken: string, questionId: string, optionId: string) {
+  function submitAnswer(
+    pin: string,
+    playerToken: string,
+    questionId: string,
+    answer: string | LiveAnswerPayload,
+  ) {
     const room = requireRoom(pin);
 
     if (room.status !== 'question' || !room.round) {
@@ -449,10 +467,6 @@ export function createRoomStore({
       throw new RoomStoreError('Você já respondeu esta rodada.');
     }
 
-    if (!question.options.some((option) => option.id === optionId)) {
-      throw new RoomStoreError('Opção inválida para esta pergunta.');
-    }
-
     const submittedAt = now();
 
     if (submittedAt > room.round.closesAt) {
@@ -460,7 +474,17 @@ export function createRoomStore({
     }
 
     const responseMs = Math.max(0, submittedAt - room.round.startedAt);
-    const isCorrect = optionId === question.correctOptionId;
+    let optionIds: string[];
+    let isCorrect: boolean;
+
+    try {
+      const normalizedAnswer = normalizeLiveAnswer(question, toAnswerPayload(answer));
+      optionIds = normalizedAnswer.optionIds;
+      isCorrect = isLiveAnswerCorrect(question, normalizedAnswer);
+    } catch (error) {
+      throw new RoomStoreError(error instanceof Error ? error.message : 'Resposta inválida para esta pergunta.');
+    }
+
     const points = calculateLiveScore({
       isCorrect,
       submittedAt,
@@ -470,7 +494,8 @@ export function createRoomStore({
 
     player.score += points;
     room.round.answers.set(player.id, {
-      optionId,
+      optionId: optionIds[0],
+      optionIds,
       submittedAt,
       responseMs,
       isCorrect,

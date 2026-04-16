@@ -67,17 +67,17 @@ describe('roomStore', () => {
       room.pin,
       player.playerToken,
       liveQuestionsFixture[0].id,
-      liveQuestionsFixture[0].correctOptionId,
+      'q1-a',
     );
 
     expect(answered.status).toBe('revealed');
     expect(answered.leaderboard[0].roundPoints).toBeGreaterThan(0);
-    expect(answered.currentQuestion?.correctOptionId).toBe(liveQuestionsFixture[0].correctOptionId);
+    expect(answered.currentQuestion?.correctOptionId).toBe('q1-a');
     expect(() => store.submitAnswer(
       room.pin,
       player.playerToken,
       liveQuestionsFixture[0].id,
-      liveQuestionsFixture[0].correctOptionId,
+      'q1-a',
     )).toThrow(RoomStoreError);
   });
 
@@ -92,7 +92,7 @@ describe('roomStore', () => {
       room.pin,
       player.playerToken,
       liveQuestionsFixture[0].id,
-      liveQuestionsFixture[0].correctOptionId,
+      'q1-a',
     )).toThrow(RoomStoreError);
 
     const state = store.getState(room.pin);
@@ -111,7 +111,7 @@ describe('roomStore', () => {
       room.pin,
       player.playerToken,
       liveQuestionsFixture[0].id,
-      liveQuestionsFixture[0].correctOptionId,
+      'q1-a',
     );
 
     expect(state.status).toBe('revealed');
@@ -144,10 +144,87 @@ describe('roomStore', () => {
     currentTime += 5_000;
     store.submitAnswer(room.pin, ana.playerToken, 'q2', 'q2-a');
 
+    store.nextRound(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q3', { optionIds: ['q3-d', 'q3-a', 'q3-b'] });
+    currentTime += 1_000;
+    store.submitAnswer(room.pin, bia.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b'] });
+
     const finished = store.nextRound(room.pin, room.hostToken);
 
     expect(finished.status).toBe('finished');
     expect(finished.finalRanking[0].score).toBeGreaterThanOrEqual(finished.finalRanking[1].score);
+  });
+
+  it('scores true_false questions through the question handler', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[1]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    const state = store.submitAnswer(room.pin, player.playerToken, 'q2', 'q2-a');
+
+    expect(state.status).toBe('revealed');
+    expect(state.leaderboard[0].lastAnswerCorrect).toBe(true);
+    expect(state.currentQuestion?.correctOptionId).toBe('q2-a');
+  });
+
+  it('scores multiple_select only when the selected set is exact', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[2]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q3', { optionIds: ['q3-d', 'q3-a', 'q3-b'] });
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, bia.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b'] });
+
+    expect(revealed.status).toBe('revealed');
+    expect(revealed.currentQuestion?.correctOptionIds).toEqual(['q3-a', 'q3-b', 'q3-d']);
+    expect(revealed.leaderboard[0].name).toBe('Ana');
+    expect(revealed.leaderboard[0].roundPoints).toBeGreaterThan(0);
+    expect(revealed.leaderboard.find((entry) => entry.name === 'Bia')?.roundPoints).toBe(0);
+  });
+
+  it('rejects invalid multiple_select options and duplicate submissions', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[2]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    store.startGame(room.pin, room.hostToken);
+
+    expect(() => store.submitAnswer(
+      room.pin,
+      player.playerToken,
+      'q3',
+      { optionIds: ['q3-a', 'q3-x'] },
+    )).toThrow(RoomStoreError);
+
+    store.submitAnswer(room.pin, player.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b', 'q3-d'] });
+    expect(() => store.submitAnswer(
+      room.pin,
+      player.playerToken,
+      'q3',
+      { optionIds: ['q3-a', 'q3-b', 'q3-d'] },
+    )).toThrow(RoomStoreError);
   });
 
   it('marks host disconnects, blocks host actions, and allows continuing after reconnect', () => {

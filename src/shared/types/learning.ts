@@ -1,7 +1,9 @@
 import type { LiveQuestionType } from './realtime';
 
+export type QuizQuestionType = Exclude<LiveQuestionType, 'multiple_select'>;
+
 export type QuizQuestion = {
-  tipo?: LiveQuestionType;
+  tipo?: QuizQuestionType;
   tema: string;
   pergunta: string;
   opcoes: string[];

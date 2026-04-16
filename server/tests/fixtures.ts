@@ -25,4 +25,18 @@ export const liveQuestionsFixture: LiveQuestion[] = [
     correctOptionId: 'q2-a',
     explanation: 'O servidor bloqueia submissões duplicadas.',
   },
+  {
+    id: 'q3',
+    type: 'multiple_select',
+    topic: 'Direitos',
+    text: 'Quais itens são direitos do jovem aprendiz?',
+    options: [
+      { id: 'q3-a', text: 'Carteira assinada' },
+      { id: 'q3-b', text: '13º salário' },
+      { id: 'q3-c', text: 'Trabalho voluntário obrigatório' },
+      { id: 'q3-d', text: 'Férias' },
+    ],
+    correctOptionIds: ['q3-a', 'q3-b', 'q3-d'],
+    explanation: 'O contrato de aprendizagem garante registro, 13º salário e férias.',
+  },
 ];

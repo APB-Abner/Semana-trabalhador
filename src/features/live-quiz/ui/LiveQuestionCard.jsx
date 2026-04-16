@@ -3,9 +3,37 @@ import Badge from '../../../shared/ui/Badge.jsx';
 import FeedbackNotice from '../../../shared/ui/FeedbackNotice.jsx';
 import ProgressBar from '../../../shared/ui/ProgressBar.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
+import MultipleChoiceQuestionView from './question-renderers/MultipleChoiceQuestionView.jsx';
+import MultipleSelectQuestionView from './question-renderers/MultipleSelectQuestionView.jsx';
+import TrueFalseQuestionView from './question-renderers/TrueFalseQuestionView.jsx';
 
 function getClockOffset(serverNow) {
   return Number.isFinite(serverNow) ? serverNow - Date.now() : 0;
+}
+
+function getCorrectOptionIds(question) {
+  return question?.correctOptionIds ?? (question?.correctOptionId ? [question.correctOptionId] : []);
+}
+
+function sameOptionSet(left = [], right = []) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const rightSet = new Set(right);
+  return left.every((optionId) => rightSet.has(optionId));
+}
+
+function getQuestionRenderer(type) {
+  if (type === 'multiple_select') {
+    return MultipleSelectQuestionView;
+  }
+
+  if (type === 'true_false') {
+    return TrueFalseQuestionView;
+  }
+
+  return MultipleChoiceQuestionView;
 }
 
 export default function LiveQuestionCard({
@@ -15,7 +43,7 @@ export default function LiveQuestionCard({
   disabled = false,
   hasSubmitted = false,
   onSubmit,
-  selectedOptionId,
+  selectedOptionIds = [],
   serverNow,
   showAnswer = false,
 }) {
@@ -39,18 +67,26 @@ export default function LiveQuestionCard({
     () => (startedAt && closesAt ? Math.max(1, closesAt - startedAt) : 1),
     [closesAt, startedAt],
   );
-  const selectedIsCorrect = selectedOptionId && question?.correctOptionId
-    ? selectedOptionId === question.correctOptionId
-    : false;
 
   if (!question) {
     return null;
   }
 
+  const correctOptionIds = getCorrectOptionIds(question);
+  const selectedIsCorrect = showAnswer && sameOptionSet(selectedOptionIds, correctOptionIds);
+  const QuestionRenderer = getQuestionRenderer(question.type);
+  const correctOptionTexts = question.options
+    .filter((option) => correctOptionIds.includes(option.id))
+    .map((option) => option.text)
+    .join(', ');
+
   return (
     <ResultPanel>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Badge tone="blue">{question.topic}</Badge>
+        <div className="flex flex-wrap gap-2">
+          <Badge tone="blue">{question.topic}</Badge>
+          {question.type === 'multiple_select' && <Badge tone="purple">Múltipla seleção</Badge>}
+        </div>
         {closesAt && (
           <Badge tone={remainingMs <= 5_000 ? 'red' : 'gray'}>
             {Math.ceil(remainingMs / 1000)}s
@@ -71,35 +107,15 @@ export default function LiveQuestionCard({
         {question.text}
       </h3>
 
-      <div className="mt-5 grid gap-3">
-        {question.options.map((option) => {
-          const selected = selectedOptionId === option.id;
-          const correct = showAnswer && question.correctOptionId === option.id;
-          const wrongSelection = showAnswer && selected && !correct;
-          let optionClass = 'border-gray-200 bg-white hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800';
-
-          if (correct) {
-            optionClass = 'border-green-400 bg-green-50 text-green-900 dark:border-green-600 dark:bg-green-950 dark:text-green-100';
-          } else if (wrongSelection) {
-            optionClass = 'border-red-400 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950 dark:text-red-100';
-          } else if (selected) {
-            optionClass = 'border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950';
-          }
-
-          return (
-            <button
-              key={option.id}
-              type="button"
-              disabled={disabled || hasSubmitted || showAnswer}
-              onClick={() => onSubmit?.(option.id)}
-              aria-pressed={selected}
-              className={`rounded-lg border px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default dark:focus:ring-offset-zinc-900 ${optionClass}`}
-            >
-              {option.text}
-            </button>
-          );
-        })}
-      </div>
+      <QuestionRenderer
+        correctOptionIds={correctOptionIds}
+        disabled={disabled}
+        hasSubmitted={hasSubmitted}
+        onSubmit={onSubmit}
+        question={question}
+        selectedOptionIds={selectedOptionIds}
+        showAnswer={showAnswer}
+      />
 
       {hasSubmitted && !showAnswer && (
         <FeedbackNotice tone="info" className="mt-4 text-sm">
@@ -110,7 +126,7 @@ export default function LiveQuestionCard({
       {showAnswer && (
         <FeedbackNotice tone={selectedIsCorrect ? 'success' : 'info'} className="mt-4 text-sm">
           <p className="font-semibold">
-            Resposta correta: {question.options.find((option) => option.id === question.correctOptionId)?.text}
+            {question.type === 'multiple_select' ? 'Respostas corretas' : 'Resposta correta'}: {correctOptionTexts}
           </p>
           {question.explanation && <p className="mt-1">{question.explanation}</p>}
         </FeedbackNotice>

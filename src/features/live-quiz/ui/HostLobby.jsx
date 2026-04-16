@@ -2,10 +2,10 @@ import Badge from '../../../shared/ui/Badge.jsx';
 import CtaButtonRow from '../../../shared/ui/CtaButtonRow.jsx';
 import FeedbackNotice from '../../../shared/ui/FeedbackNotice.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
-import LeaderboardPanel from './LeaderboardPanel.jsx';
 import LiveQuestionCard from './LiveQuestionCard.jsx';
 import PresenceList from './PresenceList.jsx';
 import WaitingScreen from './WaitingScreen.jsx';
+import CompetitiveResultView from './result-renderers/CompetitiveResultView.jsx';
 
 const statusLabels = {
   lobby: 'Lobby',
@@ -78,7 +78,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
               disabled
               showAnswer
             />
-            <LeaderboardPanel entries={state.leaderboard} title="Leaderboard da rodada" />
+            <CompetitiveResultView entries={state.leaderboard} title="Leaderboard da rodada" />
             <CtaButtonRow
               className="justify-start"
               actions={[{
@@ -91,7 +91,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
         )}
 
         {state.status === 'finished' && (
-          <LeaderboardPanel entries={state.finalRanking} title="Ranking final" />
+          <CompetitiveResultView entries={state.finalRanking} title="Ranking final" />
         )}
       </section>
 
