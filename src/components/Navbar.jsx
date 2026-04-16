@@ -9,6 +9,7 @@ const navigation = [
     { name: 'Mapa', href: '/mapa' },
     { name: 'Testes', href: '/testes' },
     { name: 'Game', href: '/game' },
+    { name: 'Competição', href: '/competicao' },
     { name: 'Histórias', href: '/historias' },
     { name: 'Dicas', href: '/dicas' },
 ];

@@ -10,6 +10,7 @@ Aplicação educativa em React para apresentar conteúdos, dicas e experiências
 - Tailwind CSS 4
 - Headless UI e Heroicons
 - Leaflet / React Leaflet
+- Express + Socket.IO para o modo de competição ao vivo
 - Howler e canvas-confetti
 - TypeScript incremental para lógica e dados
 - Vitest para testes unitários
@@ -28,12 +29,26 @@ URL local padrão:
 http://127.0.0.1:5173/
 ```
 
+Para o modo de competição ao vivo, rode também o backend em outro terminal:
+
+```bash
+npm run dev:server
+```
+
+Backend local padrão:
+
+```txt
+http://localhost:4000/
+```
+
 ## Scripts
 
 ```bash
 npm run dev        # servidor Vite
+npm run dev:server # servidor Express + Socket.IO
 npm run build      # build de produção
 npm run preview    # preview do build
+npm run start:server # inicia o backend sem watch
 npm run lint       # ESLint
 npm run typecheck  # TypeScript sem emitir arquivos
 npm run test:unit  # testes unitários com Vitest
@@ -52,6 +67,10 @@ src/
   features/     # lógica por funcionalidade
   pages/        # telas roteadas
   shared/       # tipos e componentes UI reutilizáveis
+
+server/
+  src/          # Express, Socket.IO e domínio das salas ao vivo
+  tests/        # testes unitários e de fluxo socket
 ```
 
 ## Arquitetura atual
@@ -71,9 +90,29 @@ src/
 - Teste vocacional com ranking top 3, percentuais, histórico local e próximos passos.
 - Quiz com feedback por resposta, explicação, revisão final e resumo salvo localmente.
 - Jogo da memória com níveis de dificuldade, prévia inicial, recordes locais e resultado próprio.
+- Competição ao vivo com sala por PIN, lobby em tempo real, host, jogadores, leaderboard e ranking final.
 - Mapa de unidades com filtros por estado e cidade.
 - Tema claro/escuro persistido no navegador.
 - Telemetria local em desenvolvimento via `window.__stwDebugStats`.
+
+## Competição Ao Vivo
+
+O modo ao vivo usa `Node + Express + Socket.IO` com estado em memória. Reiniciar o backend apaga as salas abertas.
+
+Rotas principais:
+
+- `/competicao`: entrada do modo ao vivo.
+- `/competicao/host`: cria uma sala e gera PIN.
+- `/competicao/host/:pin`: painel do host.
+- `/competicao/entrar`: formulário de jogador.
+- `/competicao/sala/:pin`: sala do jogador.
+
+Variáveis opcionais:
+
+- `PORT`: porta do backend, padrão `4000`.
+- `CLIENT_ORIGIN`: origem permitida no CORS, padrão `http://localhost:5173`.
+- `LIVE_QUIZ_ROUND_MS`: duração da rodada em milissegundos, padrão `20000`.
+- `VITE_SOCKET_URL`: URL do Socket.IO no frontend, padrão `http://localhost:4000`.
 
 ## Persistência Local
 

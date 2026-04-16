@@ -9,6 +9,10 @@ const Testes = lazy(() => import('../../pages/Testes.jsx'));
 const Mapa = lazy(() => import('../../pages/Mapa.jsx'));
 const Game = lazy(() => import('../../pages/Game.jsx'));
 const Dicas = lazy(() => import('../../pages/Dicas.jsx'));
+const Competicao = lazy(() => import('../../pages/Competicao.jsx'));
+const CompeticaoHost = lazy(() => import('../../pages/CompeticaoHost.jsx'));
+const CompeticaoEntrar = lazy(() => import('../../pages/CompeticaoEntrar.jsx'));
+const CompeticaoSala = lazy(() => import('../../pages/CompeticaoSala.jsx'));
 
 function lazyRoute(routeComponent) {
   return (
@@ -29,6 +33,11 @@ export const routes = [
       { path: 'historias', element: <Historias /> },
       { path: 'game', element: lazyRoute(Game) },
       { path: 'dicas', element: lazyRoute(Dicas) },
+      { path: 'competicao', element: lazyRoute(Competicao) },
+      { path: 'competicao/host', element: lazyRoute(CompeticaoHost) },
+      { path: 'competicao/host/:pin', element: lazyRoute(CompeticaoHost) },
+      { path: 'competicao/entrar', element: lazyRoute(CompeticaoEntrar) },
+      { path: 'competicao/sala/:pin', element: lazyRoute(CompeticaoSala) },
       { path: '*', element: <Page404 /> },
     ],
   },

@@ -67,6 +67,14 @@ test('direct URLs and reload keep route rendering', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Teste Vocacional Interativo/ })).toBeVisible();
 });
 
+test('competition route renders without requiring the live backend', async ({ page }) => {
+  await page.goto('/competicao');
+
+  await expect(page.getByRole('heading', { name: 'Competição Jovem Trabalhador' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Criar sala como host' })).toHaveAttribute('href', '/competicao/host');
+  await expect(page.getByRole('link', { name: 'Entrar com PIN' })).toHaveAttribute('href', '/competicao/entrar');
+});
+
 test('theme preference persists after reload', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Alternar modo escuro' }).click();
