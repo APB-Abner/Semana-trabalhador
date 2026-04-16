@@ -22,7 +22,7 @@ const experiences = [
     },
     {
         title: 'Teste vocacional',
-        text: 'Descubra áreas que combinam com seu perfil e receba próximos passos.',
+        text: 'Descubra áreas que combinam com você e receba próximos passos.',
         image: '/Teste.jpg',
         href: '/testes',
         cta: 'Fazer teste',
@@ -39,7 +39,7 @@ const experiences = [
 export default function Home() {
     return (
         <div className="bg-slate-50 text-gray-950 dark:bg-zinc-950 dark:text-white">
-            <section className="section relative isolate flex min-h-[calc(100svh-4rem)] items-end overflow-hidden">
+            <section className="section relative isolate flex min-h-[calc(88svh-4rem)] items-end overflow-hidden">
                 <img
                     src="/Contexto.jpg"
                     alt="Jovens em ambiente profissional"
@@ -67,14 +67,14 @@ export default function Home() {
             </section>
 
             <PageShell className="space-y-16">
-                <section className="section">
-                    <div className="mb-6 max-w-3xl">
+                <section className="section grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+                    <div className="max-w-xl lg:sticky lg:top-28">
                         <Badge tone="blue">Linha do tempo</Badge>
                         <h2 className="font-display mt-3 text-3xl font-extrabold text-gray-950 dark:text-white">
                             Direitos e oportunidades não surgiram por acaso.
                         </h2>
-                        <p className="mt-3 text-gray-600 dark:text-gray-300">
-                            Acompanhe a evolução dos marcos que explicam o trabalho formal, a aprendizagem profissional e a proteção ao jovem.
+                        <p className="mt-3 leading-7 text-gray-600 dark:text-gray-300">
+                            A evolução do trabalho formal ajuda a entender por que aprendizagem, proteção e formação profissional importam hoje.
                         </p>
                     </div>
                     <LinhaDoTempo />
@@ -101,7 +101,7 @@ export default function Home() {
                             <Link
                                 key={experience.href}
                                 to={experience.href}
-                                className="group grid overflow-hidden rounded border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-800 sm:grid-cols-[11rem_1fr]"
+                                className="group grid overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-800 sm:grid-cols-[11rem_1fr]"
                             >
                                 <img
                                     src={experience.image}

@@ -1,8 +1,8 @@
 export const timelineEvents = [
-  { ano: '1943', descricao: 'Criação da CLT – Consolidação das Leis do Trabalho no Brasil.' },
-  { ano: '1988', descricao: 'Nova Constituição garante direitos ampliados aos trabalhadores.' },
-  { ano: '1990s', descricao: 'Programas de estágio e jovem aprendiz ganham força.' },
-  { ano: '2000', descricao: 'Lei da Aprendizagem é criada (Lei 10.097).' },
-  { ano: '2014', descricao: 'Reformas no ensino médio fortalecem o ensino técnico.' },
-  { ano: '2023', descricao: 'Debates sobre o futuro do trabalho e inclusão digital.' },
+  { ano: '1943', descricao: 'Criação da CLT, consolidando regras trabalhistas em uma base nacional.' },
+  { ano: '1988', descricao: 'A Constituição amplia direitos sociais e reforça a proteção ao trabalhador.' },
+  { ano: 'Anos 1990', descricao: 'Programas de estágio e aprendizagem ganham força como entrada para o mercado.' },
+  { ano: '2000', descricao: 'A Lei da Aprendizagem regulamenta a contratação de jovens aprendizes.' },
+  { ano: '2014', descricao: 'A formação técnica ganha mais espaço nas discussões sobre educação e trabalho.' },
+  { ano: '2023', descricao: 'Inclusão digital e novas competências entram no centro do debate profissional.' },
 ];
