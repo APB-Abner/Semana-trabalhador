@@ -6,7 +6,12 @@ export default function PollResultView({ result }) {
   return (
     <ResultPanel>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-semibold text-gray-900 dark:text-white">Resultado da enquete</h3>
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">Resultado da enquete</h3>
+          <p className="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+            Distribuição de votos da rodada atual.
+          </p>
+        </div>
         <Badge tone="purple">{result.totalResponses} resposta(s)</Badge>
       </div>
 

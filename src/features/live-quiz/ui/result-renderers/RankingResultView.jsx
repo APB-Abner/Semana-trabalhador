@@ -5,7 +5,12 @@ export default function RankingResultView({ result }) {
   return (
     <ResultPanel>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-semibold text-gray-900 dark:text-white">Ranking coletivo</h3>
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">Ranking coletivo</h3>
+          <p className="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+            Ordenação agregada por contagem Borda simples.
+          </p>
+        </div>
         <Badge tone="purple">{result.totalResponses} resposta(s)</Badge>
       </div>
 

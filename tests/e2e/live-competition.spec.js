@@ -92,7 +92,7 @@ test('live competition supports competitive and participatory UI flows', async (
   await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
 
   await nextRound(host);
-  await expect(ana.getByText('Verdadeiro')).toBeVisible();
+  await expect(ana.getByRole('button', { name: /Verdadeiro/ })).toBeVisible();
   await ana.getByRole('button', { name: /Verdadeiro/ }).click();
   await bia.getByRole('button', { name: /Verdadeiro/ }).click();
   await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
@@ -147,6 +147,16 @@ test('live competition supports competitive and participatory UI flows', async (
   await bia.getByRole('button', { name: 'Confirmar ranking' }).click();
   await expect(host.getByText('Ranking coletivo')).toBeVisible();
   await expect(ana.getByText('Ambiente de trabalho').first()).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Pergunta aberta').first()).toBeVisible();
+  await ana.getByLabel('Resposta aberta curta').fill('  atualizar   meu currículo ');
+  await ana.getByRole('button', { name: 'Enviar ideia' }).click();
+  await expect(ana.getByRole('button', { name: 'Enviar ideia' })).toBeDisabled();
+  await bia.getByLabel('Resposta aberta curta').fill('Atualizar meu currículo');
+  await bia.getByRole('button', { name: 'Enviar ideia' }).click();
+  await expect(host.getByRole('heading', { name: 'Respostas abertas' })).toBeVisible();
+  await expect(ana.locator('p').filter({ hasText: 'Atualizar meu currículo' })).toBeVisible();
 
   await context.close();
 });

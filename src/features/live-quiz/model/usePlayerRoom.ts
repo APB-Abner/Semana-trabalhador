@@ -133,7 +133,7 @@ export default function usePlayerRoom(pin?: string) {
       pin,
       playerToken,
       questionId: currentQuestion.id,
-      ...(currentQuestion.type === 'word_cloud'
+      ...(currentQuestion.type === 'word_cloud' || currentQuestion.type === 'qna'
         ? { text }
         : currentQuestion.type === 'scale'
           ? { value }

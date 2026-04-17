@@ -5,7 +5,8 @@ export type LiveQuestionType =
   | 'poll'
   | 'word_cloud'
   | 'scale'
-  | 'ranking';
+  | 'ranking'
+  | 'qna';
 
 export type LiveQuestionOption = {
   id: string;
@@ -68,6 +69,12 @@ export type WordCloudAggregatedEntry = {
   count: number;
 };
 
+export type QnaAggregatedEntry = {
+  text: string;
+  normalizedText: string;
+  count: number;
+};
+
 export type ScaleDistributionEntry = {
   value: number;
   count: number;
@@ -92,6 +99,11 @@ export type AggregatedResult =
       type: 'word_cloud';
       totalResponses: number;
       entries: WordCloudAggregatedEntry[];
+    }
+  | {
+      type: 'qna';
+      totalResponses: number;
+      entries: QnaAggregatedEntry[];
     }
   | {
       type: 'scale';

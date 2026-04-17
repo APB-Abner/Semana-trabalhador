@@ -6,7 +6,12 @@ export default function ScaleResultView({ result }) {
   return (
     <ResultPanel>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="font-semibold text-gray-900 dark:text-white">Resultado da escala</h3>
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-white">Resultado da escala</h3>
+          <p className="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+            Média e distribuição dos valores enviados.
+          </p>
+        </div>
         <Badge tone="purple">{result.totalResponses} resposta(s)</Badge>
       </div>
 

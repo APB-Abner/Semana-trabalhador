@@ -182,6 +182,7 @@ describe('socket live quiz question types', () => {
         liveQuestionsFixture[4],
         liveQuestionsFixture[5],
         liveQuestionsFixture[6],
+        liveQuestionsFixture[7],
       ],
       roundMs: 5_000,
     });
@@ -426,5 +427,39 @@ describe('socket live quiz question types', () => {
     expect(rankingRevealed.aggregatedResult?.type).toBe('ranking');
     if (rankingRevealed.aggregatedResult?.type !== 'ranking') return;
     expect(rankingRevealed.aggregatedResult.items[0].totalPoints).toBe(5);
+
+    const qnaOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
+    const qnaNextAck = await emitAck<BasicAck>(host, 'round:next', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    expect(qnaNextAck.ok).toBe(true);
+
+    const qnaRound = await qnaOpenedPromise;
+    expect(qnaRound.currentQuestion?.type).toBe('qna');
+
+    const qnaRevealedPromise = once<RoomState>(host, 'round:revealed');
+    await emitAck<BasicAck>(anaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: ana.playerToken,
+      questionId: qnaRound.currentQuestion?.id,
+      text: '  Atualizar   meu currículo ',
+    });
+    await emitAck<BasicAck>(biaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: bia.playerToken,
+      questionId: qnaRound.currentQuestion?.id,
+      text: 'atualizar meu currículo',
+    });
+
+    const qnaRevealed = await qnaRevealedPromise;
+    expect(qnaRevealed.leaderboard).toEqual([]);
+    expect(qnaRevealed.aggregatedResult?.type).toBe('qna');
+    if (qnaRevealed.aggregatedResult?.type !== 'qna') return;
+    expect(qnaRevealed.aggregatedResult.entries[0]).toMatchObject({
+      text: 'Atualizar meu currículo',
+      normalizedText: 'atualizar meu currículo',
+      count: 2,
+    });
   });
 });

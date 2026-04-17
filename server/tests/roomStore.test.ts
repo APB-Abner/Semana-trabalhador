@@ -353,6 +353,39 @@ describe('roomStore', () => {
     });
   });
 
+  it('aggregates qna rounds without changing scores or leaderboard', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[7]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+    const caio = store.joinPlayer(room.pin, 'Caio');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q8', { text: '  Atualizar   meu currículo ' });
+    currentTime += 500;
+    store.submitAnswer(room.pin, bia.playerToken, 'q8', { text: 'atualizar meu currículo' });
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, caio.playerToken, 'q8', { text: 'Pedir feedback' });
+
+    expect(revealed.status).toBe('revealed');
+    expect(revealed.leaderboard).toEqual([]);
+    expect(revealed.players.every((player) => player.score === 0)).toBe(true);
+    expect(revealed.aggregatedResult?.type).toBe('qna');
+    if (revealed.aggregatedResult?.type !== 'qna') return;
+    expect(revealed.aggregatedResult.totalResponses).toBe(3);
+    expect(revealed.aggregatedResult.entries[0]).toMatchObject({
+      text: 'Atualizar meu currículo',
+      normalizedText: 'atualizar meu currículo',
+      count: 2,
+    });
+  });
+
   it('keeps final ranking based on competitive scores when participatory rounds follow', () => {
     store.clearAllRooms();
     store = createRoomStore({

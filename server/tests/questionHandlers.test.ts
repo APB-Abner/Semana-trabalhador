@@ -73,6 +73,13 @@ describe('live question handlers', () => {
     })).toThrow(/duplicados/);
   });
 
+  it('rejects invalid qna configuration', () => {
+    expect(() => validateLiveQuestion({
+      ...liveQuestionsFixture[7],
+      options: [{ id: 'q8-a', text: 'Opção indevida' }],
+    })).toThrow(/opções de resposta/);
+  });
+
   it('normalizes legacy optionId payloads for single-answer questions', () => {
     const normalized = normalizeLiveAnswer(liveQuestionsFixture[0], { optionId: 'q1-a' });
 
@@ -157,6 +164,37 @@ describe('live question handlers', () => {
     });
     expect(result.entries[1]).toMatchObject({
       text: 'Pontualidade',
+      count: 1,
+    });
+    expect(() => normalizeLiveAnswer(question, { text: '   ' })).toThrow(/palavra ou expressão curta/);
+  });
+
+  it('normalizes and aggregates qna answers as grouped open text', () => {
+    const question = liveQuestionsFixture[7];
+    const firstAnswer = normalizeLiveAnswer(question, { text: '  Atualizar   meu currículo ' });
+    const secondAnswer = normalizeLiveAnswer(question, { text: 'atualizar meu currículo' });
+    const thirdAnswer = normalizeLiveAnswer(question, { text: 'Pedir feedback' });
+
+    expect(firstAnswer.normalizedText).toBe('atualizar meu currículo');
+    expect(firstAnswer.displayText).toBe('Atualizar meu currículo');
+
+    const result = createAggregatedResult(question, [
+      { ...firstAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+      { ...secondAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+      { ...thirdAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+    ]);
+
+    expect(result?.type).toBe('qna');
+    if (result?.type !== 'qna') return;
+
+    expect(result.totalResponses).toBe(3);
+    expect(result.entries[0]).toMatchObject({
+      text: 'Atualizar meu currículo',
+      normalizedText: 'atualizar meu currículo',
+      count: 2,
+    });
+    expect(result.entries[1]).toMatchObject({
+      text: 'Pedir feedback',
       count: 1,
     });
     expect(() => normalizeLiveAnswer(question, { text: '   ' })).toThrow(/resposta curta/);

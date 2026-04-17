@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adaptQuizQuestion, adaptQuizQuestions, getLiveQuestions } from '../src/domain/questions.ts';
+import { adaptQuizQuestion, adaptQuizQuestions, getLiveOnlyQuestions, getLiveQuestions } from '../src/domain/questions.ts';
 import type { QuizQuestion } from '../../src/shared/types/learning.ts';
 
 const baseQuestion: QuizQuestion = {
@@ -71,6 +71,7 @@ describe('live quiz question adapter', () => {
     const wordCloudQuestion = liveQuestions.find((question) => question.type === 'word_cloud');
     const scaleQuestion = liveQuestions.find((question) => question.type === 'scale');
     const rankingQuestion = liveQuestions.find((question) => question.type === 'ranking');
+    const qnaQuestion = liveQuestions.find((question) => question.type === 'qna');
 
     expect(pollQuestion).toBeTruthy();
     expect(pollQuestion?.correctOptionId).toBeUndefined();
@@ -81,5 +82,23 @@ describe('live quiz question adapter', () => {
     expect(scaleQuestion?.scale).toMatchObject({ min: 1, max: 5, step: 1 });
     expect(rankingQuestion).toBeTruthy();
     expect(rankingQuestion?.options.length).toBeGreaterThanOrEqual(2);
+    expect(qnaQuestion).toBeTruthy();
+    expect(qnaQuestion?.options).toEqual([]);
+  });
+
+  it('provides a broader live-only question bank by type', () => {
+    const questions = getLiveOnlyQuestions();
+    const countByType = questions.reduce<Record<string, number>>((counts, question) => ({
+      ...counts,
+      [question.type]: (counts[question.type] ?? 0) + 1,
+    }), {});
+
+    expect(countByType.multiple_select).toBeGreaterThanOrEqual(4);
+    expect(countByType.true_false).toBeGreaterThanOrEqual(2);
+    expect(countByType.poll).toBeGreaterThanOrEqual(4);
+    expect(countByType.word_cloud).toBeGreaterThanOrEqual(4);
+    expect(countByType.scale).toBeGreaterThanOrEqual(4);
+    expect(countByType.ranking).toBeGreaterThanOrEqual(4);
+    expect(countByType.qna).toBeGreaterThanOrEqual(4);
   });
 });

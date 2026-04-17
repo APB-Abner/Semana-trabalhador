@@ -1,4 +1,5 @@
 import PollResultView from './PollResultView.jsx';
+import QnaResultView from './QnaResultView.jsx';
 import RankingResultView from './RankingResultView.jsx';
 import ScaleResultView from './ScaleResultView.jsx';
 import WordCloudResultView from './WordCloudResultView.jsx';
@@ -14,6 +15,10 @@ export default function ParticipatoryResultView({ result }) {
 
   if (result.type === 'word_cloud') {
     return <WordCloudResultView result={result} />;
+  }
+
+  if (result.type === 'qna') {
+    return <QnaResultView result={result} />;
   }
 
   if (result.type === 'scale') {

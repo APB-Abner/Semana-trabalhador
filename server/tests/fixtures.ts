@@ -86,4 +86,12 @@ export const liveQuestionsFixture: LiveQuestion[] = [
     ],
     explanation: 'A agregação usa contagem Borda simples.',
   },
+  {
+    id: 'q8',
+    type: 'qna',
+    topic: 'Reflexão',
+    text: 'Qual primeiro passo você pode dar esta semana?',
+    options: [],
+    explanation: 'As respostas abertas ajudam a transformar intenção em ação.',
+  },
 ];
