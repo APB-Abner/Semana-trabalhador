@@ -69,11 +69,17 @@ describe('live quiz question adapter', () => {
     const liveQuestions = getLiveQuestions();
     const pollQuestion = liveQuestions.find((question) => question.type === 'poll');
     const wordCloudQuestion = liveQuestions.find((question) => question.type === 'word_cloud');
+    const scaleQuestion = liveQuestions.find((question) => question.type === 'scale');
+    const rankingQuestion = liveQuestions.find((question) => question.type === 'ranking');
 
     expect(pollQuestion).toBeTruthy();
     expect(pollQuestion?.correctOptionId).toBeUndefined();
     expect(pollQuestion?.options.length).toBeGreaterThanOrEqual(2);
     expect(wordCloudQuestion).toBeTruthy();
     expect(wordCloudQuestion?.options).toEqual([]);
+    expect(scaleQuestion).toBeTruthy();
+    expect(scaleQuestion?.scale).toMatchObject({ min: 1, max: 5, step: 1 });
+    expect(rankingQuestion).toBeTruthy();
+    expect(rankingQuestion?.options.length).toBeGreaterThanOrEqual(2);
   });
 });

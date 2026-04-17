@@ -6,6 +6,8 @@ import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 import MultipleChoiceQuestionView from './question-renderers/MultipleChoiceQuestionView.jsx';
 import MultipleSelectQuestionView from './question-renderers/MultipleSelectQuestionView.jsx';
 import PollQuestionView from './question-renderers/PollQuestionView.jsx';
+import RankingQuestionView from './question-renderers/RankingQuestionView.jsx';
+import ScaleQuestionView from './question-renderers/ScaleQuestionView.jsx';
 import TrueFalseQuestionView from './question-renderers/TrueFalseQuestionView.jsx';
 import WordCloudQuestionView from './question-renderers/WordCloudQuestionView.jsx';
 
@@ -39,6 +41,14 @@ function getQuestionRenderer(type) {
     return WordCloudQuestionView;
   }
 
+  if (type === 'scale') {
+    return ScaleQuestionView;
+  }
+
+  if (type === 'ranking') {
+    return RankingQuestionView;
+  }
+
   if (type === 'true_false') {
     return TrueFalseQuestionView;
   }
@@ -55,6 +65,7 @@ export default function LiveQuestionCard({
   onSubmit,
   selectedOptionIds = [],
   selectedText = '',
+  selectedValue,
   serverNow,
   showAnswer = false,
 }) {
@@ -100,6 +111,8 @@ export default function LiveQuestionCard({
           {question.type === 'multiple_select' && <Badge tone="purple">Múltipla seleção</Badge>}
           {question.type === 'poll' && <Badge tone="purple">Enquete</Badge>}
           {question.type === 'word_cloud' && <Badge tone="purple">Nuvem de palavras</Badge>}
+          {question.type === 'scale' && <Badge tone="purple">Escala</Badge>}
+          {question.type === 'ranking' && <Badge tone="purple">Ranking</Badge>}
         </div>
         {closesAt && (
           <Badge tone={remainingMs <= 5_000 ? 'red' : 'gray'}>
@@ -129,6 +142,7 @@ export default function LiveQuestionCard({
         question={question}
         selectedOptionIds={selectedOptionIds}
         selectedText={selectedText}
+        selectedValue={selectedValue}
         showAnswer={showAnswer}
       />
 

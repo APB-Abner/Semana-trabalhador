@@ -59,4 +59,31 @@ export const liveQuestionsFixture: LiveQuestion[] = [
     options: [],
     explanation: 'As respostas parecidas são agrupadas.',
   },
+  {
+    id: 'q6',
+    type: 'scale',
+    topic: 'Confiança',
+    text: 'De 1 a 5, quão confiante você está?',
+    options: [],
+    scale: {
+      min: 1,
+      max: 5,
+      step: 1,
+      minLabel: 'Pouco confiante',
+      maxLabel: 'Muito confiante',
+    },
+    explanation: 'A escala mostra a média do grupo.',
+  },
+  {
+    id: 'q7',
+    type: 'ranking',
+    topic: 'Prioridades',
+    text: 'Ordene suas prioridades.',
+    options: [
+      { id: 'q7-a', text: 'Aprendizado' },
+      { id: 'q7-b', text: 'Ambiente' },
+      { id: 'q7-c', text: 'Salário' },
+    ],
+    explanation: 'A agregação usa contagem Borda simples.',
+  },
 ];

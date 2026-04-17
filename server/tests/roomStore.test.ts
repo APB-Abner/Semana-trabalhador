@@ -295,6 +295,64 @@ describe('roomStore', () => {
     });
   });
 
+  it('aggregates scale rounds without changing scores or leaderboard', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[5]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q6', { value: 2 });
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, bia.playerToken, 'q6', { value: 4 });
+
+    expect(revealed.status).toBe('revealed');
+    expect(revealed.leaderboard).toEqual([]);
+    expect(revealed.players.every((player) => player.score === 0)).toBe(true);
+    expect(revealed.aggregatedResult?.type).toBe('scale');
+    if (revealed.aggregatedResult?.type !== 'scale') return;
+    expect(revealed.aggregatedResult.average).toBe(3);
+    expect(revealed.aggregatedResult.distribution.find((entry) => entry.value === 2)).toMatchObject({
+      count: 1,
+      percentage: 50,
+    });
+  });
+
+  it('aggregates ranking rounds with Borda count without changing scores', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[6]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q7', { optionIds: ['q7-a', 'q7-b', 'q7-c'] });
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, bia.playerToken, 'q7', { optionIds: ['q7-b', 'q7-a', 'q7-c'] });
+
+    expect(revealed.status).toBe('revealed');
+    expect(revealed.leaderboard).toEqual([]);
+    expect(revealed.players.every((player) => player.score === 0)).toBe(true);
+    expect(revealed.aggregatedResult?.type).toBe('ranking');
+    if (revealed.aggregatedResult?.type !== 'ranking') return;
+    expect(revealed.aggregatedResult.items[0]).toMatchObject({
+      optionId: 'q7-a',
+      totalPoints: 5,
+      averagePosition: 1.5,
+    });
+  });
+
   it('keeps final ranking based on competitive scores when participatory rounds follow', () => {
     store.clearAllRooms();
     store = createRoomStore({

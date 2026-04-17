@@ -24,5 +24,6 @@
     }
   },
   "include": ["src", "tests", "vite.config.js", "playwright.config.js"],
+  "exclude": ["tests/Dvj0MwMw.js"],
   "references": []
 }

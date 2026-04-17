@@ -13,6 +13,7 @@ export type NormalizedLiveAnswer = {
   text?: string;
   normalizedText?: string;
   displayText?: string;
+  value?: number;
 };
 
 export type QuestionHandler = {

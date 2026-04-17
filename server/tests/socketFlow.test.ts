@@ -180,6 +180,8 @@ describe('socket live quiz question types', () => {
         liveQuestionsFixture[2],
         liveQuestionsFixture[3],
         liveQuestionsFixture[4],
+        liveQuestionsFixture[5],
+        liveQuestionsFixture[6],
       ],
       roundMs: 5_000,
     });
@@ -364,5 +366,65 @@ describe('socket live quiz question types', () => {
       normalizedText: 'trabalho em equipe',
       count: 2,
     });
+
+    const scaleOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
+    const scaleNextAck = await emitAck<BasicAck>(host, 'round:next', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    expect(scaleNextAck.ok).toBe(true);
+
+    const scaleRound = await scaleOpenedPromise;
+    expect(scaleRound.currentQuestion?.type).toBe('scale');
+
+    const scaleRevealedPromise = once<RoomState>(host, 'round:revealed');
+    await emitAck<BasicAck>(anaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: ana.playerToken,
+      questionId: scaleRound.currentQuestion?.id,
+      value: 2,
+    });
+    await emitAck<BasicAck>(biaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: bia.playerToken,
+      questionId: scaleRound.currentQuestion?.id,
+      value: 4,
+    });
+
+    const scaleRevealed = await scaleRevealedPromise;
+    expect(scaleRevealed.leaderboard).toEqual([]);
+    expect(scaleRevealed.aggregatedResult?.type).toBe('scale');
+    if (scaleRevealed.aggregatedResult?.type !== 'scale') return;
+    expect(scaleRevealed.aggregatedResult.average).toBe(3);
+
+    const rankingOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
+    const rankingNextAck = await emitAck<BasicAck>(host, 'round:next', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    expect(rankingNextAck.ok).toBe(true);
+
+    const rankingRound = await rankingOpenedPromise;
+    expect(rankingRound.currentQuestion?.type).toBe('ranking');
+
+    const rankingRevealedPromise = once<RoomState>(host, 'round:revealed');
+    await emitAck<BasicAck>(anaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: ana.playerToken,
+      questionId: rankingRound.currentQuestion?.id,
+      optionIds: ['q7-a', 'q7-b', 'q7-c'],
+    });
+    await emitAck<BasicAck>(biaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: bia.playerToken,
+      questionId: rankingRound.currentQuestion?.id,
+      optionIds: ['q7-b', 'q7-a', 'q7-c'],
+    });
+
+    const rankingRevealed = await rankingRevealedPromise;
+    expect(rankingRevealed.leaderboard).toEqual([]);
+    expect(rankingRevealed.aggregatedResult?.type).toBe('ranking');
+    if (rankingRevealed.aggregatedResult?.type !== 'ranking') return;
+    expect(rankingRevealed.aggregatedResult.items[0].totalPoints).toBe(5);
   });
 });

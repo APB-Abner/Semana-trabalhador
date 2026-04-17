@@ -2,6 +2,8 @@ import type { LiveAnswerPayload, LiveQuestion, LiveQuestionType, PlayerAnswer } 
 import { multipleChoiceHandler } from './multipleChoice.ts';
 import { multipleSelectHandler } from './multipleSelect.ts';
 import { pollHandler } from './poll.ts';
+import { rankingHandler } from './ranking.ts';
+import { scaleHandler } from './scale.ts';
 import { trueFalseHandler } from './trueFalse.ts';
 import { wordCloudHandler } from './wordCloud.ts';
 import type { NormalizedLiveAnswer, QuestionHandler } from './types.ts';
@@ -12,6 +14,8 @@ const handlers: Record<LiveQuestionType, QuestionHandler> = {
   multiple_select: multipleSelectHandler,
   poll: pollHandler,
   word_cloud: wordCloudHandler,
+  scale: scaleHandler,
+  ranking: rankingHandler,
 };
 
 export function getQuestionHandler(type: LiveQuestionType): QuestionHandler {

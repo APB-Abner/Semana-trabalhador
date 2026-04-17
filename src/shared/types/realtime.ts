@@ -3,11 +3,21 @@ export type LiveQuestionType =
   | 'true_false'
   | 'multiple_select'
   | 'poll'
-  | 'word_cloud';
+  | 'word_cloud'
+  | 'scale'
+  | 'ranking';
 
 export type LiveQuestionOption = {
   id: string;
   text: string;
+};
+
+export type LiveScaleConfig = {
+  min: number;
+  max: number;
+  step?: number;
+  minLabel?: string;
+  maxLabel?: string;
 };
 
 export type LiveQuestion = {
@@ -18,6 +28,7 @@ export type LiveQuestion = {
   options: LiveQuestionOption[];
   correctOptionId?: string;
   correctOptionIds?: string[];
+  scale?: LiveScaleConfig;
   explanation: string;
 };
 
@@ -57,6 +68,20 @@ export type WordCloudAggregatedEntry = {
   count: number;
 };
 
+export type ScaleDistributionEntry = {
+  value: number;
+  count: number;
+  percentage: number;
+};
+
+export type RankingAggregatedItem = {
+  optionId: string;
+  text: string;
+  totalPoints: number;
+  averagePosition: number | null;
+  firstPlaceVotes: number;
+};
+
 export type AggregatedResult =
   | {
       type: 'poll';
@@ -67,6 +92,17 @@ export type AggregatedResult =
       type: 'word_cloud';
       totalResponses: number;
       entries: WordCloudAggregatedEntry[];
+    }
+  | {
+      type: 'scale';
+      totalResponses: number;
+      average: number | null;
+      distribution: ScaleDistributionEntry[];
+    }
+  | {
+      type: 'ranking';
+      totalResponses: number;
+      items: RankingAggregatedItem[];
     };
 
 export type LiveRoomStatus = 'lobby' | 'question' | 'revealed' | 'finished';
@@ -115,6 +151,7 @@ export type LiveAnswerPayload = {
   optionId?: string;
   optionIds?: string[];
   text?: string;
+  value?: number;
 };
 
 export type AnswerSubmitPayload = LiveAnswerPayload & {

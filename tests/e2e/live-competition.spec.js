@@ -131,5 +131,22 @@ test('live competition supports competitive and participatory UI flows', async (
   await expect(host.getByText('Nuvem de palavras').first()).toBeVisible();
   await expect(ana.getByText('Trabalho em equipe')).toBeVisible();
 
+  await nextRound(host);
+  await expect(ana.getByText('Escala').first()).toBeVisible();
+  await ana.getByRole('button', { name: '4' }).click();
+  await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
+  await bia.getByRole('button', { name: '2' }).click();
+  await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
+  await expect(host.getByText('Resultado da escala')).toBeVisible();
+  await expect(ana.getByText('Média do grupo')).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Ranking').first()).toBeVisible();
+  await ana.getByRole('button', { name: /Mover Ambiente de trabalho para cima/ }).click();
+  await ana.getByRole('button', { name: 'Confirmar ranking' }).click();
+  await bia.getByRole('button', { name: 'Confirmar ranking' }).click();
+  await expect(host.getByText('Ranking coletivo')).toBeVisible();
+  await expect(ana.getByText('Ambiente de trabalho').first()).toBeVisible();
+
   await context.close();
 });

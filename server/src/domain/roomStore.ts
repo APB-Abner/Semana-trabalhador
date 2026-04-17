@@ -78,6 +78,7 @@ function toPublicQuestion(question: LiveQuestion | null, revealAnswer: boolean) 
     topic: question.topic,
     text: question.text,
     options: question.options,
+    scale: question.scale,
   };
 
   if (!revealAnswer) {
@@ -495,6 +496,7 @@ export function createRoomStore({
     let text: string | undefined;
     let normalizedText: string | undefined;
     let displayText: string | undefined;
+    let value: number | undefined;
     let isCorrect: boolean;
 
     try {
@@ -503,6 +505,7 @@ export function createRoomStore({
       text = normalizedAnswer.text;
       normalizedText = normalizedAnswer.normalizedText;
       displayText = normalizedAnswer.displayText;
+      value = normalizedAnswer.value;
       isCorrect = isCompetitiveQuestion(question)
         ? isLiveAnswerCorrect(question, normalizedAnswer)
         : false;
@@ -526,6 +529,7 @@ export function createRoomStore({
       text,
       normalizedText,
       displayText,
+      value,
       submittedAt,
       responseMs,
       isCorrect,

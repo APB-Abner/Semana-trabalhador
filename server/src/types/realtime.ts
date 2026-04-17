@@ -19,6 +19,7 @@ export type {
   LiveQuestion,
   LiveQuestionOption,
   LiveQuestionType,
+  LiveScaleConfig,
   LiveRoomStatus,
   PublicLiveQuestion,
   RoomCreateAck,
@@ -34,6 +35,7 @@ export type PlayerAnswer = {
   text?: string;
   normalizedText?: string;
   displayText?: string;
+  value?: number;
   submittedAt: number;
   responseMs: number;
   isCorrect: boolean;

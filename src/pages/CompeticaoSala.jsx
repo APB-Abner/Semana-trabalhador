@@ -35,6 +35,7 @@ export default function CompeticaoSala() {
   const submittedAnswer = currentQuestionId ? submittedAnswers[currentQuestionId] : null;
   const selectedOptionIds = submittedAnswer?.optionIds ?? [];
   const selectedText = submittedAnswer?.text ?? '';
+  const selectedValue = submittedAnswer?.value;
   const hasSubmitted = Boolean(submittedAnswer);
 
   const handleJoin = async ({ roomPin, name }) => {
@@ -104,6 +105,7 @@ export default function CompeticaoSala() {
           serverNow={state.serverNow}
           selectedOptionIds={selectedOptionIds}
           selectedText={selectedText}
+          selectedValue={selectedValue}
           hasSubmitted={hasSubmitted}
           onSubmit={submitAnswer}
         />
@@ -118,6 +120,7 @@ export default function CompeticaoSala() {
             serverNow={state.serverNow}
             selectedOptionIds={selectedOptionIds}
             selectedText={selectedText}
+            selectedValue={selectedValue}
             hasSubmitted={hasSubmitted}
             showAnswer
           />

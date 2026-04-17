@@ -10,7 +10,10 @@ import type {
 type SubmittedLiveAnswer = {
   optionIds: string[];
   text?: string;
+  value?: number;
 };
+
+type LiveAnswerInput = string | string[] | { text: string } | { value: number };
 
 const roomStateEvents = [
   'room:state',
@@ -108,7 +111,7 @@ export default function usePlayerRoom(pin?: string) {
     return response;
   }, [emitWithAck]);
 
-  const submitAnswer = useCallback(async (answer: string | string[] | { text: string }) => {
+  const submitAnswer = useCallback(async (answer: LiveAnswerInput) => {
     const currentQuestion = state?.currentQuestion;
 
     if (!pin || !currentQuestion) {
@@ -122,16 +125,19 @@ export default function usePlayerRoom(pin?: string) {
       return;
     }
 
-    const isTextAnswer = typeof answer === 'object' && !Array.isArray(answer);
-    const optionIds = isTextAnswer ? [] : (Array.isArray(answer) ? answer : [answer]);
-    const text = isTextAnswer ? answer.text : undefined;
+    const isObjectAnswer = typeof answer === 'object' && !Array.isArray(answer);
+    const optionIds = isObjectAnswer ? [] : (Array.isArray(answer) ? answer : [answer]);
+    const text = isObjectAnswer && 'text' in answer ? answer.text : undefined;
+    const value = isObjectAnswer && 'value' in answer ? answer.value : undefined;
     const payload: AnswerSubmitPayload = {
       pin,
       playerToken,
       questionId: currentQuestion.id,
       ...(currentQuestion.type === 'word_cloud'
         ? { text }
-        : currentQuestion.type === 'multiple_select'
+        : currentQuestion.type === 'scale'
+          ? { value }
+          : currentQuestion.type === 'multiple_select' || currentQuestion.type === 'ranking'
           ? { optionIds }
           : { optionId: optionIds[0] }),
     };
@@ -144,7 +150,7 @@ export default function usePlayerRoom(pin?: string) {
 
     setSubmittedAnswers((answers) => ({
       ...answers,
-      [currentQuestion.id]: { optionIds, text },
+      [currentQuestion.id]: { optionIds, text, value },
     }));
     setState(response.state);
   }, [emitWithAck, pin, state?.currentQuestion]);

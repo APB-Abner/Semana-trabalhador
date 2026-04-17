@@ -48,6 +48,31 @@ describe('live question handlers', () => {
     })).toThrow(/resposta/);
   });
 
+  it('rejects invalid scale and ranking configuration', () => {
+    expect(() => validateLiveQuestion({
+      ...liveQuestionsFixture[5],
+      options: [{ id: 'q6-a', text: 'Opcao indevida' }],
+    })).toThrow(/opcoes/);
+
+    expect(() => validateLiveQuestion({
+      ...liveQuestionsFixture[5],
+      scale: { min: 5, max: 1, step: 1 },
+    })).toThrow(/min e max/);
+
+    expect(() => validateLiveQuestion({
+      ...liveQuestionsFixture[6],
+      options: [{ id: 'q7-a', text: 'Aprendizado' }],
+    })).toThrow(/pelo menos 2/);
+
+    expect(() => validateLiveQuestion({
+      ...liveQuestionsFixture[6],
+      options: [
+        { id: 'q7-a', text: 'Aprendizado' },
+        { id: 'q7-a', text: 'Ambiente' },
+      ],
+    })).toThrow(/duplicados/);
+  });
+
   it('normalizes legacy optionId payloads for single-answer questions', () => {
     const normalized = normalizeLiveAnswer(liveQuestionsFixture[0], { optionId: 'q1-a' });
 
@@ -135,5 +160,69 @@ describe('live question handlers', () => {
       count: 1,
     });
     expect(() => normalizeLiveAnswer(question, { text: '   ' })).toThrow(/resposta curta/);
+  });
+
+  it('normalizes and aggregates scale answers by average and distribution', () => {
+    const question = liveQuestionsFixture[5];
+    const firstAnswer = normalizeLiveAnswer(question, { value: 2 });
+    const secondAnswer = normalizeLiveAnswer(question, { value: 4 });
+    const thirdAnswer = normalizeLiveAnswer(question, { value: 5 });
+
+    expect(firstAnswer.value).toBe(2);
+    expect(() => normalizeLiveAnswer(question, { value: 6 })).toThrow(/fora da escala/);
+
+    const result = createAggregatedResult(question, [
+      { ...firstAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+      { ...secondAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+      { ...thirdAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+    ]);
+
+    expect(result?.type).toBe('scale');
+    if (result?.type !== 'scale') return;
+
+    expect(result.totalResponses).toBe(3);
+    expect(result.average).toBe(3.67);
+    expect(result.distribution.find((entry) => entry.value === 4)).toMatchObject({
+      count: 1,
+      percentage: 33,
+    });
+  });
+
+  it('validates ranking as a complete permutation and aggregates with Borda count', () => {
+    const question = liveQuestionsFixture[6];
+    const firstAnswer = normalizeLiveAnswer(question, { optionIds: ['q7-a', 'q7-b', 'q7-c'] });
+    const secondAnswer = normalizeLiveAnswer(question, { optionIds: ['q7-b', 'q7-a', 'q7-c'] });
+
+    expect(() => normalizeLiveAnswer(question, { optionIds: ['q7-a', 'q7-b'] })).toThrow(/todos os itens/);
+    expect(() => normalizeLiveAnswer(question, { optionIds: ['q7-a', 'q7-a', 'q7-b'] })).toThrow(/repetir/);
+    expect(() => normalizeLiveAnswer(question, { optionIds: ['q7-a', 'q7-b', 'q7-x'] })).toThrow(/inv/);
+
+    const result = createAggregatedResult(question, [
+      { ...firstAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+      { ...secondAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+    ]);
+
+    expect(result?.type).toBe('ranking');
+    if (result?.type !== 'ranking') return;
+
+    expect(result.totalResponses).toBe(2);
+    expect(result.items[0]).toMatchObject({
+      optionId: 'q7-a',
+      totalPoints: 5,
+      averagePosition: 1.5,
+      firstPlaceVotes: 1,
+    });
+    expect(result.items[1]).toMatchObject({
+      optionId: 'q7-b',
+      totalPoints: 5,
+      averagePosition: 1.5,
+      firstPlaceVotes: 1,
+    });
+    expect(result.items[2]).toMatchObject({
+      optionId: 'q7-c',
+      totalPoints: 2,
+      averagePosition: 3,
+      firstPlaceVotes: 0,
+    });
   });
 });
