@@ -7,7 +7,14 @@ export type LiveQuestionType =
   | 'poll'
   | 'word_cloud'
   | 'scale'
-  | 'ranking';
+  | 'ranking'
+  | 'qna';
+
+export type LiveQuestionBucket = 'competitive' | 'participatory';
+
+export type LiveQuestionTone = 'objective' | 'reflective' | 'interview_like';
+
+export type LiveQuestionDifficulty = 'easy' | 'medium' | 'hard';
 
 export type LiveQuestionOption = {
   id: string;
@@ -25,7 +32,11 @@ export type LiveScaleConfig = {
 export type LiveQuestion = {
   id: string;
   type: LiveQuestionType;
+  bucket?: LiveQuestionBucket;
+  tone?: LiveQuestionTone;
   topic: string;
+  difficulty?: LiveQuestionDifficulty;
+  enabled?: boolean;
   text: string;
   options: LiveQuestionOption[];
   correctOptionId?: string;
@@ -72,6 +83,12 @@ export type WordCloudAggregatedEntry = {
   count: number;
 };
 
+export type QnaAggregatedEntry = {
+  text: string;
+  normalizedText: string;
+  count: number;
+};
+
 export type ScaleDistributionEntry = {
   value: number;
   count: number;
@@ -96,6 +113,11 @@ export type AggregatedResult =
       type: 'word_cloud';
       totalResponses: number;
       entries: WordCloudAggregatedEntry[];
+    }
+  | {
+      type: 'qna';
+      totalResponses: number;
+      entries: QnaAggregatedEntry[];
     }
   | {
       type: 'scale';

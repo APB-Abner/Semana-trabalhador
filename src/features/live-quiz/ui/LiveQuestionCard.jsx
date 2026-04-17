@@ -6,6 +6,7 @@ import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 import MultipleChoiceQuestionView from './question-renderers/MultipleChoiceQuestionView.jsx';
 import MultipleSelectQuestionView from './question-renderers/MultipleSelectQuestionView.jsx';
 import PollQuestionView from './question-renderers/PollQuestionView.jsx';
+import QnaQuestionView from './question-renderers/QnaQuestionView.jsx';
 import RankingQuestionView from './question-renderers/RankingQuestionView.jsx';
 import ScaleQuestionView from './question-renderers/ScaleQuestionView.jsx';
 import TrueFalseQuestionView from './question-renderers/TrueFalseQuestionView.jsx';
@@ -28,6 +29,25 @@ function sameOptionSet(left = [], right = []) {
   return left.every((optionId) => rightSet.has(optionId));
 }
 
+const typeLabels = {
+  multiple_choice: 'Múltipla escolha',
+  true_false: 'Verdadeiro ou falso',
+  multiple_select: 'Múltipla seleção',
+  poll: 'Enquete',
+  word_cloud: 'Nuvem de palavras',
+  scale: 'Escala',
+  ranking: 'Ranking',
+  qna: 'Pergunta aberta',
+};
+
+const submittedMessages = {
+  poll: 'Voto enviado. Aguarde o resultado coletivo.',
+  word_cloud: 'Termo enviado. Aguarde a nuvem da rodada.',
+  scale: 'Valor enviado. Aguarde a distribuição do grupo.',
+  ranking: 'Ranking enviado. Aguarde a agregação coletiva.',
+  qna: 'Ideia enviada. Aguarde a lista de respostas da rodada.',
+};
+
 function getQuestionRenderer(type) {
   if (type === 'multiple_select') {
     return MultipleSelectQuestionView;
@@ -39,6 +59,10 @@ function getQuestionRenderer(type) {
 
   if (type === 'word_cloud') {
     return WordCloudQuestionView;
+  }
+
+  if (type === 'qna') {
+    return QnaQuestionView;
   }
 
   if (type === 'scale') {
@@ -102,17 +126,14 @@ export default function LiveQuestionCard({
     .filter((option) => correctOptionIds.includes(option.id))
     .map((option) => option.text)
     .join(', ');
+  const submittedMessage = submittedMessages[question.type] ?? 'Resposta enviada. Aguarde o fechamento da rodada.';
 
   return (
     <ResultPanel>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-2">
           <Badge tone="blue">{question.topic}</Badge>
-          {question.type === 'multiple_select' && <Badge tone="purple">Múltipla seleção</Badge>}
-          {question.type === 'poll' && <Badge tone="purple">Enquete</Badge>}
-          {question.type === 'word_cloud' && <Badge tone="purple">Nuvem de palavras</Badge>}
-          {question.type === 'scale' && <Badge tone="purple">Escala</Badge>}
-          {question.type === 'ranking' && <Badge tone="purple">Ranking</Badge>}
+          <Badge tone="purple">{typeLabels[question.type] ?? question.type}</Badge>
         </div>
         {closesAt && (
           <Badge tone={remainingMs <= 5_000 ? 'red' : 'gray'}>
@@ -148,7 +169,7 @@ export default function LiveQuestionCard({
 
       {hasSubmitted && !showAnswer && (
         <FeedbackNotice tone="info" className="mt-4 text-sm">
-          Resposta enviada. Aguarde o fechamento da rodada.
+          {submittedMessage}
         </FeedbackNotice>
       )}
 

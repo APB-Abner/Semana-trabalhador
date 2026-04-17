@@ -104,8 +104,8 @@ export default function usePlayerRoom(pin?: string) {
     const response = await emitWithAck<RoomJoinAck>('room:join', {
       pin: normalizedPin,
       role: 'player',
-      avatar,
       name,
+      avatar,
     });
 
     if (!response.ok) {
@@ -143,7 +143,7 @@ export default function usePlayerRoom(pin?: string) {
       pin,
       playerToken,
       questionId: currentQuestion.id,
-      ...(currentQuestion.type === 'word_cloud'
+      ...(currentQuestion.type === 'word_cloud' || currentQuestion.type === 'qna'
         ? { text }
         : currentQuestion.type === 'scale'
           ? { value }

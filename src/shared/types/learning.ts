@@ -2,7 +2,7 @@ import type { LiveQuestionType } from './realtime';
 
 export type QuizQuestionType = Exclude<
   LiveQuestionType,
-  'multiple_select' | 'poll' | 'word_cloud' | 'scale' | 'ranking'
+  'multiple_select' | 'poll' | 'word_cloud' | 'scale' | 'ranking' | 'qna'
 >;
 
 export type QuizQuestion = {

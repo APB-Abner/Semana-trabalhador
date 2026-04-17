@@ -1,0 +1,776 @@
+import type {
+  LiveQuestion,
+  LiveQuestionBucket,
+  LiveQuestionDifficulty,
+  LiveQuestionOption,
+  LiveQuestionTone,
+  LiveQuestionType,
+} from '../types/realtime.ts';
+
+export type LiveQuestionCatalogEntry = LiveQuestion & {
+  bucket: LiveQuestionBucket;
+  tone: LiveQuestionTone;
+  difficulty?: LiveQuestionDifficulty;
+  enabled?: boolean;
+};
+
+type CatalogQuestionInput = Omit<
+  LiveQuestionCatalogEntry,
+  'options' | 'correctOptionId' | 'correctOptionIds'
+> & {
+  options?: string[];
+  correctOptionText?: string;
+  correctOptionTexts?: string[];
+};
+
+export const competitiveQuestionTypes = new Set<LiveQuestionType>([
+  'multiple_choice',
+  'true_false',
+  'multiple_select',
+]);
+
+export const participatoryQuestionTypes = new Set<LiveQuestionType>([
+  'poll',
+  'word_cloud',
+  'scale',
+  'ranking',
+  'qna',
+]);
+
+function toOptionId(questionId: string, optionIndex: number): string {
+  return `${questionId}-o${optionIndex + 1}`;
+}
+
+function makeOptions(questionId: string, optionTexts: string[] = []): LiveQuestionOption[] {
+  return optionTexts.map((text, index) => ({
+    id: toOptionId(questionId, index),
+    text,
+  }));
+}
+
+function findOptionId(questionId: string, options: LiveQuestionOption[], optionText: string) {
+  const option = options.find((candidate) => candidate.text === optionText);
+
+  if (!option) {
+    throw new Error(`Opcao correta ausente em ${questionId}: ${optionText}`);
+  }
+
+  return option.id;
+}
+
+export function defineLiveQuestion(input: CatalogQuestionInput): LiveQuestionCatalogEntry {
+  const {
+    correctOptionText,
+    correctOptionTexts,
+    options: optionTexts,
+    ...question
+  } = input;
+  const options = makeOptions(input.id, optionTexts);
+  const correctOptionId = correctOptionText
+    ? findOptionId(input.id, options, correctOptionText)
+    : undefined;
+  const correctOptionIds = correctOptionTexts?.map((optionText) => (
+    findOptionId(input.id, options, optionText)
+  ));
+
+  return {
+    ...question,
+    options,
+    correctOptionId,
+    correctOptionIds,
+  };
+}
+
+export function getBucketForQuestionType(type: LiveQuestionType): LiveQuestionBucket {
+  if (competitiveQuestionTypes.has(type)) {
+    return 'competitive';
+  }
+
+  return 'participatory';
+}
+
+export function validateLiveQuestionMetadata(question: LiveQuestion) {
+  const bucket = question.bucket;
+  const tone = question.tone;
+
+  if (!bucket || !tone) {
+    throw new Error(`Pergunta live sem bucket/tone: ${question.id}`);
+  }
+
+  const expectedBucket = getBucketForQuestionType(question.type);
+
+  if (bucket !== expectedBucket) {
+    throw new Error(`Pergunta ${question.id} esta no bucket ${bucket}, mas o tipo ${question.type} exige ${expectedBucket}.`);
+  }
+
+  if (bucket === 'competitive' && tone !== 'objective') {
+    throw new Error(`Pergunta competitiva precisa usar tone objective: ${question.id}`);
+  }
+
+  if (bucket === 'competitive' && tone === 'interview_like') {
+    throw new Error(`Pergunta com tom de entrevista nao pode entrar no competitivo: ${question.id}`);
+  }
+}
+
+export const competitiveLiveQuestions: LiveQuestionCatalogEntry[] = [
+  defineLiveQuestion({
+    id: 'live-mc-curriculo-objetivo',
+    type: 'multiple_choice',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Curriculo',
+    difficulty: 'easy',
+    text: 'Qual informacao deve aparecer de forma clara no topo de um curriculo?',
+    options: ['Nome e contato', 'Apelido da escola', 'Salario desejado', 'Lista de hobbies sem contexto'],
+    correctOptionText: 'Nome e contato',
+    explanation: 'Recrutadores precisam encontrar rapidamente quem e o candidato e como falar com ele.',
+  }),
+  defineLiveQuestion({
+    id: 'live-mc-comunicacao-feedback',
+    type: 'multiple_choice',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Comunicacao',
+    difficulty: 'easy',
+    text: 'Ao receber um feedback no trabalho, a melhor primeira atitude e:',
+    options: ['Ouvir e pedir exemplo concreto', 'Interromper para se defender', 'Ignorar e seguir igual', 'Responder com ironia'],
+    correctOptionText: 'Ouvir e pedir exemplo concreto',
+    explanation: 'Feedback fica mais util quando a pessoa entende o comportamento observado e o proximo ajuste esperado.',
+  }),
+  defineLiveQuestion({
+    id: 'live-mc-postura-atraso',
+    type: 'multiple_choice',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Postura profissional',
+    difficulty: 'easy',
+    text: 'Se perceber que vai se atrasar para o trabalho, o mais profissional e:',
+    options: ['Avisar com antecedencia pelo canal combinado', 'Chegar e fingir que nada aconteceu', 'Pedir para um colega bater ponto', 'Esperar alguem perguntar'],
+    correctOptionText: 'Avisar com antecedencia pelo canal combinado',
+    explanation: 'Comunicar cedo reduz impacto na equipe e mostra responsabilidade.',
+  }),
+  defineLiveQuestion({
+    id: 'live-mc-email-profissional',
+    type: 'multiple_choice',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Comunicacao',
+    difficulty: 'medium',
+    text: 'Qual assunto de e-mail e mais adequado para enviar um curriculo?',
+    options: ['Candidatura - Jovem Aprendiz - Nome Sobrenome', 'Oi, olha ai', 'Urgente!!!!!', 'Meu documento'],
+    correctOptionText: 'Candidatura - Jovem Aprendiz - Nome Sobrenome',
+    explanation: 'Um assunto claro ajuda a mensagem ser encontrada e entendida rapidamente.',
+  }),
+  defineLiveQuestion({
+    id: 'live-mc-seguranca-epi',
+    type: 'multiple_choice',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Seguranca',
+    difficulty: 'medium',
+    text: 'Quando a funcao exige EPI, o jovem deve:',
+    options: ['Usar conforme orientacao e avisar se estiver danificado', 'Usar apenas se o chefe estiver olhando', 'Emprestar sempre que pedirem', 'Adaptar por conta propria'],
+    correctOptionText: 'Usar conforme orientacao e avisar se estiver danificado',
+    explanation: 'EPI protege a saude e deve seguir orientacao tecnica da empresa.',
+  }),
+  defineLiveQuestion({
+    id: 'live-mc-trabalho-equipe',
+    type: 'multiple_choice',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Trabalho em equipe',
+    difficulty: 'easy',
+    text: 'Uma atitude que fortalece o trabalho em equipe e:',
+    options: ['Compartilhar informacoes relevantes', 'Guardar tudo para parecer indispensavel', 'Culpar colegas por erro coletivo', 'Evitar combinar prazos'],
+    correctOptionText: 'Compartilhar informacoes relevantes',
+    explanation: 'Equipes funcionam melhor quando informacao circula no tempo certo.',
+  }),
+  defineLiveQuestion({
+    id: 'live-mc-direitos-transporte',
+    type: 'multiple_choice',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Direitos',
+    difficulty: 'medium',
+    text: 'O vale-transporte existe principalmente para:',
+    options: ['Apoiar o deslocamento casa-trabalho', 'Premiar quem nunca falta', 'Substituir ferias', 'Pagar hora extra'],
+    correctOptionText: 'Apoiar o deslocamento casa-trabalho',
+    explanation: 'O beneficio esta ligado ao deslocamento necessario para trabalhar.',
+  }),
+  defineLiveQuestion({
+    id: 'live-mc-aprendizagem-curso',
+    type: 'multiple_choice',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Aprendizagem',
+    difficulty: 'medium',
+    text: 'No contrato de aprendizagem, a parte teorica serve para:',
+    options: ['Desenvolver competencias relacionadas ao trabalho', 'Substituir a escola regular', 'Eliminar a pratica na empresa', 'Aumentar a jornada sem registro'],
+    correctOptionText: 'Desenvolver competencias relacionadas ao trabalho',
+    explanation: 'A aprendizagem une pratica supervisionada e formacao teorica.',
+  }),
+  defineLiveQuestion({
+    id: 'live-tf-contrato-escrito',
+    type: 'true_false',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Contrato',
+    difficulty: 'easy',
+    text: 'O contrato de aprendizagem deve ter registro formal.',
+    options: ['Verdadeiro', 'Falso'],
+    correctOptionText: 'Verdadeiro',
+    explanation: 'O contrato precisa ser formalizado e registrado conforme as regras da aprendizagem.',
+  }),
+  defineLiveQuestion({
+    id: 'live-tf-falta-justificada',
+    type: 'true_false',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Rotina',
+    difficulty: 'easy',
+    text: 'Avisar e justificar uma ausencia ajuda a equipe a se organizar.',
+    options: ['Verdadeiro', 'Falso'],
+    correctOptionText: 'Verdadeiro',
+    explanation: 'Comunicar ausencia de forma correta reduz ruído e impacto operacional.',
+  }),
+  defineLiveQuestion({
+    id: 'live-tf-feedback',
+    type: 'true_false',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Desenvolvimento',
+    difficulty: 'easy',
+    text: 'Feedback serve apenas para apontar erro.',
+    options: ['Verdadeiro', 'Falso'],
+    correctOptionText: 'Falso',
+    explanation: 'Feedback tambem reforca boas praticas e orienta desenvolvimento.',
+  }),
+  defineLiveQuestion({
+    id: 'live-tf-dados-pessoais',
+    type: 'true_false',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Seguranca digital',
+    difficulty: 'medium',
+    text: 'Dados pessoais de clientes ou colegas devem ser compartilhados apenas quando houver necessidade e permissao.',
+    options: ['Verdadeiro', 'Falso'],
+    correctOptionText: 'Verdadeiro',
+    explanation: 'Privacidade e cuidado com dados fazem parte da postura profissional.',
+  }),
+  defineLiveQuestion({
+    id: 'live-tf-hora-extra',
+    type: 'true_false',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Jornada',
+    difficulty: 'medium',
+    text: 'O jovem aprendiz deve aceitar qualquer jornada extra sem considerar limites legais.',
+    options: ['Verdadeiro', 'Falso'],
+    correctOptionText: 'Falso',
+    explanation: 'A jornada do aprendiz tem limites e precisa respeitar a formacao do jovem.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ms-direitos-trabalhistas',
+    type: 'multiple_select',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Direitos',
+    difficulty: 'medium',
+    text: 'Quais direitos fazem parte de um contrato formal de jovem aprendiz?',
+    options: ['Carteira assinada', '13o salario', 'Ferias', 'Trabalho voluntario obrigatorio'],
+    correctOptionTexts: ['Carteira assinada', '13o salario', 'Ferias'],
+    explanation: 'O contrato de aprendizagem e formal e garante registro, ferias, 13o salario e outros direitos trabalhistas.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ms-documentos-admissao',
+    type: 'multiple_select',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Admissao',
+    difficulty: 'medium',
+    text: 'Quais dados ou documentos costumam ser pedidos em uma admissao formal?',
+    options: ['Documento de identificacao', 'Dados bancarios quando solicitado', 'Comprovante escolar quando aplicavel', 'Senha pessoal do e-mail'],
+    correctOptionTexts: ['Documento de identificacao', 'Dados bancarios quando solicitado', 'Comprovante escolar quando aplicavel'],
+    explanation: 'A admissao pede documentos formais, mas senhas pessoais nunca devem ser compartilhadas.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ms-soft-skills-equipe',
+    type: 'multiple_select',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Soft skills',
+    difficulty: 'easy',
+    text: 'Quais comportamentos ajudam na convivencia profissional?',
+    options: ['Escuta ativa', 'Pontualidade', 'Respeito a combinados', 'Expor colega em publico'],
+    correctOptionTexts: ['Escuta ativa', 'Pontualidade', 'Respeito a combinados'],
+    explanation: 'Convivencia profissional depende de respeito, combinados claros e comunicacao.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ms-atitudes-profissionais',
+    type: 'multiple_select',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Postura profissional',
+    difficulty: 'medium',
+    text: 'Quais atitudes indicam responsabilidade no primeiro emprego?',
+    options: ['Confirmar instrucoes importantes', 'Registrar prazos', 'Avisar impedimentos cedo', 'Sumir quando nao souber fazer'],
+    correctOptionTexts: ['Confirmar instrucoes importantes', 'Registrar prazos', 'Avisar impedimentos cedo'],
+    explanation: 'Responsabilidade aparece em comunicacao, organizacao e previsibilidade.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ms-canais-aprendizado',
+    type: 'multiple_select',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Aprendizagem',
+    difficulty: 'medium',
+    text: 'Quais caminhos ajudam a aprender uma tarefa nova com seguranca?',
+    options: ['Pedir demonstracao', 'Consultar procedimento da empresa', 'Anotar passos importantes', 'Inventar um metodo sem validar'],
+    correctOptionTexts: ['Pedir demonstracao', 'Consultar procedimento da empresa', 'Anotar passos importantes'],
+    explanation: 'Aprender com seguranca exige referencia, pratica e validacao.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ms-seguranca-rotina',
+    type: 'multiple_select',
+    bucket: 'competitive',
+    tone: 'objective',
+    topic: 'Seguranca',
+    difficulty: 'medium',
+    text: 'Quais praticas ajudam a evitar acidentes na rotina?',
+    options: ['Seguir orientacoes de seguranca', 'Avisar risco identificado', 'Usar equipamento correto', 'Improvisar ferramenta quebrada'],
+    correctOptionTexts: ['Seguir orientacoes de seguranca', 'Avisar risco identificado', 'Usar equipamento correto'],
+    explanation: 'Seguranca depende de prevencao, comunicacao e uso correto dos recursos.',
+  }),
+];
+
+export const participatoryLiveQuestions: LiveQuestionCatalogEntry[] = [
+  defineLiveQuestion({
+    id: 'live-poll-interesse',
+    type: 'poll',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Interesses',
+    difficulty: 'easy',
+    text: 'Qual tema voce quer aprofundar depois da competicao?',
+    options: ['Curriculo', 'Entrevista', 'Direitos do aprendiz', 'Primeiro emprego'],
+    explanation: 'A enquete ajuda o mediador a escolher o proximo assunto da turma.',
+  }),
+  defineLiveQuestion({
+    id: 'live-poll-maior-desafio',
+    type: 'poll',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Preparacao',
+    difficulty: 'easy',
+    text: 'Qual etapa parece mais desafiadora para conseguir a primeira oportunidade?',
+    options: ['Encontrar vagas', 'Montar curriculo', 'Fazer entrevista', 'Conciliar estudos e trabalho'],
+    explanation: 'O resultado mostra onde a turma precisa de mais apoio.',
+  }),
+  defineLiveQuestion({
+    id: 'live-poll-formato-aprendizagem',
+    type: 'poll',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Aprendizagem',
+    difficulty: 'easy',
+    text: 'Qual formato ajuda mais voce a aprender uma tarefa nova?',
+    options: ['Ver alguem fazendo', 'Tentar com supervisao', 'Ler um passo a passo', 'Conversar em grupo'],
+    explanation: 'Preferencias de aprendizagem ajudam o host a ajustar a dinamica.',
+  }),
+  defineLiveQuestion({
+    id: 'live-poll-canal-vaga',
+    type: 'poll',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Busca de vagas',
+    difficulty: 'easy',
+    text: 'Onde voce mais procura ou procuraria vagas?',
+    options: ['Sites de emprego', 'Redes sociais', 'Indicação de conhecidos', 'Escola ou curso'],
+    explanation: 'A resposta indica quais canais merecem mais orientacao pratica.',
+  }),
+  defineLiveQuestion({
+    id: 'live-poll-primeira-acao',
+    type: 'poll',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Plano de acao',
+    difficulty: 'easy',
+    text: 'Qual acao voce faria primeiro para se preparar nesta semana?',
+    options: ['Atualizar curriculo', 'Treinar apresentacao', 'Pesquisar vagas', 'Organizar documentos'],
+    explanation: 'A turma visualiza um plano de acao simples e imediato.',
+  }),
+  defineLiveQuestion({
+    id: 'live-poll-area-interesse',
+    type: 'poll',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Areas',
+    difficulty: 'easy',
+    text: 'Qual area desperta mais curiosidade hoje?',
+    options: ['Administrativo', 'Tecnologia', 'Atendimento', 'Logistica'],
+    explanation: 'O resultado ajuda a conectar interesses com oportunidades locais.',
+  }),
+  defineLiveQuestion({
+    id: 'live-poll-feedback-preferido',
+    type: 'poll',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Feedback',
+    difficulty: 'easy',
+    text: 'Como voce prefere receber orientacao sobre melhoria?',
+    options: ['Conversa individual', 'Exemplo pratico', 'Checklist escrito', 'Treino em grupo'],
+    explanation: 'O formato de feedback impacta como a pessoa aprende e ajusta comportamento.',
+  }),
+  defineLiveQuestion({
+    id: 'live-poll-tema-final',
+    type: 'poll',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Encerramento',
+    difficulty: 'easy',
+    text: 'Qual tema deveria virar uma oficina pratica?',
+    options: ['Curriculo', 'Entrevista', 'Comunicação no trabalho', 'Direitos e deveres'],
+    explanation: 'A votação pode orientar a proxima atividade presencial ou online.',
+  }),
+  defineLiveQuestion({
+    id: 'live-word-cloud-carreira',
+    type: 'word_cloud',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Carreira',
+    difficulty: 'easy',
+    text: 'Em uma palavra ou expressao curta, o que mais importa no primeiro emprego?',
+    explanation: 'As respostas semelhantes sao agrupadas para mostrar os temas mais lembrados pela turma.',
+  }),
+  defineLiveQuestion({
+    id: 'live-word-cloud-soft-skill',
+    type: 'word_cloud',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Soft skills',
+    difficulty: 'easy',
+    text: 'Qual habilidade comportamental mais ajuda um aprendiz?',
+    explanation: 'A nuvem mostra as habilidades mais associadas ao inicio da vida profissional.',
+  }),
+  defineLiveQuestion({
+    id: 'live-word-cloud-entrevista',
+    type: 'word_cloud',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Entrevista',
+    difficulty: 'easy',
+    text: 'Qual palavra resume uma boa entrevista?',
+    explanation: 'O resultado abre conversa sobre postura, preparo e clareza.',
+  }),
+  defineLiveQuestion({
+    id: 'live-word-cloud-ambiente',
+    type: 'word_cloud',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Ambiente',
+    difficulty: 'easy',
+    text: 'Que palavra define um ambiente de trabalho saudavel?',
+    explanation: 'As frequencias ajudam a discutir cultura e convivencia.',
+  }),
+  defineLiveQuestion({
+    id: 'live-word-cloud-direito',
+    type: 'word_cloud',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Direitos',
+    difficulty: 'easy',
+    text: 'Qual direito do aprendiz voce considera mais importante?',
+    explanation: 'A nuvem mostra quais direitos estao mais presentes na memoria da turma.',
+  }),
+  defineLiveQuestion({
+    id: 'live-word-cloud-futuro',
+    type: 'word_cloud',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Futuro',
+    difficulty: 'easy',
+    text: 'Qual palavra voce associa ao seu futuro profissional?',
+    explanation: 'O resultado aproxima expectativa individual e visao coletiva.',
+  }),
+  defineLiveQuestion({
+    id: 'live-word-cloud-comunicacao',
+    type: 'word_cloud',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Comunicacao',
+    difficulty: 'easy',
+    text: 'Qual palavra combina com comunicacao profissional?',
+    explanation: 'A nuvem ajuda a discutir clareza, respeito e escuta.',
+  }),
+  defineLiveQuestion({
+    id: 'live-word-cloud-aprendizado',
+    type: 'word_cloud',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Aprendizagem',
+    difficulty: 'easy',
+    text: 'Qual termo resume aprender no trabalho?',
+    explanation: 'Os termos evidenciam como a turma percebe a aprendizagem pratica.',
+  }),
+  defineLiveQuestion({
+    id: 'live-scale-confianca',
+    type: 'scale',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Autopercepcao',
+    difficulty: 'easy',
+    text: 'De 1 a 5, quao confiante voce esta para participar de uma entrevista?',
+    scale: { min: 1, max: 5, step: 1, minLabel: 'Preciso praticar', maxLabel: 'Muito confiante' },
+    explanation: 'A escala mostra a media de confianca do grupo sem alterar o ranking competitivo.',
+  }),
+  defineLiveQuestion({
+    id: 'live-scale-curriculo',
+    type: 'scale',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Curriculo',
+    difficulty: 'easy',
+    text: 'De 1 a 5, quao pronto esta seu curriculo hoje?',
+    scale: { min: 1, max: 5, step: 1, minLabel: 'Ainda nao tenho', maxLabel: 'Pronto para enviar' },
+    explanation: 'O host identifica se a turma precisa de apoio pratico no curriculo.',
+  }),
+  defineLiveQuestion({
+    id: 'live-scale-entrevista',
+    type: 'scale',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Entrevista',
+    difficulty: 'easy',
+    text: 'De 1 a 5, quanto voce ja praticou falar sobre suas experiencias?',
+    scale: { min: 1, max: 5, step: 1, minLabel: 'Nada ainda', maxLabel: 'Pratiquei bastante' },
+    explanation: 'A media ajuda a decidir se vale fazer treino de apresentacao.',
+  }),
+  defineLiveQuestion({
+    id: 'live-scale-comunicacao',
+    type: 'scale',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Comunicacao',
+    difficulty: 'easy',
+    text: 'De 1 a 5, quao confortavel voce esta para pedir ajuda no trabalho?',
+    scale: { min: 1, max: 5, step: 1, minLabel: 'Pouco confortavel', maxLabel: 'Muito confortavel' },
+    explanation: 'Pedir ajuda no momento certo evita erro e acelera aprendizagem.',
+  }),
+  defineLiveQuestion({
+    id: 'live-scale-direitos',
+    type: 'scale',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Direitos',
+    difficulty: 'easy',
+    text: 'De 1 a 5, quanto voce sente que conhece seus direitos como aprendiz?',
+    scale: { min: 1, max: 5, step: 1, minLabel: 'Conheco pouco', maxLabel: 'Conheco bem' },
+    explanation: 'A escala sinaliza se o grupo precisa revisar direitos basicos.',
+  }),
+  defineLiveQuestion({
+    id: 'live-scale-rotina',
+    type: 'scale',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Rotina',
+    difficulty: 'easy',
+    text: 'De 1 a 5, quao organizado voce se sente para conciliar estudo e trabalho?',
+    scale: { min: 1, max: 5, step: 1, minLabel: 'Preciso melhorar', maxLabel: 'Bem organizado' },
+    explanation: 'A organizacao da rotina e um ponto central para permanencia no programa.',
+  }),
+  defineLiveQuestion({
+    id: 'live-scale-equipe',
+    type: 'scale',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Equipe',
+    difficulty: 'easy',
+    text: 'De 1 a 5, quao facil e para voce trabalhar em grupo?',
+    scale: { min: 1, max: 5, step: 1, minLabel: 'Tenho dificuldade', maxLabel: 'Tenho facilidade' },
+    explanation: 'A resposta abre conversa sobre colaboracao e comunicacao.',
+  }),
+  defineLiveQuestion({
+    id: 'live-scale-tecnologia',
+    type: 'scale',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Tecnologia',
+    difficulty: 'easy',
+    text: 'De 1 a 5, quao seguro voce se sente usando ferramentas digitais no trabalho?',
+    scale: { min: 1, max: 5, step: 1, minLabel: 'Preciso aprender', maxLabel: 'Uso com seguranca' },
+    explanation: 'Ferramentas digitais aparecem em muitos processos de trabalho.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ranking-prioridades',
+    type: 'ranking',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Prioridades',
+    difficulty: 'easy',
+    text: 'Ordene o que mais pesa na escolha de uma primeira oportunidade.',
+    options: ['Aprendizado', 'Ambiente de trabalho', 'Salario', 'Localizacao'],
+    explanation: 'O ranking usa contagem Borda simples para revelar as prioridades coletivas da turma.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ranking-preparacao',
+    type: 'ranking',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Preparacao',
+    difficulty: 'easy',
+    text: 'Ordene as acoes mais importantes antes de enviar uma candidatura.',
+    options: ['Revisar curriculo', 'Ler a vaga com atencao', 'Separar documentos', 'Treinar apresentacao'],
+    explanation: 'A ordem mostra como a turma prioriza a preparacao.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ranking-comunicacao',
+    type: 'ranking',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Comunicacao',
+    difficulty: 'easy',
+    text: 'Ordene o que torna uma comunicacao profissional mais clara.',
+    options: ['Objetividade', 'Respeito', 'Escuta', 'Confirmar combinados'],
+    explanation: 'A agregacao evidencia os criterios mais valorizados pela turma.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ranking-beneficios',
+    type: 'ranking',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Oportunidade',
+    difficulty: 'easy',
+    text: 'Ordene os fatores que mais ajudam a permanecer em uma oportunidade.',
+    options: ['Aprendizado constante', 'Apoio da lideranca', 'Rotina organizada', 'Reconhecimento'],
+    explanation: 'O resultado orienta uma conversa sobre permanencia e desenvolvimento.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ranking-rotina',
+    type: 'ranking',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Rotina',
+    difficulty: 'easy',
+    text: 'Ordene o que mais ajuda a cumprir prazos.',
+    options: ['Planejar tarefas', 'Perguntar cedo', 'Anotar combinados', 'Evitar distracoes'],
+    explanation: 'A turma identifica praticas simples de organizacao.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ranking-vaga',
+    type: 'ranking',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Busca de vagas',
+    difficulty: 'easy',
+    text: 'Ordene o que voce olha primeiro em uma vaga de aprendiz.',
+    options: ['Atividades da vaga', 'Local de trabalho', 'Horario', 'Requisitos'],
+    explanation: 'A priorizacao ajuda a ler vagas com mais criterio.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ranking-trilha',
+    type: 'ranking',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Carreira',
+    difficulty: 'easy',
+    text: 'Ordene habilidades que voce quer desenvolver primeiro.',
+    options: ['Comunicacao', 'Organizacao', 'Tecnologia', 'Trabalho em equipe'],
+    explanation: 'O ranking pode virar uma trilha de estudos da turma.',
+  }),
+  defineLiveQuestion({
+    id: 'live-ranking-feedback',
+    type: 'ranking',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Feedback',
+    difficulty: 'easy',
+    text: 'Ordene o que faz um feedback ser mais util.',
+    options: ['Exemplo concreto', 'Proximo passo claro', 'Tom respeitoso', 'Momento adequado'],
+    explanation: 'A resposta coletiva mostra o que a turma espera de uma boa orientacao.',
+  }),
+  defineLiveQuestion({
+    id: 'live-qna-primeiro-passo',
+    type: 'qna',
+    bucket: 'participatory',
+    tone: 'interview_like',
+    topic: 'Plano de acao',
+    difficulty: 'easy',
+    text: 'Qual seria um primeiro passo realista para melhorar sua preparacao profissional nesta semana?',
+    explanation: 'Respostas equivalentes sao agrupadas e podem virar combinados de acao.',
+  }),
+  defineLiveQuestion({
+    id: 'live-qna-duvida-direitos',
+    type: 'qna',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Direitos',
+    difficulty: 'easy',
+    text: 'Qual duvida sobre direitos do aprendiz voce gostaria de esclarecer?',
+    explanation: 'As perguntas mais repetidas ajudam o host a priorizar explicacoes.',
+  }),
+  defineLiveQuestion({
+    id: 'live-qna-mensagem-feedback',
+    type: 'qna',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Feedback',
+    difficulty: 'medium',
+    text: 'Escreva uma frase curta que voce poderia usar para pedir feedback.',
+    explanation: 'A lista cria repertorio de comunicacao para situações reais.',
+  }),
+  defineLiveQuestion({
+    id: 'live-qna-habito-rotina',
+    type: 'qna',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Rotina',
+    difficulty: 'easy',
+    text: 'Qual habito simples ajudaria voce a chegar mais preparado ao trabalho?',
+    explanation: 'Ideias semelhantes sao agrupadas para mostrar habitos prioritarios.',
+  }),
+  defineLiveQuestion({
+    id: 'live-qna-situacao-desafio',
+    type: 'qna',
+    bucket: 'participatory',
+    tone: 'interview_like',
+    topic: 'Entrevista',
+    difficulty: 'medium',
+    text: 'Cite uma situacao em que voce precisou aprender algo novo rapidamente.',
+    explanation: 'A pergunta treina repertorio sem virar rodada competitiva.',
+  }),
+  defineLiveQuestion({
+    id: 'live-qna-pedido-ajuda',
+    type: 'qna',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Comunicacao',
+    difficulty: 'easy',
+    text: 'Como voce pediria ajuda se nao entendesse uma tarefa?',
+    explanation: 'A resposta mostra formas praticas de pedir apoio com clareza.',
+  }),
+  defineLiveQuestion({
+    id: 'live-qna-comunicacao-clara',
+    type: 'qna',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Comunicacao',
+    difficulty: 'easy',
+    text: 'Qual combinacao de palavras torna uma mensagem profissional mais clara?',
+    explanation: 'A turma constroi exemplos curtos de comunicacao objetiva.',
+  }),
+  defineLiveQuestion({
+    id: 'live-qna-proximo-aprendizado',
+    type: 'qna',
+    bucket: 'participatory',
+    tone: 'reflective',
+    topic: 'Aprendizagem',
+    difficulty: 'easy',
+    text: 'O que voce gostaria de aprender melhor antes da primeira oportunidade?',
+    explanation: 'O resultado ajuda a planejar proximos conteudos.',
+  }),
+];
+
+export const liveOnlyQuestions: LiveQuestionCatalogEntry[] = [
+  ...competitiveLiveQuestions,
+  ...participatoryLiveQuestions,
+];

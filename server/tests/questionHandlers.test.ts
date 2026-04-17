@@ -159,7 +159,39 @@ describe('live question handlers', () => {
       text: 'Pontualidade',
       count: 1,
     });
-    expect(() => normalizeLiveAnswer(question, { text: '   ' })).toThrow(/resposta curta/);
+    expect(() => normalizeLiveAnswer(question, { text: '   ' })).toThrow(/palavra ou termo curto/);
+  });
+
+  it('normalizes and aggregates qna answers as grouped open text', () => {
+    const question = liveQuestionsFixture[7];
+    const firstAnswer = normalizeLiveAnswer(question, { text: '  atualizar   meu curriculo ' });
+    const secondAnswer = normalizeLiveAnswer(question, { text: 'Atualizar meu curriculo' });
+    const thirdAnswer = normalizeLiveAnswer(question, { text: 'Treinar entrevista' });
+
+    expect(() => validateLiveQuestion({
+      ...question,
+      options: [{ id: 'q8-a', text: 'Opcao indevida' }],
+    })).toThrow(/opcoes/);
+
+    const result = createAggregatedResult(question, [
+      { ...firstAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+      { ...secondAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+      { ...thirdAnswer, submittedAt: 1, responseMs: 1, isCorrect: false, points: 0 },
+    ]);
+
+    expect(result?.type).toBe('qna');
+    if (result?.type !== 'qna') return;
+
+    expect(result.totalResponses).toBe(3);
+    expect(result.entries[0]).toMatchObject({
+      text: 'Atualizar meu curriculo',
+      normalizedText: 'atualizar meu curriculo',
+      count: 2,
+    });
+    expect(result.entries[1]).toMatchObject({
+      text: 'Treinar entrevista',
+      count: 1,
+    });
   });
 
   it('normalizes and aggregates scale answers by average and distribution', () => {

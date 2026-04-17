@@ -2,27 +2,27 @@ import type { LiveAnswerPayload, LiveQuestion } from '../../types/realtime.ts';
 import { aggregateTextEntries, normalizeTextAnswer } from './textAnswers.ts';
 import type { NormalizedLiveAnswer, QuestionHandler } from './types.ts';
 
-const MAX_WORD_CLOUD_TEXT_LENGTH = 40;
+const MAX_QNA_TEXT_LENGTH = 160;
 
-export function normalizeWordCloudAnswer(payload: LiveAnswerPayload): NormalizedLiveAnswer {
+export function normalizeQnaAnswer(payload: LiveAnswerPayload): NormalizedLiveAnswer {
   return normalizeTextAnswer(payload, {
-    emptyMessage: 'Informe uma palavra ou termo curto.',
-    maxLength: MAX_WORD_CLOUD_TEXT_LENGTH,
+    emptyMessage: 'Informe uma resposta curta.',
+    maxLength: MAX_QNA_TEXT_LENGTH,
   });
 }
 
-export const wordCloudHandler: QuestionHandler = {
-  type: 'word_cloud',
+export const qnaHandler: QuestionHandler = {
+  type: 'qna',
   mode: 'participatory',
   validateQuestion(question: LiveQuestion) {
     if (question.options.length > 0) {
-      throw new Error(`Nuvem de palavras nao deve ter opcoes de resposta: ${question.text}`);
+      throw new Error(`Pergunta aberta nao deve ter opcoes de resposta: ${question.text}`);
     }
   },
-  normalizeAnswer: (_question, payload) => normalizeWordCloudAnswer(payload),
+  normalizeAnswer: (_question, payload) => normalizeQnaAnswer(payload),
   aggregateResult(_question, answers) {
     return {
-      type: 'word_cloud',
+      type: 'qna',
       totalResponses: answers.length,
       entries: aggregateTextEntries(answers),
     };
