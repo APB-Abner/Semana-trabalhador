@@ -38,8 +38,8 @@ export default function CompeticaoSala() {
   const selectedValue = submittedAnswer?.value;
   const hasSubmitted = Boolean(submittedAnswer);
 
-  const handleJoin = async ({ roomPin, name }) => {
-    const response = await joinRoom({ roomPin, name });
+  const handleJoin = async ({ roomPin, name, avatar }) => {
+    const response = await joinRoom({ roomPin, name, avatar });
 
     if (response?.ok) {
       navigate(`/competicao/sala/${response.pin}`);

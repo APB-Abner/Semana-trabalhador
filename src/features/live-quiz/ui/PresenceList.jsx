@@ -1,5 +1,6 @@
 import Badge from '../../../shared/ui/Badge.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
+import PigeonAvatar from '../../pigeon-avatar/ui/PigeonAvatar';
 
 export default function PresenceList({ players = [] }) {
   return (
@@ -13,9 +14,10 @@ export default function PresenceList({ players = [] }) {
         {players.length ? players.map((player) => (
           <div
             key={player.id}
-            className="flex items-center justify-between rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
+            className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
           >
-            <span className="font-medium text-gray-800 dark:text-gray-100">{player.name}</span>
+            <PigeonAvatar avatar={player.avatar} size="sm" label={`Avatar de ${player.name}`} />
+            <span className="min-w-0 truncate font-medium text-gray-800 dark:text-gray-100">{player.name}</span>
             <Badge tone={player.connected ? 'green' : 'gray'}>
               {player.connected ? 'online' : 'offline'}
             </Badge>

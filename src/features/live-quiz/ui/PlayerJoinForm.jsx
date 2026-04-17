@@ -1,15 +1,23 @@
 import { useState } from 'react';
+import { PigeonAvatarEditor, useStoredPigeonAvatar } from '../../pigeon-avatar';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 
 export default function PlayerJoinForm({ initialPin = '', onJoin }) {
   const [name, setName] = useState('');
   const [pin, setPin] = useState(initialPin);
   const [loading, setLoading] = useState(false);
+  const {
+    avatar,
+    resetAvatar,
+    saveAvatar,
+    selectPreset,
+    setAvatar,
+  } = useStoredPigeonAvatar();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    await onJoin?.({ name, roomPin: pin });
+    await onJoin?.({ name, roomPin: pin, avatar });
     setLoading(false);
   };
 
@@ -44,6 +52,17 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
             required
             className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
             placeholder="000000"
+          />
+        </div>
+
+        <div className="border-t border-gray-200 pt-4 dark:border-zinc-800">
+          <PigeonAvatarEditor
+            value={avatar}
+            onChange={setAvatar}
+            onPresetSelect={selectPreset}
+            onSave={saveAvatar}
+            onReset={resetAvatar}
+            compact
           />
         </div>
 

@@ -1,5 +1,6 @@
 import { createPin, createToken } from './pin.ts';
 import { calculateLiveScore } from './scoring.ts';
+import { normalizePigeonAvatarState } from '../../../src/features/pigeon-avatar/model/avatarRules.ts';
 import {
   createAggregatedResult,
   isCompetitiveQuestion,
@@ -17,6 +18,7 @@ import type {
   RoomEventName,
   RoomState,
 } from '../types/realtime.ts';
+import type { PigeonAvatarState } from '../../../src/shared/types/pigeonAvatar.ts';
 
 type RoomStoreOptions = {
   questions: LiveQuestion[];
@@ -228,6 +230,7 @@ export function createRoomStore({
         return {
           playerId: player.id,
           name: player.name,
+          avatar: player.avatar,
           score: player.score,
           roundPoints: answer?.points ?? 0,
           lastAnswerCorrect: answer?.isCorrect ?? false,
@@ -361,7 +364,7 @@ export function createRoomStore({
     };
   }
 
-  function joinPlayer(pin: string, name: string): JoinPlayerResult {
+  function joinPlayer(pin: string, name: string, avatar?: PigeonAvatarState): JoinPlayerResult {
     const room = requireRoom(pin);
     const cleanName = normalizePlayerName(name);
 
@@ -383,6 +386,7 @@ export function createRoomStore({
       id: playerId,
       token: playerToken,
       name: cleanName,
+      avatar: normalizePigeonAvatarState(avatar),
       score: 0,
       connected: true,
       joinedAt: now(),

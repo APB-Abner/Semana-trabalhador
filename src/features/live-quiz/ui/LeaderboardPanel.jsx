@@ -1,5 +1,6 @@
 import Badge from '../../../shared/ui/Badge.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
+import PigeonAvatar from '../../pigeon-avatar/ui/PigeonAvatar';
 
 export default function LeaderboardPanel({ entries = [], title = 'Leaderboard' }) {
   return (
@@ -15,9 +16,10 @@ export default function LeaderboardPanel({ entries = [], title = 'Leaderboard' }
         {entries.length ? entries.map((entry, index) => (
           <div
             key={entry.playerId}
-            className="grid grid-cols-[2rem_1fr_auto] items-center gap-3 rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
+            className="grid grid-cols-[2rem_2.5rem_1fr_auto] items-center gap-3 rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
           >
             <span className="font-bold text-blue-600 dark:text-blue-300">#{index + 1}</span>
+            <PigeonAvatar avatar={entry.avatar} size="sm" label={`Avatar de ${entry.name}`} />
             <div>
               <p className="font-semibold text-gray-900 dark:text-white">{entry.name}</p>
               <p className="text-xs text-gray-600 dark:text-gray-300">

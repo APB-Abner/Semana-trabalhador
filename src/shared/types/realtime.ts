@@ -1,3 +1,5 @@
+import type { PigeonAvatarState } from './pigeonAvatar';
+
 export type LiveQuestionType =
   | 'multiple_choice'
   | 'true_false'
@@ -41,6 +43,7 @@ export type PublicLiveQuestion = Omit<LiveQuestion, 'correctOptionId' | 'correct
 export type LivePlayer = {
   id: string;
   name: string;
+  avatar: PigeonAvatarState;
   score: number;
   connected: boolean;
   joinedAt: number;
@@ -49,6 +52,7 @@ export type LivePlayer = {
 export type LeaderboardEntry = {
   playerId: string;
   name: string;
+  avatar: PigeonAvatarState;
   score: number;
   roundPoints: number;
   lastAnswerCorrect: boolean;
@@ -134,6 +138,7 @@ export type RoomJoinPayload = {
   pin: string;
   role: ClientRole;
   name?: string;
+  avatar?: PigeonAvatarState;
   playerToken?: string;
   hostToken?: string;
 };
