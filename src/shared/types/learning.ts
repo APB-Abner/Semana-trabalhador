@@ -20,16 +20,48 @@ export type QuizAnswerReview = {
   isCorrect: boolean;
 };
 
+export type VocationalDimension =
+  | 'analitico'
+  | 'social'
+  | 'criativo'
+  | 'organizacional'
+  | 'pratico'
+  | 'lideranca';
+
+export type VocationalOption = {
+  id: string;
+  texto: string;
+  weights: Partial<Record<VocationalDimension, number>>;
+};
+
+export type VocationalQuestion = {
+  id: string;
+  texto: string;
+  contexto?: string;
+  opcoes: VocationalOption[];
+};
+
 export type VocationalProfile = {
   title: string;
   summary: string;
   strengths: string[];
   environments: string[];
   relatedAreas: string[];
+  fitSummary: string;
+  idealWorkStyles: string[];
+  suggestedActions: string[];
+  dimensionWeights: Partial<Record<VocationalDimension, number>>;
   nextStep: {
     label: string;
     href: string;
   };
+};
+
+export type VocationalDimensionScore = {
+  id: VocationalDimension;
+  label: string;
+  score: number;
+  percentage: number;
 };
 
 export type VocationalRankingEntry = VocationalProfile & {
@@ -37,12 +69,16 @@ export type VocationalRankingEntry = VocationalProfile & {
   order: number;
   score: number;
   percentage: number;
+  reasons: string[];
 };
 
 export type VocationalResult = {
   primary: VocationalRankingEntry | null;
   ranking: VocationalRankingEntry[];
   scoreByArea: Record<string, number>;
+  scoreByDimension: Record<VocationalDimension, number>;
+  dimensions: VocationalDimensionScore[];
+  profileBlend: string[];
   totalAnswers: number;
 };
 
