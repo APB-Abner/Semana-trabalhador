@@ -21,6 +21,55 @@ const liveOnlyQuestions: LiveQuestion[] = [
     ],
     explanation: 'O contrato de aprendizagem é formal e garante registro, férias, 13º salário e outros direitos trabalhistas.',
   },
+  {
+    id: 'live-poll-interesse',
+    type: 'poll',
+    topic: 'Interesses',
+    text: 'Qual tema você quer aprofundar depois da competição?',
+    options: [
+      { id: 'live-poll-interesse-o1', text: 'Currículo' },
+      { id: 'live-poll-interesse-o2', text: 'Entrevista' },
+      { id: 'live-poll-interesse-o3', text: 'Direitos do aprendiz' },
+      { id: 'live-poll-interesse-o4', text: 'Primeiro emprego' },
+    ],
+    explanation: 'A enquete ajuda o mediador a escolher o próximo assunto da turma.',
+  },
+  {
+    id: 'live-word-cloud-carreira',
+    type: 'word_cloud',
+    topic: 'Carreira',
+    text: 'Em uma palavra ou expressão curta, o que mais importa no primeiro emprego?',
+    options: [],
+    explanation: 'As respostas semelhantes são agrupadas para mostrar os temas mais lembrados pela turma.',
+  },
+  {
+    id: 'live-scale-confianca',
+    type: 'scale',
+    topic: 'Autopercepção',
+    text: 'De 1 a 5, quão confiante você está para participar de uma entrevista?',
+    options: [],
+    scale: {
+      min: 1,
+      max: 5,
+      step: 1,
+      minLabel: 'Preciso praticar',
+      maxLabel: 'Muito confiante',
+    },
+    explanation: 'A escala mostra a média de confiança do grupo sem alterar o ranking competitivo.',
+  },
+  {
+    id: 'live-ranking-prioridades',
+    type: 'ranking',
+    topic: 'Prioridades',
+    text: 'Ordene o que mais pesa na escolha de uma primeira oportunidade.',
+    options: [
+      { id: 'live-ranking-prioridades-o1', text: 'Aprendizado' },
+      { id: 'live-ranking-prioridades-o2', text: 'Ambiente de trabalho' },
+      { id: 'live-ranking-prioridades-o3', text: 'Salário' },
+      { id: 'live-ranking-prioridades-o4', text: 'Localização' },
+    ],
+    explanation: 'O ranking usa contagem Borda simples para revelar as prioridades coletivas da turma.',
+  },
 ];
 
 function toOptionId(questionIndex: number, optionIndex: number): string {

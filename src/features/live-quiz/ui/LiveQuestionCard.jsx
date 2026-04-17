@@ -5,7 +5,11 @@ import ProgressBar from '../../../shared/ui/ProgressBar.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 import MultipleChoiceQuestionView from './question-renderers/MultipleChoiceQuestionView.jsx';
 import MultipleSelectQuestionView from './question-renderers/MultipleSelectQuestionView.jsx';
+import PollQuestionView from './question-renderers/PollQuestionView.jsx';
+import RankingQuestionView from './question-renderers/RankingQuestionView.jsx';
+import ScaleQuestionView from './question-renderers/ScaleQuestionView.jsx';
 import TrueFalseQuestionView from './question-renderers/TrueFalseQuestionView.jsx';
+import WordCloudQuestionView from './question-renderers/WordCloudQuestionView.jsx';
 
 function getClockOffset(serverNow) {
   return Number.isFinite(serverNow) ? serverNow - Date.now() : 0;
@@ -29,6 +33,22 @@ function getQuestionRenderer(type) {
     return MultipleSelectQuestionView;
   }
 
+  if (type === 'poll') {
+    return PollQuestionView;
+  }
+
+  if (type === 'word_cloud') {
+    return WordCloudQuestionView;
+  }
+
+  if (type === 'scale') {
+    return ScaleQuestionView;
+  }
+
+  if (type === 'ranking') {
+    return RankingQuestionView;
+  }
+
   if (type === 'true_false') {
     return TrueFalseQuestionView;
   }
@@ -44,6 +64,8 @@ export default function LiveQuestionCard({
   hasSubmitted = false,
   onSubmit,
   selectedOptionIds = [],
+  selectedText = '',
+  selectedValue,
   serverNow,
   showAnswer = false,
 }) {
@@ -73,6 +95,7 @@ export default function LiveQuestionCard({
   }
 
   const correctOptionIds = getCorrectOptionIds(question);
+  const hasCorrectAnswer = correctOptionIds.length > 0;
   const selectedIsCorrect = showAnswer && sameOptionSet(selectedOptionIds, correctOptionIds);
   const QuestionRenderer = getQuestionRenderer(question.type);
   const correctOptionTexts = question.options
@@ -86,6 +109,10 @@ export default function LiveQuestionCard({
         <div className="flex flex-wrap gap-2">
           <Badge tone="blue">{question.topic}</Badge>
           {question.type === 'multiple_select' && <Badge tone="purple">Múltipla seleção</Badge>}
+          {question.type === 'poll' && <Badge tone="purple">Enquete</Badge>}
+          {question.type === 'word_cloud' && <Badge tone="purple">Nuvem de palavras</Badge>}
+          {question.type === 'scale' && <Badge tone="purple">Escala</Badge>}
+          {question.type === 'ranking' && <Badge tone="purple">Ranking</Badge>}
         </div>
         {closesAt && (
           <Badge tone={remainingMs <= 5_000 ? 'red' : 'gray'}>
@@ -114,6 +141,8 @@ export default function LiveQuestionCard({
         onSubmit={onSubmit}
         question={question}
         selectedOptionIds={selectedOptionIds}
+        selectedText={selectedText}
+        selectedValue={selectedValue}
         showAnswer={showAnswer}
       />
 
@@ -123,12 +152,18 @@ export default function LiveQuestionCard({
         </FeedbackNotice>
       )}
 
-      {showAnswer && (
+      {showAnswer && hasCorrectAnswer && (
         <FeedbackNotice tone={selectedIsCorrect ? 'success' : 'info'} className="mt-4 text-sm">
           <p className="font-semibold">
             {question.type === 'multiple_select' ? 'Respostas corretas' : 'Resposta correta'}: {correctOptionTexts}
           </p>
           {question.explanation && <p className="mt-1">{question.explanation}</p>}
+        </FeedbackNotice>
+      )}
+
+      {showAnswer && !hasCorrectAnswer && question.explanation && (
+        <FeedbackNotice tone="info" className="mt-4 text-sm">
+          {question.explanation}
         </FeedbackNotice>
       )}
     </ResultPanel>

@@ -1,4 +1,5 @@
 import type {
+  AggregatedResult,
   LeaderboardEntry,
   LiveAnswerPayload,
   LivePlayer,
@@ -8,6 +9,7 @@ import type {
 
 export type {
   AnswerSubmitPayload,
+  AggregatedResult,
   BasicAck,
   ClientRole,
   HostActionPayload,
@@ -17,6 +19,7 @@ export type {
   LiveQuestion,
   LiveQuestionOption,
   LiveQuestionType,
+  LiveScaleConfig,
   LiveRoomStatus,
   PublicLiveQuestion,
   RoomCreateAck,
@@ -27,8 +30,12 @@ export type {
 } from '../../../src/shared/types/realtime.ts';
 
 export type PlayerAnswer = {
-  optionId: string;
+  optionId?: string;
   optionIds: string[];
+  text?: string;
+  normalizedText?: string;
+  displayText?: string;
+  value?: number;
   submittedAt: number;
   responseMs: number;
   isCorrect: boolean;
@@ -57,6 +64,7 @@ export type LiveRoomInternal = {
   round: LiveRound | null;
   leaderboard: LeaderboardEntry[];
   finalRanking: LeaderboardEntry[];
+  aggregatedResult: AggregatedResult | null;
   roundTimer: NodeJS.Timeout | null;
   lobbyExpirationTimer: NodeJS.Timeout | null;
   finishedExpirationTimer: NodeJS.Timeout | null;

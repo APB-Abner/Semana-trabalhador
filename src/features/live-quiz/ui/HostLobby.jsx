@@ -6,6 +6,7 @@ import LiveQuestionCard from './LiveQuestionCard.jsx';
 import PresenceList from './PresenceList.jsx';
 import WaitingScreen from './WaitingScreen.jsx';
 import CompetitiveResultView from './result-renderers/CompetitiveResultView.jsx';
+import ParticipatoryResultView from './result-renderers/ParticipatoryResultView.jsx';
 
 const statusLabels = {
   lobby: 'Lobby',
@@ -78,7 +79,11 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
               disabled
               showAnswer
             />
-            <CompetitiveResultView entries={state.leaderboard} title="Leaderboard da rodada" />
+            {state.aggregatedResult ? (
+              <ParticipatoryResultView result={state.aggregatedResult} />
+            ) : (
+              <CompetitiveResultView entries={state.leaderboard} title="Leaderboard da rodada" />
+            )}
             <CtaButtonRow
               className="justify-start"
               actions={[{

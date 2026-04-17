@@ -63,7 +63,7 @@ test.afterAll(() => {
   }
 });
 
-test('live competition supports true_false and multiple_select UI flows', async ({ browser }) => {
+test('live competition supports competitive and participatory UI flows', async ({ browser }) => {
   const context = await browser.newContext();
   const host = await context.newPage();
   const ana = await context.newPage();
@@ -113,6 +113,40 @@ test('live competition supports true_false and multiple_select UI flows', async 
 
   await expect(ana.getByText(/Respostas corretas: Carteira assinada/)).toBeVisible();
   await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Enquete').first()).toBeVisible();
+  await ana.getByRole('button', { name: /Curr/ }).click();
+  await bia.getByRole('button', { name: /Entrevista/ }).click();
+  await expect(host.getByText('Resultado da enquete')).toBeVisible();
+  await expect(ana.getByText(/1 voto/).first()).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Nuvem de palavras').first()).toBeVisible();
+  await ana.getByLabel('Resposta para nuvem de palavras').fill('  trabalho   em equipe ');
+  await ana.getByRole('button', { name: 'Enviar resposta' }).click();
+  await expect(ana.getByRole('button', { name: 'Enviar resposta' })).toBeDisabled();
+  await bia.getByLabel('Resposta para nuvem de palavras').fill('Trabalho em equipe');
+  await bia.getByRole('button', { name: 'Enviar resposta' }).click();
+  await expect(host.getByText('Nuvem de palavras').first()).toBeVisible();
+  await expect(ana.getByText('Trabalho em equipe')).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Escala').first()).toBeVisible();
+  await ana.getByRole('button', { name: '4' }).click();
+  await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
+  await bia.getByRole('button', { name: '2' }).click();
+  await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
+  await expect(host.getByText('Resultado da escala')).toBeVisible();
+  await expect(ana.getByText('Média do grupo')).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Ranking').first()).toBeVisible();
+  await ana.getByRole('button', { name: /Mover Ambiente de trabalho para cima/ }).click();
+  await ana.getByRole('button', { name: 'Confirmar ranking' }).click();
+  await bia.getByRole('button', { name: 'Confirmar ranking' }).click();
+  await expect(host.getByText('Ranking coletivo')).toBeVisible();
+  await expect(ana.getByText('Ambiente de trabalho').first()).toBeVisible();
 
   await context.close();
 });

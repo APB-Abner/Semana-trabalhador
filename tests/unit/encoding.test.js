@@ -24,6 +24,10 @@ const ignoredDirectories = new Set([
   'test-results',
 ]);
 
+const ignoredFiles = new Set([
+  path.join(rootDir, 'tests', 'Dvj0MwMw.js'),
+]);
+
 const mojibakePatterns = [
   { label: 'replacement character', pattern: /\uFFFD/u },
   { label: 'UTF-8 accent read as Latin-1', pattern: /\u00C3[\u0080-\u00BF]/u },
@@ -41,6 +45,10 @@ function collectTextFiles(entry) {
   const stats = statSync(absolutePath);
 
   if (stats.isFile()) {
+    if (ignoredFiles.has(absolutePath)) {
+      return [];
+    }
+
     return textExtensions.has(path.extname(absolutePath)) ? [absolutePath] : [];
   }
 

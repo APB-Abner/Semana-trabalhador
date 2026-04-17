@@ -175,7 +175,14 @@ describe('socket live quiz question types', () => {
 
   beforeEach(async () => {
     const app = createRealtimeApp({
-      questions: [liveQuestionsFixture[1], liveQuestionsFixture[2]],
+      questions: [
+        liveQuestionsFixture[1],
+        liveQuestionsFixture[2],
+        liveQuestionsFixture[3],
+        liveQuestionsFixture[4],
+        liveQuestionsFixture[5],
+        liveQuestionsFixture[6],
+      ],
       roundMs: 5_000,
     });
     httpServer = app.httpServer;
@@ -204,7 +211,7 @@ describe('socket live quiz question types', () => {
     return socket;
   }
 
-  it('supports true_false and multiple_select answer payloads', async () => {
+  it('supports competitive and participatory answer payloads', async () => {
     const host = await connectClient();
     const anaSocket = await connectClient();
     const biaSocket = await connectClient();
@@ -295,5 +302,129 @@ describe('socket live quiz question types', () => {
     expect(multipleSelectRevealed.currentQuestion?.correctOptionIds).toEqual(['q3-a', 'q3-b', 'q3-d']);
     expect(leaderboard.leaderboard[0].name).toBe('Ana');
     expect(leaderboard.leaderboard.find((entry) => entry.name === 'Bia')?.roundPoints).toBe(0);
+
+    const pollOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
+    const pollNextAck = await emitAck<BasicAck>(host, 'round:next', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    expect(pollNextAck.ok).toBe(true);
+
+    const pollRound = await pollOpenedPromise;
+    expect(pollRound.currentQuestion?.type).toBe('poll');
+
+    const pollRevealedPromise = once<RoomState>(host, 'round:revealed');
+    await emitAck<BasicAck>(anaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: ana.playerToken,
+      questionId: pollRound.currentQuestion?.id,
+      optionId: 'q4-a',
+    });
+    await emitAck<BasicAck>(biaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: bia.playerToken,
+      questionId: pollRound.currentQuestion?.id,
+      optionId: 'q4-b',
+    });
+
+    const pollRevealed = await pollRevealedPromise;
+    expect(pollRevealed.leaderboard).toEqual([]);
+    expect(pollRevealed.aggregatedResult?.type).toBe('poll');
+    if (pollRevealed.aggregatedResult?.type !== 'poll') return;
+    expect(pollRevealed.aggregatedResult.totalResponses).toBe(2);
+
+    const wordCloudOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
+    const wordCloudNextAck = await emitAck<BasicAck>(host, 'round:next', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    expect(wordCloudNextAck.ok).toBe(true);
+
+    const wordCloudRound = await wordCloudOpenedPromise;
+    expect(wordCloudRound.currentQuestion?.type).toBe('word_cloud');
+
+    const wordCloudRevealedPromise = once<RoomState>(host, 'round:revealed');
+    await emitAck<BasicAck>(anaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: ana.playerToken,
+      questionId: wordCloudRound.currentQuestion?.id,
+      text: '  trabalho   em equipe ',
+    });
+    await emitAck<BasicAck>(biaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: bia.playerToken,
+      questionId: wordCloudRound.currentQuestion?.id,
+      text: 'Trabalho em equipe',
+    });
+
+    const wordCloudRevealed = await wordCloudRevealedPromise;
+    expect(wordCloudRevealed.leaderboard).toEqual([]);
+    expect(wordCloudRevealed.aggregatedResult?.type).toBe('word_cloud');
+    if (wordCloudRevealed.aggregatedResult?.type !== 'word_cloud') return;
+    expect(wordCloudRevealed.aggregatedResult.entries[0]).toMatchObject({
+      text: 'Trabalho em equipe',
+      normalizedText: 'trabalho em equipe',
+      count: 2,
+    });
+
+    const scaleOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
+    const scaleNextAck = await emitAck<BasicAck>(host, 'round:next', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    expect(scaleNextAck.ok).toBe(true);
+
+    const scaleRound = await scaleOpenedPromise;
+    expect(scaleRound.currentQuestion?.type).toBe('scale');
+
+    const scaleRevealedPromise = once<RoomState>(host, 'round:revealed');
+    await emitAck<BasicAck>(anaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: ana.playerToken,
+      questionId: scaleRound.currentQuestion?.id,
+      value: 2,
+    });
+    await emitAck<BasicAck>(biaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: bia.playerToken,
+      questionId: scaleRound.currentQuestion?.id,
+      value: 4,
+    });
+
+    const scaleRevealed = await scaleRevealedPromise;
+    expect(scaleRevealed.leaderboard).toEqual([]);
+    expect(scaleRevealed.aggregatedResult?.type).toBe('scale');
+    if (scaleRevealed.aggregatedResult?.type !== 'scale') return;
+    expect(scaleRevealed.aggregatedResult.average).toBe(3);
+
+    const rankingOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
+    const rankingNextAck = await emitAck<BasicAck>(host, 'round:next', {
+      pin: created.pin,
+      hostToken: created.hostToken,
+    });
+    expect(rankingNextAck.ok).toBe(true);
+
+    const rankingRound = await rankingOpenedPromise;
+    expect(rankingRound.currentQuestion?.type).toBe('ranking');
+
+    const rankingRevealedPromise = once<RoomState>(host, 'round:revealed');
+    await emitAck<BasicAck>(anaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: ana.playerToken,
+      questionId: rankingRound.currentQuestion?.id,
+      optionIds: ['q7-a', 'q7-b', 'q7-c'],
+    });
+    await emitAck<BasicAck>(biaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: bia.playerToken,
+      questionId: rankingRound.currentQuestion?.id,
+      optionIds: ['q7-b', 'q7-a', 'q7-c'],
+    });
+
+    const rankingRevealed = await rankingRevealedPromise;
+    expect(rankingRevealed.leaderboard).toEqual([]);
+    expect(rankingRevealed.aggregatedResult?.type).toBe('ranking');
+    if (rankingRevealed.aggregatedResult?.type !== 'ranking') return;
+    expect(rankingRevealed.aggregatedResult.items[0].totalPoints).toBe(5);
   });
 });

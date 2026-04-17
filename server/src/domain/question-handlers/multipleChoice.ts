@@ -9,6 +9,7 @@ import type { QuestionHandler } from './types.ts';
 
 export const multipleChoiceHandler: QuestionHandler = {
   type: 'multiple_choice',
+  mode: 'competitive',
   validateQuestion(question: LiveQuestion) {
     assertCorrectOptionsExist(question);
 
