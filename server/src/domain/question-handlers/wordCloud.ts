@@ -6,7 +6,7 @@ const MAX_WORD_CLOUD_TEXT_LENGTH = 40;
 
 export function normalizeWordCloudAnswer(payload: LiveAnswerPayload): NormalizedLiveAnswer {
   return normalizeTextAnswer(payload, {
-    emptyMessage: 'Informe uma palavra ou expressão curta.',
+    emptyMessage: 'Informe uma palavra ou termo curto.',
     maxLength: MAX_WORD_CLOUD_TEXT_LENGTH,
   });
 }
@@ -16,7 +16,7 @@ export const wordCloudHandler: QuestionHandler = {
   mode: 'participatory',
   validateQuestion(question: LiveQuestion) {
     if (question.options.length > 0) {
-      throw new Error(`Nuvem de palavras não deve ter opções de resposta: ${question.text}`);
+      throw new Error(`Nuvem de palavras nao deve ter opcoes de resposta: ${question.text}`);
     }
   },
   normalizeAnswer: (_question, payload) => normalizeWordCloudAnswer(payload),

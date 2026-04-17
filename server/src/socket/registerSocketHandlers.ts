@@ -78,7 +78,7 @@ export function registerSocketHandlers(io: Server, store: RoomStore) {
           return;
         }
 
-        const room = store.joinPlayer(payload.pin, payload.name ?? '');
+        const room = store.joinPlayer(payload.pin, payload.name ?? '', payload.avatar);
         attachSocketToRoom(socket, payload.pin, { playerToken: room.playerToken });
         ack?.({ ok: true, pin: payload.pin, playerToken: room.playerToken, state: room.state });
         emitRoom(io, payload.pin, ServerEvents.PRESENCE_UPDATE, room.state);

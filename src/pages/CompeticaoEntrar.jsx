@@ -9,8 +9,8 @@ export default function CompeticaoEntrar() {
   const navigate = useNavigate();
   const { error, joinRoom } = usePlayerRoom();
 
-  const handleJoin = async ({ roomPin, name }) => {
-    const response = await joinRoom({ roomPin, name });
+  const handleJoin = async ({ roomPin, name, avatar }) => {
+    const response = await joinRoom({ roomPin, name, avatar });
 
     if (response?.ok) {
       navigate(`/competicao/sala/${response.pin}`);

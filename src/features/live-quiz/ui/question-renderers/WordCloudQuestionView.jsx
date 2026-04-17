@@ -31,8 +31,8 @@ export default function WordCloudQuestionView({
         placeholder="Digite uma palavra ou termo curto"
         className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default disabled:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-offset-zinc-900 dark:disabled:bg-zinc-950"
       />
-      <div className="mt-2 flex justify-between text-xs font-semibold text-gray-500 dark:text-gray-400">
-        <span>Termo curto para formar a nuvem</span>
+      <div className="mt-2 flex justify-between gap-3 text-xs font-semibold text-gray-500 dark:text-gray-400">
+        <span>Termo curto para formar a nuvem. Ate {maxLength} caracteres</span>
         <span>{text.length}/{maxLength}</span>
       </div>
 

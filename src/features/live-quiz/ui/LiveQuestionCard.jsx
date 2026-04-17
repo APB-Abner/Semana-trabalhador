@@ -41,11 +41,11 @@ const typeLabels = {
 };
 
 const submittedMessages = {
-  poll: 'Voto enviado. Aguarde o resultado agregado da enquete.',
-  word_cloud: 'Termo enviado. Aguarde a nuvem de palavras.',
-  scale: 'Valor enviado. Aguarde a distribuição da escala.',
-  ranking: 'Ranking enviado. Aguarde a prioridade coletiva.',
-  qna: 'Ideia enviada. Aguarde a lista de respostas abertas.',
+  poll: 'Voto enviado. Aguarde o resultado coletivo.',
+  word_cloud: 'Termo enviado. Aguarde a nuvem da rodada.',
+  scale: 'Valor enviado. Aguarde a distribuição do grupo.',
+  ranking: 'Ranking enviado. Aguarde a agregação coletiva.',
+  qna: 'Ideia enviada. Aguarde a lista de respostas da rodada.',
 };
 
 function getQuestionRenderer(type) {
@@ -61,16 +61,16 @@ function getQuestionRenderer(type) {
     return WordCloudQuestionView;
   }
 
+  if (type === 'qna') {
+    return QnaQuestionView;
+  }
+
   if (type === 'scale') {
     return ScaleQuestionView;
   }
 
   if (type === 'ranking') {
     return RankingQuestionView;
-  }
-
-  if (type === 'qna') {
-    return QnaQuestionView;
   }
 
   if (type === 'true_false') {
@@ -126,6 +126,7 @@ export default function LiveQuestionCard({
     .filter((option) => correctOptionIds.includes(option.id))
     .map((option) => option.text)
     .join(', ');
+  const submittedMessage = submittedMessages[question.type] ?? 'Resposta enviada. Aguarde o fechamento da rodada.';
 
   return (
     <ResultPanel>
@@ -168,7 +169,7 @@ export default function LiveQuestionCard({
 
       {hasSubmitted && !showAnswer && (
         <FeedbackNotice tone="info" className="mt-4 text-sm">
-          {submittedMessages[question.type] ?? 'Resposta enviada. Aguarde o fechamento da rodada.'}
+          {submittedMessage}
         </FeedbackNotice>
       )}
 

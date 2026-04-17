@@ -7,7 +7,7 @@ export default function QnaResultView({ result }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="font-semibold text-gray-900 dark:text-white">Respostas abertas</h3>
-          <p className="mt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Ideias equivalentes foram agrupadas por texto normalizado.
           </p>
         </div>
@@ -18,10 +18,12 @@ export default function QnaResultView({ result }) {
         {result.entries.length ? result.entries.map((entry) => (
           <div
             key={entry.normalizedText}
-            className="rounded-md border border-gray-100 bg-gray-50 p-3 dark:border-zinc-800 dark:bg-zinc-950"
+            className="rounded-lg border border-gray-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">{entry.text}</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {entry.text}
+              </p>
               <Badge tone="blue">{entry.count}x</Badge>
             </div>
           </div>

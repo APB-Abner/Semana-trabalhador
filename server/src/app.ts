@@ -2,7 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
-import { getLiveQuestions } from './domain/questions.ts';
+import { getLiveQuestionBank, selectLiveQuestionsForSession } from './domain/questions.ts';
 import { createRoomStore, type RoomStore } from './domain/roomStore.ts';
 import { registerSocketHandlers } from './socket/registerSocketHandlers.ts';
 import type { LiveQuestion, RoomEvent } from './types/realtime.ts';
@@ -14,17 +14,22 @@ export type CreateRealtimeAppOptions = {
   roomStore?: RoomStore;
 };
 
-export function createRealtimeApp({
-  clientOrigin = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
-  questions = getLiveQuestions(),
-  roundMs = Number(process.env.LIVE_QUIZ_ROUND_MS ?? 20_000),
-  roomStore,
-}: CreateRealtimeAppOptions = {}) {
+export function createRealtimeApp(options: CreateRealtimeAppOptions = {}) {
+  const {
+    clientOrigin = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
+    questions,
+    roundMs = Number(process.env.LIVE_QUIZ_ROUND_MS ?? 20_000),
+    roomStore,
+  } = options;
   let io: Server;
   const app = express();
   const httpServer = createServer(app);
+  const questionBank = questions ?? getLiveQuestionBank();
   const store = roomStore ?? createRoomStore({
-    questions,
+    questions: questionBank,
+    selectQuestions: questions
+      ? undefined
+      : ({ recentQuestionIds }) => selectLiveQuestionsForSession({ questions: questionBank, recentQuestionIds }),
     roundMs,
     onRoomEvent: (event: RoomEvent) => {
       io.to(event.pin).emit(event.event, event.state);

@@ -1,7 +1,12 @@
 import type { LiveAnswerPayload } from '../../types/realtime.ts';
 import type { NormalizedLiveAnswer } from './types.ts';
 
-export type TextAggregateEntry = {
+type TextAnswerOptions = {
+  emptyMessage: string;
+  maxLength: number;
+};
+
+type TextEntry = {
   text: string;
   normalizedText: string;
   count: number;
@@ -11,22 +16,24 @@ function collapseSpaces(text: string) {
   return text.trim().replace(/\s+/g, ' ');
 }
 
-export function toDisplayText(text: string) {
+function toDisplayText(text: string) {
   const collapsed = collapseSpaces(text);
+
+  if (!collapsed) {
+    return '';
+  }
+
   return collapsed.charAt(0).toLocaleUpperCase('pt-BR') + collapsed.slice(1);
 }
 
-export function toNormalizedText(text: string) {
+function toNormalizedText(text: string) {
   return collapseSpaces(text).toLocaleLowerCase('pt-BR');
 }
 
-export function normalizeTextAnswer(payload: LiveAnswerPayload, {
-  emptyMessage,
-  maxLength,
-}: {
-  emptyMessage: string;
-  maxLength: number;
-}): NormalizedLiveAnswer {
+export function normalizeTextAnswer(
+  payload: LiveAnswerPayload,
+  { emptyMessage, maxLength }: TextAnswerOptions,
+): NormalizedLiveAnswer {
   const rawText = payload.text ?? '';
   const displayText = toDisplayText(rawText);
   const normalizedText = toNormalizedText(rawText);
@@ -36,7 +43,7 @@ export function normalizeTextAnswer(payload: LiveAnswerPayload, {
   }
 
   if (displayText.length > maxLength) {
-    throw new Error(`A resposta deve ter no máximo ${maxLength} caracteres.`);
+    throw new Error(`A resposta deve ter no maximo ${maxLength} caracteres.`);
   }
 
   return {
@@ -47,8 +54,10 @@ export function normalizeTextAnswer(payload: LiveAnswerPayload, {
   };
 }
 
-export function aggregateTextEntries(answers: Array<{ normalizedText?: string; displayText?: string }>) {
-  const entriesByText = new Map<string, TextAggregateEntry>();
+export function aggregateTextEntries(
+  answers: Array<{ displayText?: string; normalizedText?: string }>,
+): TextEntry[] {
+  const entriesByText = new Map<string, TextEntry>();
 
   answers.forEach((answer) => {
     if (!answer.normalizedText || !answer.displayText) {

@@ -6,6 +6,7 @@ import type {
   RoomJoinAck,
   RoomState,
 } from '../../../shared/types/realtime';
+import type { PigeonAvatarState } from '../../../shared/types/pigeonAvatar';
 
 type SubmittedLiveAnswer = {
   optionIds: string[];
@@ -89,13 +90,22 @@ export default function usePlayerRoom(pin?: string) {
     });
   }, [connected, emitWithAck, pin]);
 
-  const joinRoom = useCallback(async ({ roomPin, name }: { roomPin: string; name: string }) => {
+  const joinRoom = useCallback(async ({
+    roomPin,
+    name,
+    avatar,
+  }: {
+    roomPin: string;
+    name: string;
+    avatar?: PigeonAvatarState;
+  }) => {
     setError(null);
     const normalizedPin = roomPin.trim();
     const response = await emitWithAck<RoomJoinAck>('room:join', {
       pin: normalizedPin,
       role: 'player',
       name,
+      avatar,
     });
 
     if (!response.ok) {

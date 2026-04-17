@@ -6,7 +6,7 @@ const MAX_QNA_TEXT_LENGTH = 160;
 
 export function normalizeQnaAnswer(payload: LiveAnswerPayload): NormalizedLiveAnswer {
   return normalizeTextAnswer(payload, {
-    emptyMessage: 'Escreva uma resposta curta.',
+    emptyMessage: 'Informe uma resposta curta.',
     maxLength: MAX_QNA_TEXT_LENGTH,
   });
 }
@@ -16,7 +16,7 @@ export const qnaHandler: QuestionHandler = {
   mode: 'participatory',
   validateQuestion(question: LiveQuestion) {
     if (question.options.length > 0) {
-      throw new Error(`Pergunta aberta não deve ter opções de resposta: ${question.text}`);
+      throw new Error(`Pergunta aberta nao deve ter opcoes de resposta: ${question.text}`);
     }
   },
   normalizeAnswer: (_question, payload) => normalizeQnaAnswer(payload),

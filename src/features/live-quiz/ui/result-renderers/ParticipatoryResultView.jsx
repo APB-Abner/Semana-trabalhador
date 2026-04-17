@@ -29,5 +29,9 @@ export default function ParticipatoryResultView({ result }) {
     return <RankingResultView result={result} />;
   }
 
+  if (result.type === 'qna') {
+    return <QnaResultView result={result} />;
+  }
+
   return null;
 }

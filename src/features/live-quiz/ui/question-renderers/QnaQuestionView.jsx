@@ -18,7 +18,7 @@ export default function QnaQuestionView({
 
   return (
     <div className="mt-5">
-      <label htmlFor="live-qna-answer" className="sr-only">
+      <label htmlFor="live-qna-answer" className="text-sm font-semibold text-gray-700 dark:text-gray-200">
         Resposta aberta curta
       </label>
       <textarea
@@ -29,10 +29,10 @@ export default function QnaQuestionView({
         maxLength={maxLength}
         rows={4}
         placeholder="Escreva uma resposta curta ou uma ideia para compartilhar com o grupo"
-        className="w-full resize-none rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default disabled:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-offset-zinc-900 dark:disabled:bg-zinc-950"
+        className="mt-2 w-full resize-none rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default disabled:bg-gray-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-offset-zinc-900 dark:disabled:bg-zinc-950"
       />
       <div className="mt-2 flex justify-between gap-3 text-xs font-semibold text-gray-500 dark:text-gray-400">
-        <span>Resposta opinativa curta. Ideias iguais serão agrupadas.</span>
+        <span>Resposta opinativa curta. Ideias equivalentes serao agrupadas.</span>
         <span>{text.length}/{maxLength}</span>
       </div>
 

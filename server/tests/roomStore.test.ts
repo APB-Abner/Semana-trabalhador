@@ -31,11 +31,32 @@ describe('roomStore', () => {
 
   it('adds a player and rejects invalid joins', () => {
     const room = store.createRoom();
-    const player = store.joinPlayer(room.pin, 'Ana');
+    const player = store.joinPlayer(room.pin, 'Ana', {
+      baseId: 'official-pigeon',
+      palette: {
+        primary: '#9AD8FF',
+        secondary: '#3B82F6',
+        chest: '#F0F9FF',
+        beak: '#FFB13B',
+        accent: '#22D3EE',
+      },
+      patternId: 'wing-bars',
+      expressionId: 'focused',
+      equipped: {
+        head: 'neon-headphones',
+        face: 'visor-glasses',
+      },
+      selectedPresetId: 'gamer',
+      details: {
+        blush: true,
+      },
+    });
 
     expect(player.playerToken).toBeTruthy();
     expect(player.state.players).toHaveLength(1);
     expect(player.state.players[0].name).toBe('Ana');
+    expect(player.state.players[0].avatar.selectedPresetId).toBe('gamer');
+    expect(player.state.players[0].avatar.equipped.head).toBe('neon-headphones');
     expect(() => store.joinPlayer('000000', 'Bia')).toThrow(RoomStoreError);
     expect(() => store.joinPlayer(room.pin, '')).toThrow(RoomStoreError);
   });

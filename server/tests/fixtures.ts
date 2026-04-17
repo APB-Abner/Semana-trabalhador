@@ -89,9 +89,9 @@ export const liveQuestionsFixture: LiveQuestion[] = [
   {
     id: 'q8',
     type: 'qna',
-    topic: 'Reflexão',
-    text: 'Qual primeiro passo você pode dar esta semana?',
+    topic: 'Plano de acao',
+    text: 'Qual primeiro passo voce faria esta semana?',
     options: [],
-    explanation: 'As respostas abertas ajudam a transformar intenção em ação.',
+    explanation: 'Respostas equivalentes sao agrupadas.',
   },
 ];

@@ -65,19 +65,44 @@ describe('local persistence', () => {
 
   it('stores the latest vocational top 3 summary', () => {
     const history = saveVocationalHistory({
-      primary: { area: 'tecnologia' },
+      primary: { area: 'tecnologia', title: 'Tecnologia e Inovacao' },
       ranking: [
-        { area: 'tecnologia', title: 'Tecnologia', percentage: 60, score: 3 },
+        { area: 'tecnologia', title: 'Tecnologia e Inovacao', percentage: 60, score: 3 },
         { area: 'exatas', title: 'Exatas', percentage: 20, score: 1 },
         { area: 'saude', title: 'Saude', percentage: 20, score: 1 },
       ],
+      profileBlend: [],
     });
 
     expect(history.primaryArea).toBe('tecnologia');
+    expect(history.primaryTitle).toBe('Tecnologia e Inovacao');
     expect(history.ranking).toHaveLength(3);
     expect(readVocationalHistory().ranking[0]).toMatchObject({
       area: 'tecnologia',
       percentage: 60,
+    });
+  });
+
+  it('stores the latest vocational summary with blend info', () => {
+    const history = saveVocationalHistory({
+      primary: { area: 'tecnologia', title: 'Tecnologia e Inovacao' },
+      ranking: [
+        { area: 'tecnologia', title: 'Tecnologia e Inovacao', percentage: 100, score: 36 },
+        { area: 'exatas', title: 'Exatas e Solucao de Problemas', percentage: 86, score: 31 },
+        { area: 'administracao', title: 'Administracao e Gestao', percentage: 74, score: 27 },
+      ],
+      profileBlend: ['Analitico', 'Pratico'],
+    });
+
+    expect(history.primaryArea).toBe('tecnologia');
+    expect(history.primaryTitle).toBe('Tecnologia e Inovacao');
+    expect(history.profileBlend).toEqual(['Analitico', 'Pratico']);
+    expect(history.ranking).toHaveLength(3);
+
+    expect(readVocationalHistory()).toMatchObject({
+      primaryArea: 'tecnologia',
+      primaryTitle: 'Tecnologia e Inovacao',
+      profileBlend: ['Analitico', 'Pratico'],
     });
   });
 });

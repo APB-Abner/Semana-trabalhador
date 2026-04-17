@@ -130,7 +130,7 @@ Tipos de pergunta ao vivo:
 - `word_cloud`: resposta curta em texto, sem resposta correta e sem pontuação.
 - `scale`: valor numérico dentro de uma faixa `min`/`max`/`step`, sem resposta correta e sem pontuação.
 - `ranking`: ordenação completa de itens, sem resposta correta e sem pontuação.
-- `qna`: pergunta aberta curta/opinativa, sem resposta correta e sem pontuação.
+- `qna`: resposta aberta curta, sem resposta correta e sem pontuação.
 
 As rodadas competitivas (`multiple_choice`, `true_false`, `multiple_select`) alimentam leaderboard e ranking final. As rodadas participativas (`poll`, `word_cloud`, `scale`, `ranking`, `qna`) geram apenas resultado agregado da rodada atual:
 
@@ -138,16 +138,15 @@ As rodadas competitivas (`multiple_choice`, `true_false`, `multiple_select`) ali
 - `word_cloud`: respostas normalizadas por frequência, preservando uma versão legível para exibição.
 - `scale`: média do grupo, total de respostas e distribuição por valor.
 - `ranking`: contagem Borda simples, média de posição e votos em primeiro lugar por item.
-- `qna`: lista de respostas abertas agrupadas por texto normalizado, com contagem por resposta equivalente.
+- `qna`: respostas abertas agrupadas por texto normalizado, preservando uma versão legível para exibição.
 
-A base de perguntas live foi ampliada em uma playlist própria, separando perguntas competitivas e participativas sem alterar o quiz normal em `/game`.
+A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty` e `enabled`. Cada sala recebe uma rotação de 10 perguntas: 4 competitivas e 6 participativas, com no máximo 2 perguntas do mesmo tipo, no máximo 1 `qna` e no máximo 1 `word_cloud`. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
 
 Limitações desta fase:
 
 - As salas continuam em memória; reiniciar o backend apaga partidas abertas.
 - `multiple_select` existe apenas no modo ao vivo e não altera o quiz normal em `/game`.
 - `poll`, `word_cloud`, `scale`, `ranking` e `qna` existem apenas no modo ao vivo e não alteram os fluxos normais do site.
-- `qna` ainda não tem moderação, votação, destaque manual ou threading; nesta fase o resultado é uma listagem agrupada.
 - O backend segue pensado para uma instância única enquanto não houver Redis, banco ou coordenação entre processos.
 
 ## Deploy Produção

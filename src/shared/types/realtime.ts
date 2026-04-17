@@ -1,3 +1,5 @@
+import type { PigeonAvatarState } from './pigeonAvatar';
+
 export type LiveQuestionType =
   | 'multiple_choice'
   | 'true_false'
@@ -7,6 +9,12 @@ export type LiveQuestionType =
   | 'scale'
   | 'ranking'
   | 'qna';
+
+export type LiveQuestionBucket = 'competitive' | 'participatory';
+
+export type LiveQuestionTone = 'objective' | 'reflective' | 'interview_like';
+
+export type LiveQuestionDifficulty = 'easy' | 'medium' | 'hard';
 
 export type LiveQuestionOption = {
   id: string;
@@ -24,7 +32,11 @@ export type LiveScaleConfig = {
 export type LiveQuestion = {
   id: string;
   type: LiveQuestionType;
+  bucket?: LiveQuestionBucket;
+  tone?: LiveQuestionTone;
   topic: string;
+  difficulty?: LiveQuestionDifficulty;
+  enabled?: boolean;
   text: string;
   options: LiveQuestionOption[];
   correctOptionId?: string;
@@ -42,6 +54,7 @@ export type PublicLiveQuestion = Omit<LiveQuestion, 'correctOptionId' | 'correct
 export type LivePlayer = {
   id: string;
   name: string;
+  avatar: PigeonAvatarState;
   score: number;
   connected: boolean;
   joinedAt: number;
@@ -50,6 +63,7 @@ export type LivePlayer = {
 export type LeaderboardEntry = {
   playerId: string;
   name: string;
+  avatar: PigeonAvatarState;
   score: number;
   roundPoints: number;
   lastAnswerCorrect: boolean;
@@ -146,6 +160,7 @@ export type RoomJoinPayload = {
   pin: string;
   role: ClientRole;
   name?: string;
+  avatar?: PigeonAvatarState;
   playerToken?: string;
   hostToken?: string;
 };

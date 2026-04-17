@@ -11,7 +11,7 @@ export default function useVocationalTest(questions, results) {
   const savedResultRef = useRef(false);
 
   const resultado = useMemo(
-    () => calculateProfile(respostas, results),
+    () => calculateProfile(respostas.filter(Boolean), results),
     [respostas, results],
   );
 
@@ -26,8 +26,12 @@ export default function useVocationalTest(questions, results) {
     savedResultRef.current = true;
   }, [finalizado, resultado]);
 
-  const responder = useCallback((areas) => {
-    setRespostas((currentAnswers) => [...currentAnswers, ...areas]);
+  const responder = useCallback((option) => {
+    setRespostas((currentAnswers) => {
+      const nextAnswers = [...currentAnswers];
+      nextAnswers[etapa] = option;
+      return nextAnswers;
+    });
 
     if (etapa + 1 < questions.length) {
       setEtapa((currentStep) => currentStep + 1);
@@ -36,6 +40,21 @@ export default function useVocationalTest(questions, results) {
 
     setFinalizado(true);
   }, [etapa, questions.length]);
+
+  const voltar = useCallback(() => {
+    if (finalizado) {
+      setFinalizado(false);
+      setEtapa(Math.max(questions.length - 1, 0));
+      savedResultRef.current = false;
+      return;
+    }
+
+    if (etapa === 0) {
+      return;
+    }
+
+    setEtapa((currentStep) => currentStep - 1);
+  }, [etapa, finalizado, questions.length]);
 
   const reset = useCallback(() => {
     setEtapa(0);
@@ -46,13 +65,16 @@ export default function useVocationalTest(questions, results) {
 
   return {
     etapa,
+    canGoBack: etapa > 0 && !finalizado,
     finalizado,
     history,
     perguntaAtual: questions[etapa],
-    progresso: Math.round(((etapa + 1) / questions.length) * 100),
+    progresso: finalizado ? 100 : Math.round(((etapa + 1) / questions.length) * 100),
     responder,
+    respostaAtual: respostas[etapa] ?? null,
     reset,
     resultado,
     totalPerguntas: questions.length,
+    voltar,
   };
 }

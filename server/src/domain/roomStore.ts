@@ -1,5 +1,6 @@
 import { createPin, createToken } from './pin.ts';
 import { calculateLiveScore } from './scoring.ts';
+import { normalizePigeonAvatarState } from '../../../src/features/pigeon-avatar/model/avatarRules.ts';
 import {
   createAggregatedResult,
   isCompetitiveQuestion,
@@ -17,9 +18,12 @@ import type {
   RoomEventName,
   RoomState,
 } from '../types/realtime.ts';
+import type { PigeonAvatarState } from '../../../src/shared/types/pigeonAvatar.ts';
 
 type RoomStoreOptions = {
   questions: LiveQuestion[];
+  selectQuestions?: (context: { recentQuestionIds: string[] }) => LiveQuestion[];
+  recentQuestionHistorySize?: number;
   roundMs?: number;
   abandonedLobbyTtlMs?: number;
   finishedRoomTtlMs?: number;
@@ -99,6 +103,8 @@ function toAnswerPayload(answer: string | LiveAnswerPayload): LiveAnswerPayload 
 
 export function createRoomStore({
   questions,
+  selectQuestions,
+  recentQuestionHistorySize = 30,
   roundMs = 20_000,
   abandonedLobbyTtlMs = DEFAULT_ABANDONED_LOBBY_TTL_MS,
   finishedRoomTtlMs = DEFAULT_FINISHED_ROOM_TTL_MS,
@@ -108,6 +114,30 @@ export function createRoomStore({
   assertQuestions(questions);
 
   const rooms = new Map<string, LiveRoomInternal>();
+  const recentQuestionIds: string[] = [];
+
+  function rememberSessionQuestions(sessionQuestions: LiveQuestion[]) {
+    if (!recentQuestionHistorySize) {
+      return;
+    }
+
+    recentQuestionIds.push(...sessionQuestions.map((question) => question.id));
+
+    if (recentQuestionIds.length > recentQuestionHistorySize) {
+      recentQuestionIds.splice(0, recentQuestionIds.length - recentQuestionHistorySize);
+    }
+  }
+
+  function getSessionQuestions() {
+    const sessionQuestions = selectQuestions
+      ? selectQuestions({ recentQuestionIds: [...recentQuestionIds] })
+      : questions;
+
+    assertQuestions(sessionQuestions);
+    rememberSessionQuestions(sessionQuestions);
+
+    return sessionQuestions;
+  }
 
   function requireRoom(pin: string): LiveRoomInternal {
     const room = rooms.get(pin);
@@ -228,6 +258,7 @@ export function createRoomStore({
         return {
           playerId: player.id,
           name: player.name,
+          avatar: player.avatar,
           score: player.score,
           roundPoints: answer?.points ?? 0,
           lastAnswerCorrect: answer?.isCorrect ?? false,
@@ -334,13 +365,14 @@ export function createRoomStore({
   function createRoom(): CreateRoomResult {
     const pin = createPin(new Set(rooms.keys()));
     const hostToken = createToken();
+    const sessionQuestions = getSessionQuestions();
     const room: LiveRoomInternal = {
       pin,
       hostToken,
       hostConnected: true,
       status: 'lobby',
       players: new Map(),
-      questions,
+      questions: sessionQuestions,
       currentQuestionIndex: -1,
       round: null,
       leaderboard: [],
@@ -361,7 +393,7 @@ export function createRoomStore({
     };
   }
 
-  function joinPlayer(pin: string, name: string): JoinPlayerResult {
+  function joinPlayer(pin: string, name: string, avatar?: PigeonAvatarState): JoinPlayerResult {
     const room = requireRoom(pin);
     const cleanName = normalizePlayerName(name);
 
@@ -383,6 +415,7 @@ export function createRoomStore({
       id: playerId,
       token: playerToken,
       name: cleanName,
+      avatar: normalizePigeonAvatarState(avatar),
       score: 0,
       connected: true,
       joinedAt: now(),
