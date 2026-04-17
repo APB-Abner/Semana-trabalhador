@@ -39,4 +39,24 @@ export const liveQuestionsFixture: LiveQuestion[] = [
     correctOptionIds: ['q3-a', 'q3-b', 'q3-d'],
     explanation: 'O contrato de aprendizagem garante registro, 13º salário e férias.',
   },
+  {
+    id: 'q4',
+    type: 'poll',
+    topic: 'Interesses',
+    text: 'Qual tema você quer aprofundar?',
+    options: [
+      { id: 'q4-a', text: 'Currículo' },
+      { id: 'q4-b', text: 'Entrevista' },
+      { id: 'q4-c', text: 'Direitos' },
+    ],
+    explanation: 'A enquete orienta o próximo assunto.',
+  },
+  {
+    id: 'q5',
+    type: 'word_cloud',
+    topic: 'Carreira',
+    text: 'O que mais importa no primeiro emprego?',
+    options: [],
+    explanation: 'As respostas parecidas são agrupadas.',
+  },
 ];

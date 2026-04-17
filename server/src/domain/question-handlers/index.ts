@@ -1,13 +1,17 @@
-import type { LiveAnswerPayload, LiveQuestion, LiveQuestionType } from '../../types/realtime.ts';
+import type { LiveAnswerPayload, LiveQuestion, LiveQuestionType, PlayerAnswer } from '../../types/realtime.ts';
 import { multipleChoiceHandler } from './multipleChoice.ts';
 import { multipleSelectHandler } from './multipleSelect.ts';
+import { pollHandler } from './poll.ts';
 import { trueFalseHandler } from './trueFalse.ts';
+import { wordCloudHandler } from './wordCloud.ts';
 import type { NormalizedLiveAnswer, QuestionHandler } from './types.ts';
 
 const handlers: Record<LiveQuestionType, QuestionHandler> = {
   multiple_choice: multipleChoiceHandler,
   true_false: trueFalseHandler,
   multiple_select: multipleSelectHandler,
+  poll: pollHandler,
+  word_cloud: wordCloudHandler,
 };
 
 export function getQuestionHandler(type: LiveQuestionType): QuestionHandler {
@@ -29,7 +33,27 @@ export function normalizeLiveAnswer(question: LiveQuestion, payload: LiveAnswerP
 }
 
 export function isLiveAnswerCorrect(question: LiveQuestion, answer: NormalizedLiveAnswer): boolean {
-  return getQuestionHandler(question.type).isCorrect(question, answer);
+  const handler = getQuestionHandler(question.type);
+
+  if (!handler.isCorrect) {
+    return false;
+  }
+
+  return handler.isCorrect(question, answer);
+}
+
+export function isCompetitiveQuestion(question: LiveQuestion): boolean {
+  return getQuestionHandler(question.type).mode === 'competitive';
+}
+
+export function createAggregatedResult(question: LiveQuestion, answers: PlayerAnswer[]) {
+  const handler = getQuestionHandler(question.type);
+
+  if (!handler.aggregateResult) {
+    return null;
+  }
+
+  return handler.aggregateResult(question, answers);
 }
 
 export type { NormalizedLiveAnswer, QuestionHandler };

@@ -119,11 +119,19 @@ Tipos de pergunta ao vivo:
 - `multiple_choice`: uma alternativa correta, pontuação por acerto e velocidade.
 - `true_false`: duas alternativas, mesma pontuação competitiva da múltipla escolha.
 - `multiple_select`: múltiplas alternativas corretas, envio explícito por botão e pontuação apenas quando o conjunto marcado é exatamente igual ao conjunto correto.
+- `poll`: enquete com uma opção por jogador, sem resposta correta e sem pontuação.
+- `word_cloud`: resposta curta em texto, sem resposta correta e sem pontuação.
+
+As rodadas competitivas (`multiple_choice`, `true_false`, `multiple_select`) alimentam leaderboard e ranking final. As rodadas participativas (`poll`, `word_cloud`) geram apenas resultado agregado da rodada atual:
+
+- `poll`: votos por opção, percentual e total de respostas.
+- `word_cloud`: respostas normalizadas por frequência, preservando uma versão legível para exibição.
 
 Limitações desta fase:
 
 - As salas continuam em memória; reiniciar o backend apaga partidas abertas.
 - `multiple_select` existe apenas no modo ao vivo e não altera o quiz normal em `/game`.
+- `poll` e `word_cloud` existem apenas no modo ao vivo e não alteram os fluxos normais do site.
 - O backend segue pensado para uma instância única enquanto não houver Redis, banco ou coordenação entre processos.
 
 ## Deploy Produção

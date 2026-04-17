@@ -63,7 +63,7 @@ test.afterAll(() => {
   }
 });
 
-test('live competition supports true_false and multiple_select UI flows', async ({ browser }) => {
+test('live competition supports competitive and participatory UI flows', async ({ browser }) => {
   const context = await browser.newContext();
   const host = await context.newPage();
   const ana = await context.newPage();
@@ -113,6 +113,23 @@ test('live competition supports true_false and multiple_select UI flows', async 
 
   await expect(ana.getByText(/Respostas corretas: Carteira assinada/)).toBeVisible();
   await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Enquete').first()).toBeVisible();
+  await ana.getByRole('button', { name: /Curr/ }).click();
+  await bia.getByRole('button', { name: /Entrevista/ }).click();
+  await expect(host.getByText('Resultado da enquete')).toBeVisible();
+  await expect(ana.getByText(/1 voto/).first()).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Nuvem de palavras').first()).toBeVisible();
+  await ana.getByLabel('Resposta para nuvem de palavras').fill('  trabalho   em equipe ');
+  await ana.getByRole('button', { name: 'Enviar resposta' }).click();
+  await expect(ana.getByRole('button', { name: 'Enviar resposta' })).toBeDisabled();
+  await bia.getByLabel('Resposta para nuvem de palavras').fill('Trabalho em equipe');
+  await bia.getByRole('button', { name: 'Enviar resposta' }).click();
+  await expect(host.getByText('Nuvem de palavras').first()).toBeVisible();
+  await expect(ana.getByText('Trabalho em equipe')).toBeVisible();
 
   await context.close();
 });

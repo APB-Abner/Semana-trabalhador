@@ -1,6 +1,8 @@
 import { createPin, createToken } from './pin.ts';
 import { calculateLiveScore } from './scoring.ts';
 import {
+  createAggregatedResult,
+  isCompetitiveQuestion,
   isLiveAnswerCorrect,
   normalizeLiveAnswer,
   validateLiveQuestion,
@@ -148,6 +150,7 @@ export function createRoomStore({
       answeredCount: room.round?.answers.size ?? 0,
       leaderboard: room.leaderboard,
       finalRanking: room.finalRanking,
+      aggregatedResult: room.aggregatedResult,
     };
   }
 
@@ -242,6 +245,7 @@ export function createRoomStore({
   function finishGame(room: LiveRoomInternal) {
     clearRoundTimer(room);
     room.status = 'finished';
+    room.aggregatedResult = null;
     room.finalRanking = sortRanking(createRoundLeaderboard(room));
     room.leaderboard = room.finalRanking;
     emit(room, 'game:finished');
@@ -255,9 +259,20 @@ export function createRoomStore({
 
     clearRoundTimer(room);
     room.status = 'revealed';
-    room.leaderboard = createRoundLeaderboard(room);
+    const currentQuestion = room.questions[room.currentQuestionIndex];
+    const answers = [...room.round!.answers.values()];
+
+    if (currentQuestion && isCompetitiveQuestion(currentQuestion)) {
+      room.aggregatedResult = null;
+      room.leaderboard = createRoundLeaderboard(room);
+      emit(room, 'round:revealed');
+      emit(room, 'leaderboard:update');
+      return;
+    }
+
+    room.leaderboard = [];
+    room.aggregatedResult = currentQuestion ? createAggregatedResult(currentQuestion, answers) : null;
     emit(room, 'round:revealed');
-    emit(room, 'leaderboard:update');
   }
 
   function scheduleRoundClose(room: LiveRoomInternal) {
@@ -285,6 +300,7 @@ export function createRoomStore({
       answers: new Map<string, PlayerAnswer>(),
     };
     room.leaderboard = [];
+    room.aggregatedResult = null;
     scheduleRoundClose(room);
     emit(room, 'round:opened');
   }
@@ -328,6 +344,7 @@ export function createRoomStore({
       round: null,
       leaderboard: [],
       finalRanking: [],
+      aggregatedResult: null,
       roundTimer: null,
       lobbyExpirationTimer: null,
       finishedExpirationTimer: null,
@@ -475,27 +492,40 @@ export function createRoomStore({
 
     const responseMs = Math.max(0, submittedAt - room.round.startedAt);
     let optionIds: string[];
+    let text: string | undefined;
+    let normalizedText: string | undefined;
+    let displayText: string | undefined;
     let isCorrect: boolean;
 
     try {
       const normalizedAnswer = normalizeLiveAnswer(question, toAnswerPayload(answer));
       optionIds = normalizedAnswer.optionIds;
-      isCorrect = isLiveAnswerCorrect(question, normalizedAnswer);
+      text = normalizedAnswer.text;
+      normalizedText = normalizedAnswer.normalizedText;
+      displayText = normalizedAnswer.displayText;
+      isCorrect = isCompetitiveQuestion(question)
+        ? isLiveAnswerCorrect(question, normalizedAnswer)
+        : false;
     } catch (error) {
       throw new RoomStoreError(error instanceof Error ? error.message : 'Resposta inválida para esta pergunta.');
     }
 
-    const points = calculateLiveScore({
-      isCorrect,
-      submittedAt,
-      startedAt: room.round.startedAt,
-      limitMs: roundMs,
-    });
+    const points = isCompetitiveQuestion(question)
+      ? calculateLiveScore({
+          isCorrect,
+          submittedAt,
+          startedAt: room.round.startedAt,
+          limitMs: roundMs,
+        })
+      : 0;
 
     player.score += points;
     room.round.answers.set(player.id, {
       optionId: optionIds[0],
       optionIds,
+      text,
+      normalizedText,
+      displayText,
       submittedAt,
       responseMs,
       isCorrect,

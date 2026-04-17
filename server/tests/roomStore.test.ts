@@ -126,6 +126,12 @@ describe('roomStore', () => {
   });
 
   it('builds a round leaderboard and final ranking by score', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: liveQuestionsFixture.slice(0, 3),
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
     const room = store.createRoom();
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
@@ -225,6 +231,99 @@ describe('roomStore', () => {
       'q3',
       { optionIds: ['q3-a', 'q3-b', 'q3-d'] },
     )).toThrow(RoomStoreError);
+  });
+
+  it('aggregates poll rounds without changing scores or leaderboard', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[3]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q4', 'q4-a');
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, bia.playerToken, 'q4', 'q4-b');
+
+    expect(revealed.status).toBe('revealed');
+    expect(revealed.leaderboard).toEqual([]);
+    expect(revealed.players.every((player) => player.score === 0)).toBe(true);
+    expect(revealed.aggregatedResult?.type).toBe('poll');
+    if (revealed.aggregatedResult?.type !== 'poll') return;
+    expect(revealed.aggregatedResult.totalResponses).toBe(2);
+    expect(revealed.aggregatedResult.options.find((option) => option.optionId === 'q4-a')).toMatchObject({
+      count: 1,
+      percentage: 50,
+    });
+  });
+
+  it('aggregates word_cloud rounds with normalized keys and readable display text', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[4]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+    const caio = store.joinPlayer(room.pin, 'Caio');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q5', { text: '  trabalho   em equipe ' });
+    currentTime += 500;
+    store.submitAnswer(room.pin, bia.playerToken, 'q5', { text: 'Trabalho em equipe' });
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, caio.playerToken, 'q5', { text: 'Pontualidade' });
+
+    expect(revealed.status).toBe('revealed');
+    expect(revealed.leaderboard).toEqual([]);
+    expect(revealed.players.every((player) => player.score === 0)).toBe(true);
+    expect(revealed.aggregatedResult?.type).toBe('word_cloud');
+    if (revealed.aggregatedResult?.type !== 'word_cloud') return;
+    expect(revealed.aggregatedResult.totalResponses).toBe(3);
+    expect(revealed.aggregatedResult.entries[0]).toMatchObject({
+      text: 'Trabalho em equipe',
+      normalizedText: 'trabalho em equipe',
+      count: 2,
+    });
+  });
+
+  it('keeps final ranking based on competitive scores when participatory rounds follow', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[0], liveQuestionsFixture[3]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+
+    store.startGame(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q1', 'q1-a');
+    currentTime += 500;
+    store.submitAnswer(room.pin, bia.playerToken, 'q1', 'q1-b');
+
+    store.nextRound(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q4', 'q4-a');
+    currentTime += 500;
+    store.submitAnswer(room.pin, bia.playerToken, 'q4', 'q4-b');
+
+    const finished = store.nextRound(room.pin, room.hostToken);
+
+    expect(finished.status).toBe('finished');
+    expect(finished.aggregatedResult).toBeNull();
+    expect(finished.finalRanking[0].name).toBe('Ana');
+    expect(finished.finalRanking.find((entry) => entry.name === 'Bia')?.score).toBe(0);
   });
 
   it('marks host disconnects, blocks host actions, and allows continuing after reconnect', () => {

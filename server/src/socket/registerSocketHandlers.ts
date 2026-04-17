@@ -117,6 +117,7 @@ export function registerSocketHandlers(io: Server, store: RoomStore) {
           {
             optionId: payload.optionId,
             optionIds: payload.optionIds,
+            text: payload.text,
           },
         );
         ackSuccess(ack, state);

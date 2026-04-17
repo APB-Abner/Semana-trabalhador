@@ -64,4 +64,16 @@ describe('live quiz question adapter', () => {
     expect(multipleSelectQuestion).toBeTruthy();
     expect(multipleSelectQuestion?.correctOptionIds).toHaveLength(3);
   });
+
+  it('adds live-only participatory questions to the live question set', () => {
+    const liveQuestions = getLiveQuestions();
+    const pollQuestion = liveQuestions.find((question) => question.type === 'poll');
+    const wordCloudQuestion = liveQuestions.find((question) => question.type === 'word_cloud');
+
+    expect(pollQuestion).toBeTruthy();
+    expect(pollQuestion?.correctOptionId).toBeUndefined();
+    expect(pollQuestion?.options.length).toBeGreaterThanOrEqual(2);
+    expect(wordCloudQuestion).toBeTruthy();
+    expect(wordCloudQuestion?.options).toEqual([]);
+  });
 });

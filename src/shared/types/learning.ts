@@ -1,6 +1,6 @@
 import type { LiveQuestionType } from './realtime';
 
-export type QuizQuestionType = Exclude<LiveQuestionType, 'multiple_select'>;
+export type QuizQuestionType = Exclude<LiveQuestionType, 'multiple_select' | 'poll' | 'word_cloud'>;
 
 export type QuizQuestion = {
   tipo?: QuizQuestionType;

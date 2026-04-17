@@ -5,6 +5,7 @@ import PlayerJoinForm from '../features/live-quiz/ui/PlayerJoinForm.jsx';
 import PresenceList from '../features/live-quiz/ui/PresenceList.jsx';
 import WaitingScreen from '../features/live-quiz/ui/WaitingScreen.jsx';
 import CompetitiveResultView from '../features/live-quiz/ui/result-renderers/CompetitiveResultView.jsx';
+import ParticipatoryResultView from '../features/live-quiz/ui/result-renderers/ParticipatoryResultView.jsx';
 import Badge from '../shared/ui/Badge.jsx';
 import FeedbackNotice from '../shared/ui/FeedbackNotice.jsx';
 import PageHeader from '../shared/ui/PageHeader.jsx';
@@ -31,8 +32,10 @@ export default function CompeticaoSala() {
   } = usePlayerRoom(pin);
 
   const currentQuestionId = state?.currentQuestion?.id;
-  const selectedOptionIds = currentQuestionId ? submittedAnswers[currentQuestionId] ?? [] : [];
-  const hasSubmitted = selectedOptionIds.length > 0;
+  const submittedAnswer = currentQuestionId ? submittedAnswers[currentQuestionId] : null;
+  const selectedOptionIds = submittedAnswer?.optionIds ?? [];
+  const selectedText = submittedAnswer?.text ?? '';
+  const hasSubmitted = Boolean(submittedAnswer);
 
   const handleJoin = async ({ roomPin, name }) => {
     const response = await joinRoom({ roomPin, name });
@@ -100,6 +103,7 @@ export default function CompeticaoSala() {
           closesAt={state.closesAt}
           serverNow={state.serverNow}
           selectedOptionIds={selectedOptionIds}
+          selectedText={selectedText}
           hasSubmitted={hasSubmitted}
           onSubmit={submitAnswer}
         />
@@ -113,10 +117,15 @@ export default function CompeticaoSala() {
             closesAt={state.closesAt}
             serverNow={state.serverNow}
             selectedOptionIds={selectedOptionIds}
+            selectedText={selectedText}
             hasSubmitted={hasSubmitted}
             showAnswer
           />
-          <CompetitiveResultView entries={state.leaderboard} title="Leaderboard da rodada" />
+          {state.aggregatedResult ? (
+            <ParticipatoryResultView result={state.aggregatedResult} />
+          ) : (
+            <CompetitiveResultView entries={state.leaderboard} title="Leaderboard da rodada" />
+          )}
           <WaitingScreen title="Aguardando próxima rodada" />
         </div>
       )}
