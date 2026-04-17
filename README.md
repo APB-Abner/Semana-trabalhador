@@ -41,6 +41,13 @@ Backend local padrão:
 http://localhost:4000/
 ```
 
+No Windows, se a porta `4000` estiver reservada ou bloqueada, o servidor local tenta automaticamente a próxima porta disponível. Nesse caso, ajuste o frontend antes de iniciar o Vite:
+
+```powershell
+$env:VITE_SOCKET_URL="http://127.0.0.1:4001"
+npm run dev
+```
+
 ## Scripts
 
 ```bash
