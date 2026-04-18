@@ -63,27 +63,7 @@ describe('local persistence', () => {
     expect(records.dificil.bestScore).toBe(9);
   });
 
-  it('stores the latest vocational top 3 summary', () => {
-    const history = saveVocationalHistory({
-      primary: { area: 'tecnologia', title: 'Tecnologia e Inovacao' },
-      ranking: [
-        { area: 'tecnologia', title: 'Tecnologia e Inovacao', percentage: 60, score: 3 },
-        { area: 'exatas', title: 'Exatas', percentage: 20, score: 1 },
-        { area: 'saude', title: 'Saude', percentage: 20, score: 1 },
-      ],
-      profileBlend: [],
-    });
-
-    expect(history.primaryArea).toBe('tecnologia');
-    expect(history.primaryTitle).toBe('Tecnologia e Inovacao');
-    expect(history.ranking).toHaveLength(3);
-    expect(readVocationalHistory().ranking[0]).toMatchObject({
-      area: 'tecnologia',
-      percentage: 60,
-    });
-  });
-
-  it('stores the latest vocational summary with blend info', () => {
+  it('stores the latest vocational summary with title, ranking and blend info', () => {
     const history = saveVocationalHistory({
       primary: { area: 'tecnologia', title: 'Tecnologia e Inovacao' },
       ranking: [
