@@ -5,7 +5,10 @@ import {
   DEFAULT_PIGEON_AVATAR_STATE,
   normalizePigeonAvatarState,
   PIGEON_PRESETS,
+  randomizePigeonAvatarState,
 } from '../../src/features/pigeon-avatar';
+import { isAccessoryAllowedInSlot } from '../../src/features/pigeon-avatar/model/accessories';
+import { PIGEON_ACCESSORY_SLOTS, type PigeonAccessorySlot } from '../../src/features/pigeon-avatar/model/types';
 
 describe('pigeon avatar model', () => {
   it('normalizes invalid payloads back to the official pigeon base', () => {
@@ -41,6 +44,35 @@ describe('pigeon avatar model', () => {
       expect(avatar.baseId).toBe('official-pigeon');
       expect(avatar.selectedPresetId).toBe(preset.id);
       expect(avatar.palette).toEqual(preset.palette);
+    });
+  });
+
+  it('randomizes only valid unlocked accessories through the current slot rules', () => {
+    const unlockedAccessoryIds = ['rally-cap', 'round-glasses', 'office-tie'];
+    const randomizedAvatar = randomizePigeonAvatarState(
+      createPigeonAvatarState({
+        selectedPresetId: 'gamer',
+        unlocks: {
+          source: 'progression',
+          unlockedAccessoryIds,
+        },
+      }),
+      () => 0.1,
+    );
+
+    expect(randomizedAvatar.baseId).toBe('official-pigeon');
+    expect(randomizedAvatar.selectedPresetId).toBeNull();
+    expect(Object.values(randomizedAvatar.equipped).filter(Boolean)).toHaveLength(3);
+
+    PIGEON_ACCESSORY_SLOTS.forEach((slot: PigeonAccessorySlot) => {
+      const accessoryId = randomizedAvatar.equipped[slot];
+
+      if (!accessoryId) {
+        return;
+      }
+
+      expect(isAccessoryAllowedInSlot(slot, accessoryId)).toBe(true);
+      expect(unlockedAccessoryIds).toContain(accessoryId);
     });
   });
 });

@@ -1,5 +1,14 @@
-import { applyPigeonPreset, equipPigeonAccessory, normalizePigeonAvatarState } from '../model/avatarRules';
-import { getPigeonAccessoriesBySlot, PIGEON_ACCESSORY_SLOT_LABELS } from '../model/accessories';
+import {
+  applyPigeonPreset,
+  equipPigeonAccessory,
+  normalizePigeonAvatarState,
+  randomizePigeonAvatarState,
+} from '../model/avatarRules';
+import {
+  getPigeonAccessoriesBySlot,
+  getPigeonAccessoryById,
+  PIGEON_ACCESSORY_SLOT_LABELS,
+} from '../model/accessories';
 import { PIGEON_EXPRESSIONS, PIGEON_PATTERNS } from '../model/options';
 import { PIGEON_PRESETS } from '../model/presets';
 import { PIGEON_ACCESSORY_SLOTS } from '../model/types';
@@ -41,6 +50,8 @@ export default function PigeonAvatarEditor({
   compact = false,
 }: PigeonAvatarEditorProps) {
   const avatar = normalizePigeonAvatarState(value);
+  const activePreset = PIGEON_PRESETS.find((preset) => preset.id === avatar.selectedPresetId);
+  const equippedCount = Object.values(avatar.equipped).filter(Boolean).length;
 
   const updateAvatar = (nextAvatar: PigeonAvatarState) => {
     onChange(normalizePigeonAvatarState(nextAvatar));
@@ -67,24 +78,52 @@ export default function PigeonAvatarEditor({
     updateAvatar(applyPigeonPreset(avatar, presetId));
   };
 
+  const randomizeAvatar = () => {
+    updateAvatar(randomizePigeonAvatarState(avatar));
+  };
+
   return (
     <section className="space-y-5" aria-label="Customizador de avatar do pombo">
-      <div className="grid gap-5 md:grid-cols-[9rem_1fr] md:items-start">
-        <div className="flex flex-col items-center gap-3">
-          <div className="grid h-36 w-36 place-items-center rounded-full bg-slate-100 ring-1 ring-slate-200 dark:bg-zinc-950 dark:ring-zinc-800">
-            <PigeonAvatar avatar={avatar} size="xl" />
+      <div className="grid gap-5 lg:grid-cols-[14rem_1fr] lg:items-start">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="grid h-48 w-full place-items-center rounded-md bg-slate-100 ring-1 ring-slate-200 dark:bg-zinc-900 dark:ring-zinc-800">
+            <PigeonAvatar avatar={avatar} size={156} />
+          </div>
+          <div className="mt-3 flex items-center justify-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+            <span className="grid place-items-center gap-1 text-[10px] font-bold uppercase text-slate-500 dark:text-zinc-400">
+              Lobby
+              <PigeonAvatar avatar={avatar} size={34} label="Preview lobby" />
+            </span>
+            <span className="grid place-items-center gap-1 text-[10px] font-bold uppercase text-slate-500 dark:text-zinc-400">
+              Ranking
+              <PigeonAvatar avatar={avatar} size={44} label="Preview ranking" />
+            </span>
           </div>
           {!compact && (
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-zinc-400">
-              {avatar.selectedPresetId ? 'Preset ativo' : 'Custom livre'}
-            </p>
+            <div className="mt-3 text-center">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-zinc-400">
+                {activePreset ? activePreset.label : 'Custom livre'}
+              </p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
+                {equippedCount} acessorios equipados
+              </p>
+            </div>
           )}
         </div>
 
         <div className="space-y-5">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Presets</h3>
-            <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Presets</h3>
+              <button
+                type="button"
+                onClick={randomizeAvatar}
+                className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 transition hover:border-emerald-500 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100 dark:hover:border-emerald-500"
+              >
+                Randomizar
+              </button>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
               {PIGEON_PRESETS.map((preset) => {
                 const presetAvatar = applyPigeonPreset(avatar, preset.id);
                 const selected = avatar.selectedPresetId === preset.id;
@@ -95,26 +134,36 @@ export default function PigeonAvatarEditor({
                     type="button"
                     onClick={() => selectPreset(preset.id)}
                     aria-pressed={selected}
-                    className={`flex min-h-24 flex-col items-center justify-center gap-1 rounded-md border px-2 py-2 text-xs font-semibold transition ${
+                    className={`flex min-h-32 flex-col items-center justify-center gap-1 rounded-md border px-2 py-2 text-center text-xs font-semibold transition ${
                       selected
-                        ? 'border-blue-500 bg-blue-50 text-blue-800 dark:border-blue-300 dark:bg-blue-950 dark:text-blue-100'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:border-blue-700 dark:hover:bg-blue-950'
+                        ? 'border-blue-500 bg-blue-50 text-blue-800 shadow-sm dark:border-blue-300 dark:bg-blue-950 dark:text-blue-100'
+                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-blue-700 dark:hover:bg-blue-950'
                     }`}
                   >
-                    <PigeonAvatar avatar={presetAvatar} size="sm" label={`Preview ${preset.label}`} />
+                    <PigeonAvatar avatar={presetAvatar} size="md" label={`Preview ${preset.label}`} />
                     <span>{preset.label}</span>
+                    <span className="text-[10px] font-medium leading-tight text-slate-500 dark:text-zinc-400">
+                      {preset.description}
+                    </span>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Cores</h3>
             <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-5">
               {paletteControls.map((control) => (
-                <label key={control.key} htmlFor={fieldId('pigeon-color', control.key)} className="text-xs font-semibold text-slate-600 dark:text-zinc-300">
-                  <span>{control.label}</span>
+                <label
+                  key={control.key}
+                  htmlFor={fieldId('pigeon-color', control.key)}
+                  className="rounded-md border border-slate-200 bg-slate-50 p-2 text-xs font-semibold text-slate-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border border-slate-300 dark:border-zinc-700" style={{ backgroundColor: avatar.palette[control.key] }} />
+                    {control.label}
+                  </span>
                   <input
                     id={fieldId('pigeon-color', control.key)}
                     type="color"
@@ -127,7 +176,7 @@ export default function PigeonAvatarEditor({
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950 sm:grid-cols-3">
             <label htmlFor="pigeon-pattern" className="text-xs font-semibold text-slate-600 dark:text-zinc-300">
               Padrao
               <select
@@ -167,25 +216,38 @@ export default function PigeonAvatarEditor({
             </label>
           </div>
 
-          <div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">Acessorios</h3>
             <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {PIGEON_ACCESSORY_SLOTS.map((slot) => (
-                <label key={slot} htmlFor={fieldId('pigeon-slot', slot)} className="text-xs font-semibold text-slate-600 dark:text-zinc-300">
-                  {PIGEON_ACCESSORY_SLOT_LABELS[slot]}
-                  <select
-                    id={fieldId('pigeon-slot', slot)}
-                    value={avatar.equipped[slot] ?? ''}
-                    onChange={(event) => updateSlot(slot, event.target.value)}
-                    className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+              {PIGEON_ACCESSORY_SLOTS.map((slot) => {
+                const selectedAccessory = getPigeonAccessoryById(avatar.equipped[slot]);
+
+                return (
+                  <label
+                    key={slot}
+                    htmlFor={fieldId('pigeon-slot', slot)}
+                    className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs font-semibold text-slate-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
                   >
-                    <option value="">Nenhum</option>
-                    {getPigeonAccessoriesBySlot(slot).map((accessory) => (
-                      <option key={accessory.id} value={accessory.id}>{accessory.label}</option>
-                    ))}
-                  </select>
-                </label>
-              ))}
+                    <span className="flex items-center justify-between gap-2">
+                      {PIGEON_ACCESSORY_SLOT_LABELS[slot]}
+                      <span className="max-w-20 truncate rounded-full bg-white px-2 py-0.5 text-[10px] font-bold uppercase text-slate-500 ring-1 ring-slate-200 dark:bg-zinc-950 dark:text-zinc-400 dark:ring-zinc-800">
+                        {selectedAccessory?.label ?? 'Livre'}
+                      </span>
+                    </span>
+                    <select
+                      id={fieldId('pigeon-slot', slot)}
+                      value={avatar.equipped[slot] ?? ''}
+                      onChange={(event) => updateSlot(slot, event.target.value)}
+                      className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white"
+                    >
+                      <option value="">Nenhum</option>
+                      {getPigeonAccessoriesBySlot(slot).map((accessory) => (
+                        <option key={accessory.id} value={accessory.id}>{accessory.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                );
+              })}
             </div>
           </div>
         </div>

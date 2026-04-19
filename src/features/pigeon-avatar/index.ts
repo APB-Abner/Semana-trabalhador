@@ -8,6 +8,7 @@ export {
   createPigeonAvatarState,
   equipPigeonAccessory,
   normalizePigeonAvatarState,
+  randomizePigeonAvatarState,
 } from './model/avatarRules';
 export { readPigeonAvatarState, savePigeonAvatarState, resetPigeonAvatarState } from './model/avatarStorage';
 export { useStoredPigeonAvatar } from './model/usePigeonAvatar';

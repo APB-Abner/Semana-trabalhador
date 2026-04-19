@@ -1,4 +1,9 @@
-import { getPigeonAccessoryById, hasAccessoryConflict, isAccessoryAllowedInSlot } from './accessories';
+import {
+  getPigeonAccessoriesBySlot,
+  getPigeonAccessoryById,
+  hasAccessoryConflict,
+  isAccessoryAllowedInSlot,
+} from './accessories';
 import { DEFAULT_PIGEON_AVATAR_STATE, createEmptyPigeonEquipment } from './defaultAvatar';
 import { isPigeonExpressionId, isPigeonPatternId } from './options';
 import { getPigeonPresetById } from './presets';
@@ -9,13 +14,57 @@ import type {
   PigeonAccessorySlot,
   PigeonAvatarPalette,
   PigeonAvatarState,
+  PigeonExpressionId,
+  PigeonPatternId,
   PigeonPresetId,
 } from './types';
 
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
+const RANDOM_ACCESSORY_LIMIT = 4;
+const RANDOM_SLOT_CHANCES: Record<PigeonAccessorySlot, number> = {
+  head: 0.78,
+  face: 0.74,
+  neck: 0.55,
+  body: 0.66,
+  hand: 0.5,
+  extra: 0.34,
+};
+
+const RANDOM_PALETTES: PigeonAvatarPalette[] = [
+  { primary: '#D7DBE3', secondary: '#596273', chest: '#F7F8FA', beak: '#F2A13A', accent: '#8FA3B8' },
+  { primary: '#C7D8E6', secondary: '#3F5F79', chest: '#F4F8FB', beak: '#EFA13D', accent: '#2FA7B3' },
+  { primary: '#C9CED4', secondary: '#7F8794', chest: '#F8F8F3', beak: '#EFA13D', accent: '#F05AA6' },
+  { primary: '#D5D8DE', secondary: '#596273', chest: '#F3F5F7', beak: '#EFA13D', accent: '#8C7B55' },
+  { primary: '#AEB7C3', secondary: '#566173', chest: '#F6F4EE', beak: '#ECA13A', accent: '#D8DEE9' },
+  { primary: '#EEF1F5', secondary: '#15181E', chest: '#FFFFFF', beak: '#EFA13D', accent: '#C9B36A' },
+];
+
+const RANDOM_PATTERN_IDS: PigeonPatternId[] = ['solid', 'wing-bars', 'speckles', 'chest-dots'];
+const RANDOM_EXPRESSION_IDS: PigeonExpressionId[] = ['bright', 'happy', 'focused', 'wink', 'sleepy'];
 
 function isHexColor(value: unknown): value is string {
   return typeof value === 'string' && HEX_COLOR_PATTERN.test(value);
+}
+
+function pickRandom<T>(items: T[], rng: () => number): T {
+  return items[Math.min(Math.floor(rng() * items.length), items.length - 1)];
+}
+
+function shuffleSlots(rng: () => number): PigeonAccessorySlot[] {
+  const slots = [...PIGEON_ACCESSORY_SLOTS];
+
+  for (let index = slots.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(rng() * (index + 1));
+    [slots[index], slots[swapIndex]] = [slots[swapIndex], slots[index]];
+  }
+
+  return slots;
+}
+
+function isAccessoryUnlocked(avatar: PigeonAvatarState, accessoryId: PigeonAccessoryId) {
+  const unlockedIds = avatar.unlocks?.unlockedAccessoryIds;
+
+  return !unlockedIds?.length || unlockedIds.includes(accessoryId);
 }
 
 function sanitizePalette(value: unknown): PigeonAvatarPalette {
@@ -108,6 +157,44 @@ export function applyPigeonPreset(currentState: PigeonAvatarState, presetId: Pig
     selectedPresetId: preset.id,
     details: { ...currentState.details, ...preset.details },
   });
+}
+
+export function randomizePigeonAvatarState(
+  currentState: PigeonAvatarState,
+  rng: () => number = Math.random,
+): PigeonAvatarState {
+  const normalized = normalizePigeonAvatarState(currentState);
+  let nextAvatar = normalizePigeonAvatarState({
+    ...normalized,
+    palette: pickRandom(RANDOM_PALETTES, rng),
+    patternId: pickRandom(RANDOM_PATTERN_IDS, rng),
+    expressionId: pickRandom(RANDOM_EXPRESSION_IDS, rng),
+    equipped: createEmptyPigeonEquipment(),
+    selectedPresetId: null,
+    details: {
+      ...normalized.details,
+      blush: rng() > 0.16,
+    },
+  });
+
+  shuffleSlots(rng).forEach((slot) => {
+    const equippedCount = Object.values(nextAvatar.equipped).filter(Boolean).length;
+
+    if (equippedCount >= RANDOM_ACCESSORY_LIMIT || rng() > RANDOM_SLOT_CHANCES[slot]) {
+      return;
+    }
+
+    const availableAccessories = getPigeonAccessoriesBySlot(slot)
+      .filter((accessory) => isAccessoryUnlocked(normalized, accessory.id));
+
+    if (!availableAccessories.length) {
+      return;
+    }
+
+    nextAvatar = equipPigeonAccessory(nextAvatar, slot, pickRandom(availableAccessories, rng).id);
+  });
+
+  return normalizePigeonAvatarState(nextAvatar);
 }
 
 export function createPigeonAvatarState(overrides?: Partial<PigeonAvatarState>): PigeonAvatarState {
