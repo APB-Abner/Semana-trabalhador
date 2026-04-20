@@ -1,6 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
+import pomboBaseSvgMarkup from '../assets/pombo-base.svg?raw';
 import { normalizePigeonAvatarState } from '../model/avatarRules';
 import { PIGEON_BASE } from '../model/pigeonBase';
+import { resolvePigeonPalette } from '../model/resolvePigeonPalette';
 import type {
   PigeonAccessoryId,
   PigeonAccessorySlot,
@@ -30,7 +32,9 @@ const sizeClasses: Record<PigeonAvatarSize, string> = {
 
 const ink = '#15181E';
 const white = '#FFFFFF';
-const lens = '#101318';
+const pomboBaseInlineMarkup = pomboBaseSvgMarkup
+  .replace(/<\?xml[^>]*>\s*/i, '')
+  .replace('<svg ', '<svg width="549.39" height="618.3" ');
 
 function Pattern({ id, palette }: { id: PigeonPatternId; palette: PigeonAvatarPalette }) {
   if (id === 'wing-bars') {
@@ -125,125 +129,44 @@ function Eyes({ id }: { id: PigeonExpressionId }) {
 }
 
 function BasePigeon({ avatar }: { avatar: PigeonAvatarState }) {
-  const { palette } = avatar;
+  const resolvedPalette = resolvePigeonPalette(avatar.palette);
+  const baseStyle = {
+    '--pigeon-contour': resolvedPalette.contour,
+    '--pigeon-ink': resolvedPalette.ink,
+    '--pigeon-head-base': resolvedPalette.headBase,
+    '--pigeon-head-mid': resolvedPalette.headMid,
+    '--pigeon-head-shadow': resolvedPalette.headShadow,
+    '--pigeon-head-deep-shadow': resolvedPalette.headDeepShadow,
+    '--pigeon-body-base': resolvedPalette.bodyBase,
+    '--pigeon-body-shadow': resolvedPalette.bodyShadow,
+    '--pigeon-body-deep-shadow': resolvedPalette.bodyDeepShadow,
+    '--pigeon-face-feather': resolvedPalette.faceFeather,
+    '--pigeon-chest-feather': resolvedPalette.chestFeather,
+    '--pigeon-chest-shadow': resolvedPalette.chestShadow,
+    '--pigeon-wing-light': resolvedPalette.wingLight,
+    '--pigeon-wing-base': resolvedPalette.wingBase,
+    '--pigeon-wing-dark': resolvedPalette.wingDark,
+    '--pigeon-tail-dark': resolvedPalette.tailDark,
+    '--pigeon-beak-base': resolvedPalette.beakBase,
+    '--pigeon-beak-light': resolvedPalette.beakLight,
+    '--pigeon-beak-shadow': resolvedPalette.beakShadow,
+    '--pigeon-feet': resolvedPalette.feet,
+    '--pigeon-feet-light': resolvedPalette.feetLight,
+    '--pigeon-feet-shadow': resolvedPalette.feetShadow,
+    '--pigeon-accent-main': resolvedPalette.accentMain,
+    '--pigeon-accent-shadow': resolvedPalette.accentShadow,
+    '--pigeon-accent-deep-shadow': resolvedPalette.accentDeepShadow,
+    '--pigeon-outline': resolvedPalette.contour,
+    '--pigeon-blush': resolvedPalette.blush,
+    '--pigeon-blush-opacity': avatar.details.blush ? 1 : 0,
+  } as CSSProperties;
 
   return (
-    <g stroke={ink} strokeLinecap="round" strokeLinejoin="round">
-      <ellipse cx="80" cy="150" rx="45" ry="8" fill="#0F172A" opacity="0.22" stroke="none" />
-
-      <path
-        d="M120 110 C136 108 147 117 151 131 C138 131 127 126 118 118 Z"
-        fill={palette.secondary}
-        strokeWidth="3.4"
-      />
-      <path
-        d="M34 96 C18 87 17 66 32 56 C49 62 58 77 60 94 C54 102 43 104 34 96 Z"
-        fill={palette.secondary}
-        strokeWidth="3.7"
-      />
-      <path
-        d="M126 96 C142 87 143 66 128 56 C111 62 102 77 100 94 C106 102 117 104 126 96 Z"
-        fill={palette.secondary}
-        strokeWidth="3.7"
-      />
-
-      <path
-        d="M80 21
-           C55 21 39 36 36 58
-           C25 68 21 86 25 108
-           C30 137 51 151 80 151
-           C109 151 130 137 135 108
-           C139 86 135 68 124 58
-           C121 36 105 21 80 21 Z"
-        fill={palette.primary}
-        strokeWidth="4.6"
-      />
-
-      <path
-        d="M42 69 C52 78 65 82 80 82 C96 82 108 78 118 69"
-        fill="none"
-        stroke={white}
-        strokeWidth="12"
-        opacity="0.2"
-      />
-      <path
-        d="M40 91 C51 101 65 107 80 107 C96 107 109 101 120 91"
-        fill="none"
-        stroke={palette.secondary}
-        strokeWidth="11"
-        opacity="0.2"
-      />
-
-      <path
-        d="M44 84
-           C54 94 66 100 80 100
-           C94 100 106 94 116 84
-           C119 105 111 128 96 136
-           C91 132 87 132 84 139
-           C81 142 79 142 76 139
-           C73 132 69 132 64 136
-           C49 128 41 105 44 84 Z"
-        fill={palette.chest}
-        strokeWidth="3.5"
-      />
-      <path
-        d="M54 114 C59 121 65 121 69 114 C73 123 79 123 83 114 C87 123 93 123 97 114 C101 121 107 121 112 114"
-        fill="none"
-        stroke={ink}
-        strokeWidth="2.5"
-        opacity="0.76"
-      />
-
-      <Pattern id={avatar.patternId} palette={palette} />
-
-      {avatar.details.blush && (
-        <g fill="#FB7185" opacity="0.44" stroke="none">
-          <ellipse cx="47" cy="79" rx="7" ry="4.2" />
-          <ellipse cx="113" cy="79" rx="7" ry="4.2" />
-        </g>
-      )}
-
-      <Eyes id={avatar.expressionId} />
-
-      <g>
-        <path
-          d="M63 72 C70 63 90 63 97 72 C92 82 69 83 63 72 Z"
-          fill={palette.beak}
-          strokeWidth="3.6"
-        />
-        <path
-          d="M67 76 C74 84 88 84 94 76 C89 90 72 91 67 76 Z"
-          fill={palette.beak}
-          opacity="0.72"
-          strokeWidth="3"
-        />
-        <path d="M70 75 Q80 80 91 75" fill="none" strokeWidth="2.4" opacity="0.7" />
-      </g>
-
-      <path
-        d="M43 98 C31 105 32 122 44 132 C55 127 61 115 62 103 C57 99 49 97 43 98 Z"
-        fill={palette.secondary}
-        strokeWidth="3.7"
-      />
-      <path
-        d="M117 98 C129 105 128 122 116 132 C105 127 99 115 98 103 C103 99 111 97 117 98 Z"
-        fill={palette.secondary}
-        strokeWidth="3.7"
-      />
-      <path d="M47 111 C51 115 56 117 60 118" fill="none" stroke={ink} strokeWidth="2.5" opacity="0.36" />
-      <path d="M113 111 C109 115 104 117 100 118" fill="none" stroke={ink} strokeWidth="2.5" opacity="0.36" />
-
-      <path
-        d="M62 144 C54 151 45 151 38 145 C47 141 55 141 62 144 Z"
-        fill={palette.beak}
-        strokeWidth="3.3"
-      />
-      <path
-        d="M98 144 C106 151 115 151 122 145 C113 141 105 141 98 144 Z"
-        fill={palette.beak}
-        strokeWidth="3.3"
-      />
-    </g>
+    <g
+      transform="translate(21 -1) scale(0.26757)"
+      style={baseStyle}
+      dangerouslySetInnerHTML={{ __html: pomboBaseInlineMarkup }}
+    />
   );
 }
 

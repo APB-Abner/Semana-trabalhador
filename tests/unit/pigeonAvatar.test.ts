@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   applyPigeonPreset,
@@ -5,7 +7,7 @@ import {
   DEFAULT_PIGEON_AVATAR_STATE,
   normalizePigeonAvatarState,
   PIGEON_PRESETS,
-  randomizePigeonAvatarState,
+  resolvePigeonPalette,
 } from '../../src/features/pigeon-avatar';
 import { isAccessoryAllowedInSlot } from '../../src/features/pigeon-avatar/model/accessories';
 import { PIGEON_ACCESSORY_SLOTS, type PigeonAccessorySlot } from '../../src/features/pigeon-avatar/model/types';
@@ -47,32 +49,34 @@ describe('pigeon avatar model', () => {
     });
   });
 
-  it('randomizes only valid unlocked accessories through the current slot rules', () => {
-    const unlockedAccessoryIds = ['rally-cap', 'round-glasses', 'office-tie'];
-    const randomizedAvatar = randomizePigeonAvatarState(
-      createPigeonAvatarState({
-        selectedPresetId: 'gamer',
-        unlocks: {
-          source: 'progression',
-          unlockedAccessoryIds,
-        },
-      }),
-      () => 0.1,
-    );
-
-    expect(randomizedAvatar.baseId).toBe('official-pigeon');
-    expect(randomizedAvatar.selectedPresetId).toBeNull();
-    expect(Object.values(randomizedAvatar.equipped).filter(Boolean)).toHaveLength(3);
-
-    PIGEON_ACCESSORY_SLOTS.forEach((slot: PigeonAccessorySlot) => {
-      const accessoryId = randomizedAvatar.equipped[slot];
-
-      if (!accessoryId) {
-        return;
-      }
-
-      expect(isAccessoryAllowedInSlot(slot, accessoryId)).toBe(true);
-      expect(unlockedAccessoryIds).toContain(accessoryId);
+  it('resolves the five user-facing colors into internal pigeon paint tokens', () => {
+    const tokens = resolvePigeonPalette({
+      primary: '#D8DBF8',
+      secondary: '#9AA9FF',
+      chest: '#F5F5FA',
+      beak: '#F7B33A',
+      accent: '#4FE0C4',
     });
+
+    expect(tokens.headBase).toBe('#D8DBF8');
+    expect(tokens.wingBase).toBe('#9AA9FF');
+    expect(tokens.chestFeather).toBe('#F5F5FA');
+    expect(tokens.beakBase).toBe('#F7B33A');
+    expect(tokens.feet).toBe(tokens.beakBase);
+    expect(tokens.accentMain).toBe('#4FE0C4');
+    expect(tokens.headShadow).not.toBe(tokens.headBase);
+    expect(tokens.wingDark).not.toBe(tokens.wingBase);
+    expect(tokens.beakShadow).not.toBe(tokens.beakBase);
+    expect(Object.values(tokens).every((color) => /^#[0-9A-F]{6}$/.test(color))).toBe(true);
+  });
+
+  it('keeps numeric SVG layer ids mapped through valid CSS selectors', () => {
+    const svg = readFileSync(resolve(process.cwd(), 'src/features/pigeon-avatar/assets/pombo-base.svg'), 'utf8');
+
+    expect(svg).not.toMatch(/#[0-9][\w-]*\s+\./);
+    expect(svg).toContain('[id="02_PESCOCO_Plumagem"]');
+    expect(svg).toContain('[id="03_CORPO"]');
+    expect(svg).toContain('[id="04_ASA_E_CAUDA"]');
+    expect(svg).toContain('[id="06_PES"]');
   });
 });

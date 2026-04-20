@@ -3,6 +3,7 @@ export { DEFAULT_PIGEON_AVATAR_STATE } from './model/defaultAvatar';
 export { PIGEON_BASE } from './model/pigeonBase';
 export { PIGEON_EXPRESSIONS, PIGEON_PATTERNS } from './model/options';
 export { PIGEON_PRESETS } from './model/presets';
+export { resolvePigeonPalette } from './model/resolvePigeonPalette';
 export {
   applyPigeonPreset,
   createPigeonAvatarState,
@@ -27,3 +28,4 @@ export type {
   PigeonPresetDefinition,
   PigeonPresetId,
 } from './model/types';
+export type { ResolvedPigeonPalette } from './model/resolvePigeonPalette';
