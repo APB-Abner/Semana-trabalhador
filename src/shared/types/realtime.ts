@@ -16,6 +16,8 @@ export type LiveQuestionTone = 'objective' | 'reflective' | 'interview_like';
 
 export type LiveQuestionDifficulty = 'easy' | 'medium' | 'hard';
 
+export type LiveQuestionSessionFit = 'competition' | 'workshop' | 'both';
+
 export type LiveQuestionOption = {
   id: string;
   text: string;
@@ -36,6 +38,7 @@ export type LiveQuestion = {
   tone?: LiveQuestionTone;
   topic: string;
   difficulty?: LiveQuestionDifficulty;
+  sessionFit?: LiveQuestionSessionFit;
   enabled?: boolean;
   text: string;
   options: LiveQuestionOption[];

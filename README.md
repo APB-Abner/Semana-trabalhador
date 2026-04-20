@@ -140,7 +140,7 @@ As rodadas competitivas (`multiple_choice`, `true_false`, `multiple_select`) ali
 - `ranking`: contagem Borda simples, média de posição e votos em primeiro lugar por item.
 - `qna`: respostas abertas agrupadas por texto normalizado, preservando uma versão legível para exibição.
 
-A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty` e `enabled`. Cada sala recebe uma rotação de 10 perguntas: 4 competitivas e 6 participativas, com no máximo 2 perguntas do mesmo tipo, no máximo 1 `qna` e no máximo 1 `word_cloud`. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
+A base de perguntas live fica separada entre catalogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competicao padrao usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotacao principal. Cada sala recebe uma rotacao de 10 perguntas: 5 competitivas e 5 participativas, com no maximo 2 perguntas do mesmo tipo. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
 
 Limitações desta fase:
 

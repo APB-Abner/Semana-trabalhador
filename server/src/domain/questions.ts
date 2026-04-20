@@ -50,6 +50,7 @@ export function adaptQuizQuestion(question: QuizQuestion, questionIndex: number)
     type,
     bucket: 'competitive',
     tone: 'objective',
+    sessionFit: 'competition',
     topic: question.tema,
     difficulty: getAdaptedDifficulty(questionIndex),
     text: question.pergunta,

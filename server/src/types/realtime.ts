@@ -20,6 +20,7 @@ export type {
   LiveQuestionBucket,
   LiveQuestionDifficulty,
   LiveQuestionOption,
+  LiveQuestionSessionFit,
   LiveQuestionTone,
   LiveQuestionType,
   LiveScaleConfig,

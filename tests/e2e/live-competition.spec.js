@@ -122,23 +122,13 @@ test('live competition supports competitive and participatory UI flows', async (
   await expect(ana.getByText(/1 voto/).first()).toBeVisible();
 
   await nextRound(host);
-  await expect(ana.getByText('Nuvem de palavras').first()).toBeVisible();
-  await ana.getByLabel('Resposta para nuvem de palavras').fill('  trabalho   em equipe ');
-  await ana.getByRole('button', { name: 'Enviar resposta' }).click();
-  await expect(ana.getByRole('button', { name: 'Enviar resposta' })).toBeDisabled();
-  await bia.getByLabel('Resposta para nuvem de palavras').fill('Trabalho em equipe');
-  await bia.getByRole('button', { name: 'Enviar resposta' }).click();
-  await expect(host.getByText('Nuvem de palavras').first()).toBeVisible();
-  await expect(ana.getByText('Trabalho em equipe')).toBeVisible();
-
-  await nextRound(host);
   await expect(ana.getByText('Escala').first()).toBeVisible();
   await ana.getByRole('button', { name: '4' }).click();
   await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
   await bia.getByRole('button', { name: '2' }).click();
   await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
   await expect(host.getByText('Resultado da escala')).toBeVisible();
-  await expect(ana.getByText('Média do grupo')).toBeVisible();
+  await expect(ana.getByText(/M.dia do grupo/)).toBeVisible();
 
   await nextRound(host);
   await expect(ana.getByText('Ranking').first()).toBeVisible();
@@ -147,24 +137,34 @@ test('live competition supports competitive and participatory UI flows', async (
   await expect(host.getByText('Ranking coletivo')).toBeVisible();
 
   await nextRound(host);
-  await expect(ana.getByText('Pergunta aberta').first()).toBeVisible();
-  await ana.getByLabel('Resposta aberta curta').fill('  atualizar   meu curriculo ');
-  await ana.getByRole('button', { name: 'Enviar ideia' }).click();
-  await expect(ana.getByRole('button', { name: 'Enviar ideia' })).toBeDisabled();
-  await bia.getByLabel('Resposta aberta curta').fill('Atualizar meu curriculo');
-  await bia.getByRole('button', { name: 'Enviar ideia' }).click();
-  await expect(host.getByText('Respostas abertas')).toBeVisible();
-  await expect(ana.locator('p').filter({ hasText: 'Atualizar meu curriculo' }).first()).toBeVisible();
+  await expect(ana.getByText(/M.ltipla escolha/).first()).toBeVisible();
+  await answerFirstOption(ana);
+  await answerFirstOption(bia);
+  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
 
   await nextRound(host);
-  await expect(ana.getByText('Pergunta aberta').first()).toBeVisible();
-  await ana.getByLabel('Resposta aberta curta').fill('  atualizar   meu currículo ');
-  await ana.getByRole('button', { name: 'Enviar ideia' }).click();
-  await expect(ana.getByRole('button', { name: 'Enviar ideia' })).toBeDisabled();
-  await bia.getByLabel('Resposta aberta curta').fill('Atualizar meu currículo');
-  await bia.getByRole('button', { name: 'Enviar ideia' }).click();
-  await expect(host.getByRole('heading', { name: 'Respostas abertas' })).toBeVisible();
-  await expect(ana.locator('p').filter({ hasText: 'Atualizar meu currículo' })).toBeVisible();
+  await expect(ana.getByText(/M.ltipla sele..o/)).toBeVisible();
+  await ana.locator('main button[aria-pressed]').nth(0).click();
+  await ana.locator('main button[aria-pressed]').nth(1).click();
+  await ana.locator('main button[aria-pressed]').nth(2).click();
+  await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
+  await bia.locator('main button[aria-pressed]').first().click();
+  await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
+  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Enquete').first()).toBeVisible();
+  await ana.locator('main button[aria-pressed]').first().click();
+  await bia.locator('main button[aria-pressed]').nth(1).click();
+  await expect(host.getByText('Resultado da enquete')).toBeVisible();
+
+  await nextRound(host);
+  await expect(ana.getByText('Escala').first()).toBeVisible();
+  await ana.getByRole('button', { name: '5' }).click();
+  await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
+  await bia.getByRole('button', { name: '3' }).click();
+  await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
+  await expect(host.getByText('Resultado da escala')).toBeVisible();
 
   await context.close();
 });

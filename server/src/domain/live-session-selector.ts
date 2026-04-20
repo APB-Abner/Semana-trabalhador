@@ -1,9 +1,14 @@
-import type { LiveQuestion, LiveQuestionBucket, LiveQuestionType } from '../types/realtime.ts';
+import type {
+  LiveQuestion,
+  LiveQuestionBucket,
+  LiveQuestionSessionFit,
+  LiveQuestionType,
+} from '../types/realtime.ts';
 import { getBucketForQuestionType, validateLiveQuestionMetadata } from './live-question-catalog.ts';
 
 export const LIVE_SESSION_SIZE = 10;
-export const LIVE_SESSION_COMPETITIVE_COUNT = 4;
-export const LIVE_SESSION_PARTICIPATORY_COUNT = 6;
+export const LIVE_SESSION_COMPETITIVE_COUNT = 5;
+export const LIVE_SESSION_PARTICIPATORY_COUNT = 5;
 
 type SessionSlot = {
   bucket: LiveQuestionBucket;
@@ -13,6 +18,7 @@ type SessionSlot = {
 export type LiveSessionSelectionOptions = {
   questions: LiveQuestion[];
   recentQuestionIds?: string[];
+  sessionFit?: Extract<LiveQuestionSessionFit, 'competition' | 'workshop'>;
   sessionTemplate?: SessionSlot[];
 };
 
@@ -21,12 +27,12 @@ const DEFAULT_SESSION_TEMPLATE: SessionSlot[] = [
   { bucket: 'competitive', preferredType: 'true_false' },
   { bucket: 'competitive', preferredType: 'multiple_select' },
   { bucket: 'participatory', preferredType: 'poll' },
-  { bucket: 'participatory', preferredType: 'word_cloud' },
   { bucket: 'participatory', preferredType: 'scale' },
   { bucket: 'participatory', preferredType: 'ranking' },
-  { bucket: 'participatory', preferredType: 'qna' },
-  { bucket: 'participatory', preferredType: 'poll' },
   { bucket: 'competitive', preferredType: 'multiple_choice' },
+  { bucket: 'competitive', preferredType: 'multiple_select' },
+  { bucket: 'participatory', preferredType: 'poll' },
+  { bucket: 'participatory', preferredType: 'scale' },
 ];
 
 const TYPE_LIMITS: Partial<Record<LiveQuestionType, number>> = {
@@ -48,6 +54,10 @@ function isEnabled(question: LiveQuestion) {
   return question.enabled !== false;
 }
 
+function fitsSession(question: LiveQuestion, sessionFit: Extract<LiveQuestionSessionFit, 'competition' | 'workshop'>) {
+  return question.sessionFit === sessionFit || question.sessionFit === 'both';
+}
+
 function validateSessionTemplate(template: SessionSlot[]) {
   const competitiveCount = template.filter((slot) => slot.bucket === 'competitive').length;
   const participatoryCount = template.filter((slot) => slot.bucket === 'participatory').length;
@@ -57,7 +67,7 @@ function validateSessionTemplate(template: SessionSlot[]) {
   }
 
   if (competitiveCount !== LIVE_SESSION_COMPETITIVE_COUNT || participatoryCount !== LIVE_SESSION_PARTICIPATORY_COUNT) {
-    throw new Error('Template live precisa ter 4 competitivas e 6 participativas.');
+    throw new Error('Template live precisa ter 5 competitivas e 5 participativas.');
   }
 }
 
@@ -128,11 +138,12 @@ function pickQuestion(
 export function selectLiveSessionQuestions({
   questions,
   recentQuestionIds = [],
+  sessionFit = 'competition',
   sessionTemplate = DEFAULT_SESSION_TEMPLATE,
 }: LiveSessionSelectionOptions): LiveQuestion[] {
   validateSessionTemplate(sessionTemplate);
 
-  const enabledQuestions = questions.filter(isEnabled);
+  const enabledQuestions = questions.filter((question) => isEnabled(question) && fitsSession(question, sessionFit));
   const recentSet = new Set(recentQuestionIds);
   const selectedIds = new Set<string>();
   const typeCounts = new Map<LiveQuestionType, number>();
@@ -162,11 +173,15 @@ export function summarizeLiveQuestions(questions: LiveQuestion[]) {
     summary.total += 1;
     summary.byType[question.type] = (summary.byType[question.type] ?? 0) + 1;
     summary.byBucket[bucket] = (summary.byBucket[bucket] ?? 0) + 1;
+    summary.bySessionFit[question.sessionFit ?? 'missing'] = (
+      summary.bySessionFit[question.sessionFit ?? 'missing'] ?? 0
+    ) + 1;
 
     return summary;
   }, {
     total: 0,
     byType: {} as Record<string, number>,
     byBucket: {} as Record<string, number>,
+    bySessionFit: {} as Record<string, number>,
   });
 }
