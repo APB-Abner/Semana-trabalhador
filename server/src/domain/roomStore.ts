@@ -8,6 +8,12 @@ import {
   normalizeLiveAnswer,
   validateLiveQuestion,
 } from './question-handlers/index.ts';
+import {
+  getCurrentGameForQuestionIndex,
+  isFirstQuestionOfGame,
+  selectMatchGamesForSession,
+} from './match/matchSelector.ts';
+import { sortMatchRanking } from './match/scoring.ts';
 import type {
   LeaderboardEntry,
   LiveAnswerPayload,
@@ -59,16 +65,6 @@ function assertQuestions(questions: LiveQuestion[]) {
   }
 
   questions.forEach(validateLiveQuestion);
-}
-
-function sortRanking(entries: LeaderboardEntry[]): LeaderboardEntry[] {
-  return [...entries].sort(
-    (a, b) =>
-      b.score - a.score ||
-      b.roundPoints - a.roundPoints ||
-      Number(b.lastAnswerCorrect) - Number(a.lastAnswerCorrect) ||
-      a.name.localeCompare(b.name),
-  );
 }
 
 function toPublicQuestion(question: LiveQuestion | null, revealAnswer: boolean) {
@@ -163,13 +159,34 @@ export function createRoomStore({
     }
   }
 
+  function getMatchProgress(room: LiveRoomInternal) {
+    return getCurrentGameForQuestionIndex(room.selectedGames, room.questions, room.currentQuestionIndex);
+  }
+
+  function syncMatchProgress(room: LiveRoomInternal) {
+    const { currentGameIndex, currentGameRoundIndex } = getMatchProgress(room);
+    room.currentGameIndex = currentGameIndex;
+    room.currentGameRoundIndex = currentGameRoundIndex;
+  }
+
   function sanitizeRoom(room: LiveRoomInternal): RoomState {
     const currentQuestion = room.questions[room.currentQuestionIndex] ?? null;
-    const revealAnswer = room.status === 'revealed' || room.status === 'finished';
+    const revealAnswer = room.status === 'round_revealed' || room.status === 'finished';
+    const { currentGame, currentGameIndex, currentGameRoundIndex } = getMatchProgress(room);
 
     return {
       pin: room.pin,
       status: room.status,
+      match: {
+        selectedGames: room.selectedGames,
+        currentGameIndex,
+        currentRoundIndex: currentGameRoundIndex,
+        status: room.status,
+      },
+      selectedGames: room.selectedGames,
+      currentGame,
+      currentGameIndex,
+      currentGameRoundIndex,
       hostConnected: room.hostConnected,
       serverNow: now(),
       players: [...room.players.values()].map(({ token: _token, ...player }) => player),
@@ -251,15 +268,21 @@ export function createRoomStore({
   }
 
   function createRoundLeaderboard(room: LiveRoomInternal): LeaderboardEntry[] {
+    const { currentGame } = getMatchProgress(room);
+    const currentGameId = currentGame?.id;
+
     return [...room.players.values()]
       .map((player) => {
         const answer = room.round?.answers.get(player.id);
+        const gameScores = { ...player.gameScores };
 
         return {
           playerId: player.id,
           name: player.name,
           avatar: player.avatar,
           score: player.score,
+          gameScore: currentGameId ? gameScores[currentGameId] ?? 0 : 0,
+          gameScores,
           roundPoints: answer?.points ?? 0,
           lastAnswerCorrect: answer?.isCorrect ?? false,
           responseMs: answer?.responseMs ?? null,
@@ -278,19 +301,19 @@ export function createRoomStore({
     clearRoundTimer(room);
     room.status = 'finished';
     room.aggregatedResult = null;
-    room.finalRanking = sortRanking(createRoundLeaderboard(room));
+    room.finalRanking = sortMatchRanking(createRoundLeaderboard(room));
     room.leaderboard = room.finalRanking;
     emit(room, 'game:finished');
     scheduleFinishedExpiration(room);
   }
 
   function revealRound(room: LiveRoomInternal) {
-    if (room.status !== 'question') {
+    if (room.status !== 'round_open') {
       return;
     }
 
     clearRoundTimer(room);
-    room.status = 'revealed';
+    room.status = 'round_revealed';
     const currentQuestion = room.questions[room.currentQuestionIndex];
     const answers = [...room.round!.answers.values()];
 
@@ -323,8 +346,9 @@ export function createRoomStore({
       return;
     }
 
-    room.status = 'question';
+    room.status = 'round_open';
     room.currentQuestionIndex = questionIndex;
+    syncMatchProgress(room);
     room.round = {
       questionId: question.id,
       startedAt,
@@ -366,6 +390,7 @@ export function createRoomStore({
     const pin = createPin(new Set(rooms.keys()));
     const hostToken = createToken();
     const sessionQuestions = getSessionQuestions();
+    const selectedGames = selectMatchGamesForSession(sessionQuestions);
     const room: LiveRoomInternal = {
       pin,
       hostToken,
@@ -373,6 +398,9 @@ export function createRoomStore({
       status: 'lobby',
       players: new Map(),
       questions: sessionQuestions,
+      selectedGames,
+      currentGameIndex: -1,
+      currentGameRoundIndex: -1,
       currentQuestionIndex: -1,
       round: null,
       leaderboard: [],
@@ -417,6 +445,7 @@ export function createRoomStore({
       name: cleanName,
       avatar: normalizePigeonAvatarState(avatar),
       score: 0,
+      gameScores: {},
       connected: true,
       joinedAt: now(),
     });
@@ -464,7 +493,13 @@ export function createRoomStore({
       throw new RoomStoreError('Adicione pelo menos 1 jogador para iniciar.');
     }
 
-    openRound(room, 0);
+    room.status = 'game_intro';
+    room.currentQuestionIndex = 0;
+    room.round = null;
+    room.leaderboard = [];
+    room.aggregatedResult = null;
+    syncMatchProgress(room);
+    emit(room, 'room:state');
     return sanitizeRoom(room);
   }
 
@@ -476,7 +511,21 @@ export function createRoomStore({
       return sanitizeRoom(room);
     }
 
-    if (room.status !== 'revealed') {
+    if (room.status === 'game_intro') {
+      openRound(room, room.currentQuestionIndex < 0 ? 0 : room.currentQuestionIndex);
+      return sanitizeRoom(room);
+    }
+
+    if (room.status === 'between_games') {
+      room.status = 'game_intro';
+      room.round = null;
+      room.aggregatedResult = null;
+      syncMatchProgress(room);
+      emit(room, 'room:state');
+      return sanitizeRoom(room);
+    }
+
+    if (room.status !== 'round_revealed') {
       throw new RoomStoreError('A rodada atual ainda não foi revelada.');
     }
 
@@ -484,6 +533,20 @@ export function createRoomStore({
 
     if (nextQuestionIndex >= room.questions.length) {
       finishGame(room);
+      return sanitizeRoom(room);
+    }
+
+    const nextQuestion = room.questions[nextQuestionIndex];
+
+    if (nextQuestion && isFirstQuestionOfGame(room.selectedGames, nextQuestion.id)) {
+      clearRoundTimer(room);
+      room.status = 'between_games';
+      room.currentQuestionIndex = nextQuestionIndex;
+      room.round = null;
+      room.aggregatedResult = null;
+      room.leaderboard = sortMatchRanking(createRoundLeaderboard(room));
+      syncMatchProgress(room);
+      emit(room, 'room:state');
       return sanitizeRoom(room);
     }
 
@@ -499,7 +562,7 @@ export function createRoomStore({
   ) {
     const room = requireRoom(pin);
 
-    if (room.status !== 'question' || !room.round) {
+    if (room.status !== 'round_open' || !room.round) {
       throw new RoomStoreError('Nenhuma rodada aberta para resposta.');
     }
 
@@ -556,6 +619,11 @@ export function createRoomStore({
       : 0;
 
     player.score += points;
+    const { currentGame } = getMatchProgress(room);
+
+    if (currentGame) {
+      player.gameScores[currentGame.id] = (player.gameScores[currentGame.id] ?? 0) + points;
+    }
     room.round.answers.set(player.id, {
       optionId: optionIds[0],
       optionIds,

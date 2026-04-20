@@ -123,7 +123,7 @@ export function registerSocketHandlers(io: Server, store: RoomStore) {
         );
         ackSuccess(ack, state);
 
-        if (state.status !== 'revealed') {
+        if (state.status !== 'round_revealed') {
           emitRoom(io, payload.pin, ServerEvents.ROOM_STATE, state);
         }
       } catch (error) {

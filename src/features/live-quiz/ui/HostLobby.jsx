@@ -2,6 +2,10 @@ import Badge from '../../../shared/ui/Badge.jsx';
 import CtaButtonRow from '../../../shared/ui/CtaButtonRow.jsx';
 import FeedbackNotice from '../../../shared/ui/FeedbackNotice.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
+import BetweenGamesPanel from '../../live-match/ui/BetweenGamesPanel.jsx';
+import FinalPodium from '../../live-match/ui/FinalPodium.jsx';
+import MatchGameShell from '../../live-match/ui/MatchGameShell.jsx';
+import MatchLobby from '../../live-match/ui/MatchLobby.jsx';
 import LiveQuestionCard from './LiveQuestionCard.jsx';
 import PresenceList from './PresenceList.jsx';
 import WaitingScreen from './WaitingScreen.jsx';
@@ -10,8 +14,10 @@ import ParticipatoryResultView from './result-renderers/ParticipatoryResultView.
 
 const statusLabels = {
   lobby: 'Lobby',
-  question: 'Pergunta aberta',
-  revealed: 'Rodada revelada',
+  game_intro: 'Intro do jogo',
+  round_open: 'Rodada aberta',
+  round_revealed: 'Rodada revelada',
+  between_games: 'Entre jogos',
   finished: 'Finalizada',
 };
 
@@ -21,6 +27,19 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
   }
 
   const isLastQuestion = state.currentQuestionIndex + 1 >= state.totalQuestions;
+  const isLastRoundInGame = state.currentGame
+    ? state.currentGameRoundIndex + 1 >= state.currentGame.roundCount
+    : false;
+  const nextRoundLabel = isLastQuestion
+    ? 'Finalizar match'
+    : isLastRoundInGame
+      ? 'Ver ranking parcial'
+      : 'Próxima rodada';
+  const statusLabel = state.status === 'lobby'
+    ? statusLabels[state.status]
+    : state.status === 'game_intro' || state.status === 'between_games'
+      ? `${statusLabels[state.status] || state.status} ${Math.max(0, state.currentGameIndex) + 1}/${state.selectedGames.length}`
+      : `${statusLabels[state.status] || state.status} ${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
@@ -29,30 +48,33 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
           <p className="text-sm uppercase tracking-wide text-blue-700 dark:text-blue-200">PIN da sala</p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
             <p className="font-display text-5xl font-extrabold tracking-[0.2em] text-gray-950 dark:text-white">{state.pin}</p>
-            <Badge tone="blue">
-              {state.status === 'lobby'
-                ? statusLabels[state.status]
-                : `${statusLabels[state.status] || state.status} ${state.currentQuestionIndex + 1}/${state.totalQuestions}`}
-            </Badge>
+            <Badge tone="blue">{statusLabel}</Badge>
           </div>
         </ResultPanel>
 
         {error && <FeedbackNotice tone="danger">{error}</FeedbackNotice>}
 
         {state.status === 'lobby' && (
-          <ResultPanel>
-            <h2 className="text-xl font-bold text-gray-950 dark:text-white">Sala pronta</h2>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-              Compartilhe o PIN com os jogadores. Quando todos estiverem no lobby, inicie a partida.
-            </p>
-            <CtaButtonRow
-              className="mt-5 justify-start"
-              actions={[{ label: 'Iniciar partida', onClick: onStart, tone: 'green' }]}
-            />
-          </ResultPanel>
+          <>
+            <MatchLobby state={state} />
+            <ResultPanel>
+              <h2 className="text-xl font-bold text-gray-950 dark:text-white">Sala pronta</h2>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                Compartilhe o PIN com os jogadores. Quando todos estiverem no lobby, inicie o match.
+              </p>
+              <CtaButtonRow
+                className="mt-5 justify-start"
+                actions={[{ label: 'Iniciar match', onClick: onStart, tone: 'green' }]}
+              />
+            </ResultPanel>
+          </>
         )}
 
-        {state.status === 'question' && (
+        {state.status === 'game_intro' && (
+          <MatchGameShell state={state} host onStart={onNextRound} />
+        )}
+
+        {state.status === 'round_open' && (
           <>
             <LiveQuestionCard
               question={state.currentQuestion}
@@ -69,7 +91,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
           </>
         )}
 
-        {state.status === 'revealed' && (
+        {state.status === 'round_revealed' && (
           <>
             <LiveQuestionCard
               question={state.currentQuestion}
@@ -87,7 +109,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
             <CtaButtonRow
               className="justify-start"
               actions={[{
-                label: isLastQuestion ? 'Finalizar partida' : 'Próxima rodada',
+                label: nextRoundLabel,
                 onClick: onNextRound,
                 tone: 'blue',
               }]}
@@ -95,8 +117,12 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
           </>
         )}
 
+        {state.status === 'between_games' && (
+          <BetweenGamesPanel state={state} host onContinue={onNextRound} />
+        )}
+
         {state.status === 'finished' && (
-          <CompetitiveResultView entries={state.finalRanking} title="Ranking final" />
+          <FinalPodium entries={state.finalRanking} />
         )}
       </section>
 

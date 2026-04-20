@@ -97,7 +97,7 @@ server/
 - Teste vocacional com ranking top 3, percentuais, histórico local e próximos passos.
 - Quiz com feedback por resposta, explicação, revisão final e resumo salvo localmente.
 - Jogo da memória com níveis de dificuldade, prévia inicial, recordes locais e resultado próprio.
-- Competição ao vivo com sala por PIN, lobby em tempo real, host, jogadores, leaderboard e ranking final.
+- Competição ao vivo com sala por PIN, lobby em tempo real, match de 3 blocos, host, jogadores, leaderboard parcial e pódio final.
 - Mapa de unidades com filtros por estado e cidade.
 - Tema claro/escuro persistido no navegador.
 - Telemetria local em desenvolvimento via `window.__stwDebugStats`.
@@ -105,6 +105,8 @@ server/
 ## Competição Ao Vivo
 
 O modo ao vivo usa `Node + Express + Socket.IO` com estado em memória. Reiniciar o backend apaga as salas abertas.
+
+A competição online agora roda como um `OnlineMatch`: o servidor monta uma sequência autoritativa de 3 jogos e mantém o placar acumulado da sala. Nesta fase, os 3 blocos usam o minigame funcional `quick_quiz`, reaproveitando os tipos e renderizadores do live quiz atual. Os minigames `work_situation` e `priority_order` já estão modelados na arquitetura, mas ainda não entram na rotação publicada.
 
 Rotas principais:
 
@@ -140,13 +142,14 @@ As rodadas competitivas (`multiple_choice`, `true_false`, `multiple_select`) ali
 - `ranking`: contagem Borda simples, média de posição e votos em primeiro lugar por item.
 - `qna`: respostas abertas agrupadas por texto normalizado, preservando uma versão legível para exibição.
 
-A base de perguntas live fica separada entre catalogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competicao padrao usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotacao principal. Cada sala recebe uma rotacao de 10 perguntas: 5 competitivas e 5 participativas, com no maximo 2 perguntas do mesmo tipo. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
+A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competição padrão usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotação principal. Cada sala recebe uma rotação de 10 perguntas: 5 competitivas e 5 participativas, com no máximo 2 perguntas do mesmo tipo. O match divide essa rotação em 3 blocos de `quick_quiz` no servidor. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
 
 Limitações desta fase:
 
 - As salas continuam em memória; reiniciar o backend apaga partidas abertas.
 - `multiple_select` existe apenas no modo ao vivo e não altera o quiz normal em `/game`.
 - `poll`, `word_cloud`, `scale`, `ranking` e `qna` existem apenas no modo ao vivo e não alteram os fluxos normais do site.
+- `work_situation` e `priority_order` estão preparados como tipos de minigame, mas ainda não têm conteúdo ativo nem UI de rodada própria nesta fase.
 - O backend segue pensado para uma instância única enquanto não houver Redis, banco ou coordenação entre processos.
 
 ## Deploy Produção

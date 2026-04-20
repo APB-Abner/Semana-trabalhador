@@ -1,5 +1,8 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import usePlayerRoom from '../features/live-quiz/model/usePlayerRoom';
+import usePlayerRoom from '../features/live-match/model/usePlayerMatch';
+import BetweenGamesPanel from '../features/live-match/ui/BetweenGamesPanel.jsx';
+import FinalPodium from '../features/live-match/ui/FinalPodium.jsx';
+import MatchGameShell from '../features/live-match/ui/MatchGameShell.jsx';
 import LiveQuestionCard from '../features/live-quiz/ui/LiveQuestionCard.jsx';
 import PlayerJoinForm from '../features/live-quiz/ui/PlayerJoinForm.jsx';
 import PresenceList from '../features/live-quiz/ui/PresenceList.jsx';
@@ -13,8 +16,10 @@ import PageShell from '../shared/ui/PageShell.jsx';
 
 const statusLabels = {
   lobby: 'Lobby',
-  question: 'Pergunta aberta',
-  revealed: 'Rodada revelada',
+  game_intro: 'Intro do jogo',
+  round_open: 'Rodada aberta',
+  round_revealed: 'Rodada revelada',
+  between_games: 'Entre jogos',
   finished: 'Finalizada',
 };
 
@@ -97,7 +102,11 @@ export default function CompeticaoSala() {
         </div>
       )}
 
-      {state?.status === 'question' && (
+      {state?.status === 'game_intro' && (
+        <MatchGameShell state={state} />
+      )}
+
+      {state?.status === 'round_open' && (
         <LiveQuestionCard
           question={state.currentQuestion}
           startedAt={state.startedAt}
@@ -111,7 +120,7 @@ export default function CompeticaoSala() {
         />
       )}
 
-      {state?.status === 'revealed' && (
+      {state?.status === 'round_revealed' && (
         <div className="space-y-6">
           <LiveQuestionCard
             question={state.currentQuestion}
@@ -133,8 +142,12 @@ export default function CompeticaoSala() {
         </div>
       )}
 
+      {state?.status === 'between_games' && (
+        <BetweenGamesPanel state={state} />
+      )}
+
       {state?.status === 'finished' && (
-        <CompetitiveResultView entries={state.finalRanking} title="Ranking final" />
+        <FinalPodium entries={state.finalRanking} />
       )}
     </PageShell>
   );

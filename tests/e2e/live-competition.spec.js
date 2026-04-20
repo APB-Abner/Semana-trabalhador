@@ -35,7 +35,17 @@ async function answerFirstOption(page) {
 }
 
 async function nextRound(hostPage) {
-  await hostPage.getByRole('button', { name: /xima rodada|Finalizar/ }).click();
+  await hostPage.getByRole('button', { name: /xima rodada|Finalizar match|Ver ranking parcial/ }).click();
+
+  const continueButton = hostPage.getByRole('button', { name: /Liberar pr.ximo jogo/ });
+  if (await continueButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await continueButton.click();
+  }
+
+  const introButton = hostPage.getByRole('button', { name: /Iniciar Quiz Rel.mpago/ });
+  if (await introButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await introButton.click();
+  }
 }
 
 test.beforeAll(async () => {
@@ -85,7 +95,9 @@ test('live competition supports competitive and participatory UI flows', async (
   await expect(host.locator('main').getByText('Ana', { exact: true })).toBeVisible();
   await expect(host.locator('main').getByText('Bia', { exact: true })).toBeVisible();
 
-  await host.getByRole('button', { name: 'Iniciar partida' }).click();
+  await host.getByRole('button', { name: 'Iniciar match' }).click();
+  await expect(host.getByRole('button', { name: /Iniciar Quiz Rel.mpago/ })).toBeVisible();
+  await host.getByRole('button', { name: /Iniciar Quiz Rel.mpago/ }).click();
   await expect(ana.getByRole('heading', { level: 3 })).toBeVisible();
   await answerFirstOption(ana);
   await answerFirstOption(bia);

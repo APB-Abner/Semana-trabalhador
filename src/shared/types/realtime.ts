@@ -18,6 +18,34 @@ export type LiveQuestionDifficulty = 'easy' | 'medium' | 'hard';
 
 export type LiveQuestionSessionFit = 'competition' | 'workshop' | 'both';
 
+export type MiniGameType = 'quick_quiz' | 'work_situation' | 'priority_order';
+
+export type MatchStatus =
+  | 'lobby'
+  | 'game_intro'
+  | 'round_open'
+  | 'round_revealed'
+  | 'between_games'
+  | 'finished';
+
+export type MatchGame = {
+  id: string;
+  type: MiniGameType;
+  title: string;
+  description: string;
+  roundIds: string[];
+  roundCount: number;
+  maxScore: number;
+  active: boolean;
+};
+
+export type OnlineMatch = {
+  selectedGames: MatchGame[];
+  currentGameIndex: number;
+  currentRoundIndex: number;
+  status: MatchStatus;
+};
+
 export type LiveQuestionOption = {
   id: string;
   text: string;
@@ -59,6 +87,7 @@ export type LivePlayer = {
   name: string;
   avatar: PigeonAvatarState;
   score: number;
+  gameScores: Record<string, number>;
   connected: boolean;
   joinedAt: number;
 };
@@ -68,6 +97,8 @@ export type LeaderboardEntry = {
   name: string;
   avatar: PigeonAvatarState;
   score: number;
+  gameScore: number;
+  gameScores: Record<string, number>;
   roundPoints: number;
   lastAnswerCorrect: boolean;
   responseMs: number | null;
@@ -134,11 +165,16 @@ export type AggregatedResult =
       items: RankingAggregatedItem[];
     };
 
-export type LiveRoomStatus = 'lobby' | 'question' | 'revealed' | 'finished';
+export type LiveRoomStatus = MatchStatus;
 
 export type RoomState = {
   pin: string;
   status: LiveRoomStatus;
+  match: OnlineMatch;
+  selectedGames: MatchGame[];
+  currentGame: MatchGame | null;
+  currentGameIndex: number;
+  currentGameRoundIndex: number;
   hostConnected: boolean;
   serverNow: number;
   players: LivePlayer[];

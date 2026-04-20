@@ -20,6 +20,14 @@ describe('roomStore', () => {
     vi.useRealTimers();
   });
 
+  function startFirstRound(room: { pin: string; hostToken: string }) {
+    const intro = store.startGame(room.pin, room.hostToken);
+    expect(intro.status).toBe('game_intro');
+    const opened = store.nextRound(room.pin, room.hostToken);
+    expect(opened.status).toBe('round_open');
+    return opened;
+  }
+
   it('creates rooms with unique 6-digit PINs', () => {
     const firstRoom = store.createRoom();
     const secondRoom = store.createRoom();
@@ -27,6 +35,16 @@ describe('roomStore', () => {
     expect(firstRoom.pin).toMatch(/^\d{6}$/);
     expect(secondRoom.pin).toMatch(/^\d{6}$/);
     expect(secondRoom.pin).not.toBe(firstRoom.pin);
+  });
+
+  it('creates a match with authoritative selected quick quiz games', () => {
+    const room = store.createRoom();
+
+    expect(room.state.status).toBe('lobby');
+    expect(room.state.selectedGames).toHaveLength(3);
+    expect(room.state.match.selectedGames).toEqual(room.state.selectedGames);
+    expect(room.state.selectedGames.every((game) => game.type === 'quick_quiz')).toBe(true);
+    expect(room.state.selectedGames.map((game) => game.roundCount)).toEqual([4, 3, 1]);
   });
 
   it('adds a player and rejects invalid joins', () => {
@@ -78,9 +96,15 @@ describe('roomStore', () => {
   it('starts the match and accepts a single answer per player per round', () => {
     const room = store.createRoom();
     const player = store.joinPlayer(room.pin, 'Ana');
-    const started = store.startGame(room.pin, room.hostToken);
+    const intro = store.startGame(room.pin, room.hostToken);
 
-    expect(started.status).toBe('question');
+    expect(intro.status).toBe('game_intro');
+    expect(intro.currentGame?.type).toBe('quick_quiz');
+    expect(intro.currentQuestion?.correctOptionId).toBeUndefined();
+
+    const started = store.nextRound(room.pin, room.hostToken);
+
+    expect(started.status).toBe('round_open');
     expect(started.currentQuestion?.correctOptionId).toBeUndefined();
 
     currentTime += 500;
@@ -91,7 +115,7 @@ describe('roomStore', () => {
       'q1-a',
     );
 
-    expect(answered.status).toBe('revealed');
+    expect(answered.status).toBe('round_revealed');
     expect(answered.leaderboard[0].roundPoints).toBeGreaterThan(0);
     expect(answered.currentQuestion?.correctOptionId).toBe('q1-a');
     expect(() => store.submitAnswer(
@@ -106,7 +130,7 @@ describe('roomStore', () => {
     const room = store.createRoom();
     const player = store.joinPlayer(room.pin, 'Ana');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 20_001;
 
     expect(() => store.submitAnswer(
@@ -125,7 +149,7 @@ describe('roomStore', () => {
     const room = store.createRoom();
     const player = store.joinPlayer(room.pin, 'Ana');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 20_000;
 
     const state = store.submitAnswer(
@@ -135,7 +159,7 @@ describe('roomStore', () => {
       'q1-a',
     );
 
-    expect(state.status).toBe('revealed');
+    expect(state.status).toBe('round_revealed');
     expect(state.leaderboard[0].roundPoints).toBe(700);
   });
 
@@ -157,7 +181,7 @@ describe('roomStore', () => {
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 1_000;
     store.submitAnswer(room.pin, ana.playerToken, 'q1', 'q1-a');
     currentTime += 1_000;
@@ -183,6 +207,53 @@ describe('roomStore', () => {
     expect(finished.finalRanking[0].score).toBeGreaterThanOrEqual(finished.finalRanking[1].score);
   });
 
+  it('moves through between_games at game boundaries while keeping the accumulated score', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: liveQuestionsFixture.slice(0, 5),
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    let state = startFirstRound(room);
+    expect(state.currentGame?.id).toBe('quick_quiz_1');
+
+    currentTime += 500;
+    store.submitAnswer(room.pin, player.playerToken, 'q1', 'q1-a');
+    state = store.nextRound(room.pin, room.hostToken);
+    expect(state.status).toBe('round_open');
+
+    currentTime += 500;
+    store.submitAnswer(room.pin, player.playerToken, 'q2', 'q2-a');
+    state = store.nextRound(room.pin, room.hostToken);
+    expect(state.status).toBe('round_open');
+
+    currentTime += 500;
+    store.submitAnswer(room.pin, player.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b', 'q3-d'] });
+    state = store.nextRound(room.pin, room.hostToken);
+    expect(state.status).toBe('round_open');
+
+    currentTime += 500;
+    store.submitAnswer(room.pin, player.playerToken, 'q4', 'q4-a');
+    const betweenGames = store.nextRound(room.pin, room.hostToken);
+
+    expect(betweenGames.status).toBe('between_games');
+    expect(betweenGames.currentGame?.id).toBe('quick_quiz_2');
+    expect(betweenGames.leaderboard[0].name).toBe('Ana');
+    expect(betweenGames.leaderboard[0].score).toBeGreaterThan(0);
+
+    const nextGameIntro = store.nextRound(room.pin, room.hostToken);
+    expect(nextGameIntro.status).toBe('game_intro');
+    expect(nextGameIntro.currentQuestion?.id).toBe('q5');
+    expect(nextGameIntro.currentGame?.id).toBe('quick_quiz_2');
+
+    const nextGameRound = store.nextRound(room.pin, room.hostToken);
+    expect(nextGameRound.status).toBe('round_open');
+    expect(nextGameRound.currentQuestion?.id).toBe('q5');
+  });
+
   it('scores true_false questions through the question handler', () => {
     store.clearAllRooms();
     store = createRoomStore({
@@ -193,11 +264,11 @@ describe('roomStore', () => {
     const room = store.createRoom();
     const player = store.joinPlayer(room.pin, 'Ana');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     const state = store.submitAnswer(room.pin, player.playerToken, 'q2', 'q2-a');
 
-    expect(state.status).toBe('revealed');
+    expect(state.status).toBe('round_revealed');
     expect(state.leaderboard[0].lastAnswerCorrect).toBe(true);
     expect(state.currentQuestion?.correctOptionId).toBe('q2-a');
   });
@@ -213,13 +284,13 @@ describe('roomStore', () => {
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     store.submitAnswer(room.pin, ana.playerToken, 'q3', { optionIds: ['q3-d', 'q3-a', 'q3-b'] });
     currentTime += 500;
     const revealed = store.submitAnswer(room.pin, bia.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b'] });
 
-    expect(revealed.status).toBe('revealed');
+    expect(revealed.status).toBe('round_revealed');
     expect(revealed.currentQuestion?.correctOptionIds).toEqual(['q3-a', 'q3-b', 'q3-d']);
     expect(revealed.leaderboard[0].name).toBe('Ana');
     expect(revealed.leaderboard[0].roundPoints).toBeGreaterThan(0);
@@ -236,7 +307,7 @@ describe('roomStore', () => {
     const room = store.createRoom();
     const player = store.joinPlayer(room.pin, 'Ana');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
 
     expect(() => store.submitAnswer(
       room.pin,
@@ -265,13 +336,13 @@ describe('roomStore', () => {
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     store.submitAnswer(room.pin, ana.playerToken, 'q4', 'q4-a');
     currentTime += 500;
     const revealed = store.submitAnswer(room.pin, bia.playerToken, 'q4', 'q4-b');
 
-    expect(revealed.status).toBe('revealed');
+    expect(revealed.status).toBe('round_revealed');
     expect(revealed.leaderboard).toEqual([]);
     expect(revealed.players.every((player) => player.score === 0)).toBe(true);
     expect(revealed.aggregatedResult?.type).toBe('poll');
@@ -295,7 +366,7 @@ describe('roomStore', () => {
     const bia = store.joinPlayer(room.pin, 'Bia');
     const caio = store.joinPlayer(room.pin, 'Caio');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     store.submitAnswer(room.pin, ana.playerToken, 'q5', { text: '  trabalho   em equipe ' });
     currentTime += 500;
@@ -303,7 +374,7 @@ describe('roomStore', () => {
     currentTime += 500;
     const revealed = store.submitAnswer(room.pin, caio.playerToken, 'q5', { text: 'Pontualidade' });
 
-    expect(revealed.status).toBe('revealed');
+    expect(revealed.status).toBe('round_revealed');
     expect(revealed.leaderboard).toEqual([]);
     expect(revealed.players.every((player) => player.score === 0)).toBe(true);
     expect(revealed.aggregatedResult?.type).toBe('word_cloud');
@@ -327,13 +398,13 @@ describe('roomStore', () => {
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     store.submitAnswer(room.pin, ana.playerToken, 'q6', { value: 2 });
     currentTime += 500;
     const revealed = store.submitAnswer(room.pin, bia.playerToken, 'q6', { value: 4 });
 
-    expect(revealed.status).toBe('revealed');
+    expect(revealed.status).toBe('round_revealed');
     expect(revealed.leaderboard).toEqual([]);
     expect(revealed.players.every((player) => player.score === 0)).toBe(true);
     expect(revealed.aggregatedResult?.type).toBe('scale');
@@ -356,13 +427,13 @@ describe('roomStore', () => {
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     store.submitAnswer(room.pin, ana.playerToken, 'q7', { optionIds: ['q7-a', 'q7-b', 'q7-c'] });
     currentTime += 500;
     const revealed = store.submitAnswer(room.pin, bia.playerToken, 'q7', { optionIds: ['q7-b', 'q7-a', 'q7-c'] });
 
-    expect(revealed.status).toBe('revealed');
+    expect(revealed.status).toBe('round_revealed');
     expect(revealed.leaderboard).toEqual([]);
     expect(revealed.players.every((player) => player.score === 0)).toBe(true);
     expect(revealed.aggregatedResult?.type).toBe('ranking');
@@ -386,7 +457,7 @@ describe('roomStore', () => {
     const bia = store.joinPlayer(room.pin, 'Bia');
     const caio = store.joinPlayer(room.pin, 'Caio');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     store.submitAnswer(room.pin, ana.playerToken, 'q8', { text: '  Atualizar   meu currículo ' });
     currentTime += 500;
@@ -394,7 +465,7 @@ describe('roomStore', () => {
     currentTime += 500;
     const revealed = store.submitAnswer(room.pin, caio.playerToken, 'q8', { text: 'Pedir feedback' });
 
-    expect(revealed.status).toBe('revealed');
+    expect(revealed.status).toBe('round_revealed');
     expect(revealed.leaderboard).toEqual([]);
     expect(revealed.players.every((player) => player.score === 0)).toBe(true);
     expect(revealed.aggregatedResult?.type).toBe('qna');
@@ -418,7 +489,7 @@ describe('roomStore', () => {
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     store.submitAnswer(room.pin, ana.playerToken, 'q1', 'q1-a');
     currentTime += 500;
@@ -442,7 +513,7 @@ describe('roomStore', () => {
     const room = store.createRoom();
     const player = store.joinPlayer(room.pin, 'Ana');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     currentTime += 500;
     store.submitAnswer(room.pin, player.playerToken, 'q1', 'q1-a');
 
@@ -453,7 +524,7 @@ describe('roomStore', () => {
 
     const reconnected = store.reconnectHost(room.pin, room.hostToken);
     expect(reconnected.hostConnected).toBe(true);
-    expect(store.nextRound(room.pin, room.hostToken).status).toBe('question');
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('round_open');
   });
 
   it('expires abandoned lobby rooms after the configured TTL', () => {
@@ -506,7 +577,7 @@ describe('roomStore', () => {
     const room = store.createRoom();
     const player = store.joinPlayer(room.pin, 'Ana');
 
-    store.startGame(room.pin, room.hostToken);
+    startFirstRound(room);
     store.submitAnswer(room.pin, player.playerToken, 'q1', 'q1-a');
     expect(store.nextRound(room.pin, room.hostToken).status).toBe('finished');
 

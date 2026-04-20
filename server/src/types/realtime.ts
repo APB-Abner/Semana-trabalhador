@@ -4,6 +4,7 @@ import type {
   LiveAnswerPayload,
   LivePlayer,
   LiveQuestion,
+  MatchGame,
   RoomState,
 } from '../../../src/shared/types/realtime.ts';
 
@@ -25,6 +26,10 @@ export type {
   LiveQuestionType,
   LiveScaleConfig,
   LiveRoomStatus,
+  MatchGame,
+  MatchStatus,
+  MiniGameType,
+  OnlineMatch,
   PublicLiveQuestion,
   RoomCreateAck,
   RoomJoinAck,
@@ -64,6 +69,9 @@ export type LiveRoomInternal = {
   status: RoomState['status'];
   players: Map<string, LivePlayerInternal>;
   questions: LiveQuestion[];
+  selectedGames: MatchGame[];
+  currentGameIndex: number;
+  currentGameRoundIndex: number;
   currentQuestionIndex: number;
   round: LiveRound | null;
   leaderboard: LeaderboardEntry[];

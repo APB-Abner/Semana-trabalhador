@@ -12,6 +12,49 @@ function emitAck<TResponse>(socket: Socket, event: string, payload = {}) {
   return new Promise<TResponse>((resolve) => socket.emit(event, payload, resolve));
 }
 
+async function startMatchAndOpenFirstRound(
+  host: Socket,
+  listener: Socket,
+  pin: string,
+  hostToken: string,
+) {
+  const startAck = await emitAck<BasicAck>(host, 'game:start', { pin, hostToken });
+  expect(startAck.ok).toBe(true);
+  if (!startAck.ok) return null;
+  expect(startAck.state.status).toBe('game_intro');
+
+  const openedPromise = once<RoomState>(listener, 'round:opened');
+  const openAck = await emitAck<BasicAck>(host, 'round:next', { pin, hostToken });
+  expect(openAck.ok).toBe(true);
+  if (!openAck.ok) return null;
+  expect(openAck.state.status).toBe('round_open');
+
+  return openedPromise;
+}
+
+async function openNextRound(host: Socket, listener: Socket, pin: string, hostToken: string) {
+  const openedPromise = once<RoomState>(listener, 'round:opened');
+  const nextAck = await emitAck<BasicAck>(host, 'round:next', { pin, hostToken });
+  expect(nextAck.ok).toBe(true);
+  if (!nextAck.ok) return null;
+
+  if (nextAck.state.status === 'between_games') {
+    const continueAck = await emitAck<BasicAck>(host, 'round:next', { pin, hostToken });
+    expect(continueAck.ok).toBe(true);
+    if (!continueAck.ok) return null;
+    expect(continueAck.state.status).toBe('game_intro');
+
+    const openAck = await emitAck<BasicAck>(host, 'round:next', { pin, hostToken });
+    expect(openAck.ok).toBe(true);
+    if (!openAck.ok) return null;
+    expect(openAck.state.status).toBe('round_open');
+  } else {
+    expect(nextAck.state.status).toBe('round_open');
+  }
+
+  return openedPromise;
+}
+
 describe('socket live quiz flow', () => {
   let httpServer: ReturnType<typeof createRealtimeApp>['httpServer'];
   let ioServer: ReturnType<typeof createRealtimeApp>['io'];
@@ -70,15 +113,10 @@ describe('socket live quiz flow', () => {
     const presence = await presencePromise;
     expect(presence.players.map((currentPlayer) => currentPlayer.name)).toContain('Ana');
 
-    const openedPromise = once<RoomState>(player, 'round:opened');
-    const startAck = await emitAck<BasicAck>(host, 'game:start', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-
-    expect(startAck.ok).toBe(true);
-    const opened = await openedPromise;
-    expect(opened.status).toBe('question');
+    const opened = await startMatchAndOpenFirstRound(host, player, created.pin, created.hostToken);
+    expect(opened).toBeTruthy();
+    if (!opened) return;
+    expect(opened.status).toBe('round_open');
     expect(opened.serverNow).toEqual(expect.any(Number));
     expect(opened.currentQuestion?.correctOptionId).toBeUndefined();
 
@@ -147,12 +185,9 @@ describe('socket live quiz flow', () => {
     expect(joined.ok).toBe(true);
     if (!joined.ok) return;
 
-    const openedPromise = once<RoomState>(player, 'round:opened');
-    await emitAck<BasicAck>(host, 'game:start', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-    const opened = await openedPromise;
+    const opened = await startMatchAndOpenFirstRound(host, player, created.pin, created.hostToken);
+    expect(opened).toBeTruthy();
+    if (!opened) return;
 
     await new Promise((resolve) => setTimeout(resolve, 1_100));
 
@@ -236,14 +271,9 @@ describe('socket live quiz question types', () => {
     expect(bia.ok).toBe(true);
     if (!ana.ok || !bia.ok) return;
 
-    const firstOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
-    const startAck = await emitAck<BasicAck>(host, 'game:start', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-    expect(startAck.ok).toBe(true);
-
-    const trueFalseRound = await firstOpenedPromise;
+    const trueFalseRound = await startMatchAndOpenFirstRound(host, anaSocket, created.pin, created.hostToken);
+    expect(trueFalseRound).toBeTruthy();
+    if (!trueFalseRound) return;
     expect(trueFalseRound.currentQuestion?.type).toBe('true_false');
 
     const trueFalseRevealedPromise = once<RoomState>(host, 'round:revealed');
@@ -263,14 +293,9 @@ describe('socket live quiz question types', () => {
     const trueFalseRevealed = await trueFalseRevealedPromise;
     expect(trueFalseRevealed.currentQuestion?.correctOptionId).toBe('q2-a');
 
-    const multipleSelectOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
-    const nextAck = await emitAck<BasicAck>(host, 'round:next', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-    expect(nextAck.ok).toBe(true);
-
-    const multipleSelectRound = await multipleSelectOpenedPromise;
+    const multipleSelectRound = await openNextRound(host, anaSocket, created.pin, created.hostToken);
+    expect(multipleSelectRound).toBeTruthy();
+    if (!multipleSelectRound) return;
     expect(multipleSelectRound.currentQuestion?.type).toBe('multiple_select');
 
     const anaAnswerAck = await emitAck<BasicAck>(anaSocket, 'answer:submit', {
@@ -304,14 +329,9 @@ describe('socket live quiz question types', () => {
     expect(leaderboard.leaderboard[0].name).toBe('Ana');
     expect(leaderboard.leaderboard.find((entry) => entry.name === 'Bia')?.roundPoints).toBe(0);
 
-    const pollOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
-    const pollNextAck = await emitAck<BasicAck>(host, 'round:next', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-    expect(pollNextAck.ok).toBe(true);
-
-    const pollRound = await pollOpenedPromise;
+    const pollRound = await openNextRound(host, anaSocket, created.pin, created.hostToken);
+    expect(pollRound).toBeTruthy();
+    if (!pollRound) return;
     expect(pollRound.currentQuestion?.type).toBe('poll');
 
     const pollRevealedPromise = once<RoomState>(host, 'round:revealed');
@@ -334,14 +354,9 @@ describe('socket live quiz question types', () => {
     if (pollRevealed.aggregatedResult?.type !== 'poll') return;
     expect(pollRevealed.aggregatedResult.totalResponses).toBe(2);
 
-    const wordCloudOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
-    const wordCloudNextAck = await emitAck<BasicAck>(host, 'round:next', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-    expect(wordCloudNextAck.ok).toBe(true);
-
-    const wordCloudRound = await wordCloudOpenedPromise;
+    const wordCloudRound = await openNextRound(host, anaSocket, created.pin, created.hostToken);
+    expect(wordCloudRound).toBeTruthy();
+    if (!wordCloudRound) return;
     expect(wordCloudRound.currentQuestion?.type).toBe('word_cloud');
 
     const wordCloudRevealedPromise = once<RoomState>(host, 'round:revealed');
@@ -368,14 +383,9 @@ describe('socket live quiz question types', () => {
       count: 2,
     });
 
-    const scaleOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
-    const scaleNextAck = await emitAck<BasicAck>(host, 'round:next', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-    expect(scaleNextAck.ok).toBe(true);
-
-    const scaleRound = await scaleOpenedPromise;
+    const scaleRound = await openNextRound(host, anaSocket, created.pin, created.hostToken);
+    expect(scaleRound).toBeTruthy();
+    if (!scaleRound) return;
     expect(scaleRound.currentQuestion?.type).toBe('scale');
 
     const scaleRevealedPromise = once<RoomState>(host, 'round:revealed');
@@ -398,14 +408,9 @@ describe('socket live quiz question types', () => {
     if (scaleRevealed.aggregatedResult?.type !== 'scale') return;
     expect(scaleRevealed.aggregatedResult.average).toBe(3);
 
-    const rankingOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
-    const rankingNextAck = await emitAck<BasicAck>(host, 'round:next', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-    expect(rankingNextAck.ok).toBe(true);
-
-    const rankingRound = await rankingOpenedPromise;
+    const rankingRound = await openNextRound(host, anaSocket, created.pin, created.hostToken);
+    expect(rankingRound).toBeTruthy();
+    if (!rankingRound) return;
     expect(rankingRound.currentQuestion?.type).toBe('ranking');
 
     const rankingRevealedPromise = once<RoomState>(host, 'round:revealed');
@@ -428,14 +433,9 @@ describe('socket live quiz question types', () => {
     if (rankingRevealed.aggregatedResult?.type !== 'ranking') return;
     expect(rankingRevealed.aggregatedResult.items[0].totalPoints).toBe(5);
 
-    const qnaOpenedPromise = once<RoomState>(anaSocket, 'round:opened');
-    const qnaNextAck = await emitAck<BasicAck>(host, 'round:next', {
-      pin: created.pin,
-      hostToken: created.hostToken,
-    });
-    expect(qnaNextAck.ok).toBe(true);
-
-    const qnaRound = await qnaOpenedPromise;
+    const qnaRound = await openNextRound(host, anaSocket, created.pin, created.hostToken);
+    expect(qnaRound).toBeTruthy();
+    if (!qnaRound) return;
     expect(qnaRound.currentQuestion?.type).toBe('qna');
 
     const qnaRevealedPromise = once<RoomState>(host, 'round:revealed');

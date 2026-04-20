@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import useHostRoom from '../features/live-quiz/model/useHostRoom';
+import useHostRoom from '../features/live-match/model/useHostMatch';
 import HostLobby from '../features/live-quiz/ui/HostLobby.jsx';
 import WaitingScreen from '../features/live-quiz/ui/WaitingScreen.jsx';
 import CtaButtonRow from '../shared/ui/CtaButtonRow.jsx';
