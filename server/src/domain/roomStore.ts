@@ -50,6 +50,8 @@ type RoomStoreOptions = {
   priorityOrderScenarios?: PriorityOrderScenario[];
   selectQuestions?: (context: { recentQuestionIds: string[] }) => LiveQuestion[];
   recentQuestionHistorySize?: number;
+  maxActiveRooms?: number;
+  maxPlayersPerRoom?: number;
   roundMs?: number;
   abandonedLobbyTtlMs?: number;
   finishedRoomTtlMs?: number;
@@ -78,6 +80,8 @@ export class RoomStoreError extends Error {
 
 const DEFAULT_ABANDONED_LOBBY_TTL_MS = 15 * 60 * 1000;
 const DEFAULT_FINISHED_ROOM_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_MAX_ACTIVE_ROOMS = 200;
+const DEFAULT_MAX_PLAYERS_PER_ROOM = 80;
 
 function assertQuestions(questions: LiveQuestion[]) {
   if (!questions.length) {
@@ -127,6 +131,8 @@ export function createRoomStore({
   priorityOrderScenarios = getPriorityOrderCatalog(),
   selectQuestions,
   recentQuestionHistorySize = 30,
+  maxActiveRooms = DEFAULT_MAX_ACTIVE_ROOMS,
+  maxPlayersPerRoom = DEFAULT_MAX_PLAYERS_PER_ROOM,
   roundMs = 20_000,
   abandonedLobbyTtlMs = DEFAULT_ABANDONED_LOBBY_TTL_MS,
   finishedRoomTtlMs = DEFAULT_FINISHED_ROOM_TTL_MS,
@@ -467,6 +473,10 @@ export function createRoomStore({
   }
 
   function createRoom(): CreateRoomResult {
+    if (maxActiveRooms > 0 && rooms.size >= maxActiveRooms) {
+      throw new RoomStoreError('Limite de salas ativas atingido. Tente novamente em instantes.');
+    }
+
     const pin = createPin(new Set(rooms.keys()));
     const hostToken = createToken();
     const sessionQuestions = getSessionQuestions();
@@ -520,6 +530,10 @@ export function createRoomStore({
 
     if (hasDuplicatePlayerName(room, cleanName)) {
       throw new RoomStoreError('Este nome já está em uso nesta sala.');
+    }
+
+    if (maxPlayersPerRoom > 0 && room.players.size >= maxPlayersPerRoom) {
+      throw new RoomStoreError('Esta sala atingiu o limite de participantes.');
     }
 
     const playerToken = createToken();

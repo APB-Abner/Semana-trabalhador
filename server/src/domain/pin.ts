@@ -1,8 +1,13 @@
+import { randomBytes, randomInt } from 'node:crypto';
+
 const PIN_LENGTH = 6;
 
-export function createPin(existingPins: Set<string>, random = Math.random): string {
+export function createPin(existingPins: Set<string>, random?: () => number): string {
   for (let attempt = 0; attempt < 100; attempt += 1) {
-    const pin = String(Math.floor(100000 + random() * 900000)).slice(0, PIN_LENGTH);
+    const pinNumber = random
+      ? Math.floor(100000 + random() * 900000)
+      : randomInt(100000, 1_000_000);
+    const pin = String(pinNumber).slice(0, PIN_LENGTH);
 
     if (!existingPins.has(pin)) {
       return pin;
@@ -12,7 +17,6 @@ export function createPin(existingPins: Set<string>, random = Math.random): stri
   throw new Error('Não foi possível gerar um PIN único.');
 }
 
-export function createToken(random = Math.random): string {
-  const randomPart = Math.floor(random() * Number.MAX_SAFE_INTEGER).toString(36);
-  return `${Date.now().toString(36)}-${randomPart}`;
+export function createToken(): string {
+  return randomBytes(32).toString('base64url');
 }

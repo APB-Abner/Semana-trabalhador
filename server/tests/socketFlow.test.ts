@@ -8,7 +8,7 @@ function once<T>(socket: Socket, event: string) {
   return new Promise<T>((resolve) => socket.once(event, resolve));
 }
 
-function emitAck<TResponse>(socket: Socket, event: string, payload = {}) {
+function emitAck<TResponse>(socket: Socket, event: string, payload: unknown = {}) {
   return new Promise<TResponse>((resolve) => socket.emit(event, payload, resolve));
 }
 
@@ -91,6 +91,34 @@ describe('socket live quiz flow', () => {
     await once(socket, 'connect');
     return socket;
   }
+
+  it('serves health checks with security headers and without framework fingerprinting', async () => {
+    const response = await fetch(`${baseUrl}/health`);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-powered-by')).toBeNull();
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer');
+  });
+
+  it('rejects malformed socket payloads without leaking internal errors', async () => {
+    const client = await connectClient();
+
+    const joinAck = await emitAck<RoomJoinAck>(client, 'room:join', null);
+    expect(joinAck).toEqual({
+      ok: false,
+      message: 'Dados inválidos para esta ação.',
+    });
+
+    const hostActionAck = await emitAck<BasicAck>(client, 'round:next', {
+      pin: 'abc',
+      hostToken: 'short',
+    });
+    expect(hostActionAck).toEqual({
+      ok: false,
+      message: 'PIN inválido.',
+    });
+  });
 
   it('creates a room, updates presence, opens a round, reveals leaderboard and finishes', async () => {
     const host = await connectClient();

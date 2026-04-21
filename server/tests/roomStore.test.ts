@@ -87,8 +87,27 @@ describe('roomStore', () => {
     const secondRoom = store.createRoom();
 
     expect(firstRoom.pin).toMatch(/^\d{6}$/);
+    expect(firstRoom.hostToken).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(secondRoom.pin).toMatch(/^\d{6}$/);
+    expect(secondRoom.hostToken).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(secondRoom.pin).not.toBe(firstRoom.pin);
+    expect(secondRoom.hostToken).not.toBe(firstRoom.hostToken);
+  });
+
+  it('enforces configured room and participant limits', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: liveQuestionsFixture,
+      maxActiveRooms: 1,
+      maxPlayersPerRoom: 1,
+      now: () => currentTime,
+    });
+
+    const room = store.createRoom();
+    expect(() => store.createRoom()).toThrow(RoomStoreError);
+
+    store.joinPlayer(room.pin, 'Ana');
+    expect(() => store.joinPlayer(room.pin, 'Bia')).toThrow(RoomStoreError);
   });
 
   it('creates a match with authoritative quick quiz and work situation games', () => {

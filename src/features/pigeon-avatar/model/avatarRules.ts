@@ -15,12 +15,14 @@ import type {
   PigeonAvatarPalette,
   PigeonAvatarState,
   PigeonExpressionId,
+  PigeonUnlockMetadata,
   PigeonPatternId,
   PigeonPresetId,
 } from './types';
 
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 const RANDOM_ACCESSORY_LIMIT = 4;
+const UNLOCK_SOURCE_IDS = new Set<PigeonUnlockMetadata['source']>(['default', 'progression', 'event', 'admin']);
 const RANDOM_SLOT_CHANCES: Record<PigeonAccessorySlot, number> = {
   head: 0.78,
   face: 0.74,
@@ -103,6 +105,39 @@ function sanitizeEquipment(value: unknown): EquippedPigeonAccessories {
   return equipped;
 }
 
+function sanitizeStringList(value: unknown) {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const entries = value
+    .filter((item): item is string => typeof item === 'string' && item.length > 0 && item.length <= 80)
+    .slice(0, 100);
+
+  return entries.length ? [...new Set(entries)] : undefined;
+}
+
+function sanitizeUnlocks(value: unknown): PigeonUnlockMetadata | undefined {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const source = value as Partial<PigeonUnlockMetadata>;
+  const unlockedAccessoryIds = sanitizeStringList(source.unlockedAccessoryIds);
+  const unlockedPresetIds = sanitizeStringList(source.unlockedPresetIds) as PigeonUnlockMetadata['unlockedPresetIds'];
+  const unlockSource = UNLOCK_SOURCE_IDS.has(source.source) ? source.source : undefined;
+
+  if (!unlockedAccessoryIds && !unlockedPresetIds && !unlockSource) {
+    return undefined;
+  }
+
+  return {
+    ...(unlockedAccessoryIds ? { unlockedAccessoryIds } : {}),
+    ...(unlockedPresetIds ? { unlockedPresetIds } : {}),
+    ...(unlockSource ? { source: unlockSource } : {}),
+  };
+}
+
 export function normalizePigeonAvatarState(value?: Partial<PigeonAvatarState> | null): PigeonAvatarState {
   const source = value ?? DEFAULT_PIGEON_AVATAR_STATE;
   const selectedPresetId = source.selectedPresetId && getPigeonPresetById(source.selectedPresetId)
@@ -116,7 +151,7 @@ export function normalizePigeonAvatarState(value?: Partial<PigeonAvatarState> | 
     expressionId: isPigeonExpressionId(source.expressionId) ? source.expressionId : DEFAULT_PIGEON_AVATAR_STATE.expressionId,
     equipped: sanitizeEquipment(source.equipped),
     selectedPresetId,
-    unlocks: source.unlocks,
+    unlocks: sanitizeUnlocks(source.unlocks),
     details: {
       blush: typeof source.details?.blush === 'boolean' ? source.details.blush : DEFAULT_PIGEON_AVATAR_STATE.details.blush,
     },
