@@ -8,7 +8,7 @@ const toneClasses = {
 };
 
 function buttonClass(tone) {
-  return `inline-flex min-h-10 items-center justify-center rounded-md px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${toneClasses[tone] || toneClasses.blue}`;
+  return `inline-flex min-h-10 items-center justify-center rounded-md px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55 dark:focus:ring-offset-zinc-900 ${toneClasses[tone] || toneClasses.blue}`;
 }
 
 export default function CtaButtonRow({ actions, className = '' }) {
@@ -28,6 +28,7 @@ export default function CtaButtonRow({ actions, className = '' }) {
             key={action.label}
             type="button"
             onClick={action.onClick}
+            disabled={action.disabled}
             className={buttonClass(action.tone)}
           >
             {action.label}

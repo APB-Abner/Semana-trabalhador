@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoomStore, RoomStoreError, type RoomStore } from '../src/domain/roomStore.ts';
+import { getPriorityOrderCatalog } from '../src/domain/match/minigames/priorityOrderCatalog.ts';
 import { liveQuestionsFixture } from './fixtures.ts';
 
 describe('roomStore', () => {
@@ -46,7 +47,7 @@ describe('roomStore', () => {
     expect(room.state.selectedGames.map((game) => game.type)).toEqual([
       'quick_quiz',
       'work_situation',
-      'quick_quiz',
+      'priority_order',
     ]);
     expect(room.state.selectedGames.map((game) => game.roundCount)).toEqual([4, 3, 3]);
   });
@@ -215,6 +216,8 @@ describe('roomStore', () => {
     store.clearAllRooms();
     store = createRoomStore({
       questions: liveQuestionsFixture.slice(0, 5),
+      workSituations: [],
+      priorityOrderScenarios: [],
       roundMs: 20_000,
       now: () => currentTime,
     });
@@ -315,6 +318,106 @@ describe('roomStore', () => {
       percentage: 50,
       basePoints: 600,
     });
+  });
+
+  it('plays priority_order rounds with permutation validation and distance score', () => {
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+
+    startFirstRound(room);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q1', 'q1-a');
+    store.submitAnswer(room.pin, bia.playerToken, 'q1', 'q1-b');
+
+    store.nextRound(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q2', 'q2-a');
+    store.submitAnswer(room.pin, bia.playerToken, 'q2', 'q2-b');
+
+    store.nextRound(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b', 'q3-d'] });
+    store.submitAnswer(room.pin, bia.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b'] });
+
+    store.nextRound(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q4', 'q4-a');
+    store.submitAnswer(room.pin, bia.playerToken, 'q4', 'q4-b');
+
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('between_games');
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('game_intro');
+
+    let workRound = store.nextRound(room.pin, room.hostToken);
+    for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {
+      expect(workRound.currentRound?.gameType).toBe('work_situation');
+      if (workRound.currentRound?.gameType !== 'work_situation') return;
+      const [bestOption, okOption] = workRound.currentRound.situation.options;
+      currentTime += 500;
+      store.submitAnswer(room.pin, ana.playerToken, workRound.currentRound.id, bestOption.id);
+      currentTime += 500;
+      store.submitAnswer(room.pin, bia.playerToken, workRound.currentRound.id, okOption.id);
+
+      const nextState = store.nextRound(room.pin, room.hostToken);
+      if (roundIndex < 2) {
+        expect(nextState.status).toBe('round_open');
+        workRound = nextState;
+      } else {
+        expect(nextState.status).toBe('between_games');
+      }
+    }
+
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('game_intro');
+    const priorityRound = store.nextRound(room.pin, room.hostToken);
+    expect(priorityRound.status).toBe('round_open');
+    expect(priorityRound.currentRound?.gameType).toBe('priority_order');
+    expect(priorityRound.currentQuestion).toBeNull();
+    if (priorityRound.currentRound?.gameType !== 'priority_order') return;
+    const priorityCurrentRound = priorityRound.currentRound;
+
+    const itemIds = priorityCurrentRound.scenario.items.map((item) => item.id);
+    expect(priorityCurrentRound.scenario.items[0]).not.toHaveProperty('idealPosition');
+    expect(() => store.submitAnswer(
+      room.pin,
+      ana.playerToken,
+      priorityCurrentRound.id,
+      { optionIds: [itemIds[0], itemIds[0], ...itemIds.slice(2)] },
+    )).toThrow(RoomStoreError);
+    expect(() => store.submitAnswer(
+      room.pin,
+      ana.playerToken,
+      priorityCurrentRound.id,
+      { optionIds: itemIds.slice(0, -1) },
+    )).toThrow(RoomStoreError);
+
+    const internalScenario = getPriorityOrderCatalog().find((scenario) => scenario.id === priorityCurrentRound.id);
+    const idealOrder = [...(internalScenario?.items ?? [])]
+      .sort((left, right) => left.idealPosition - right.idealPosition)
+      .map((item) => item.id);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, priorityCurrentRound.id, { optionIds: idealOrder });
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, bia.playerToken, priorityCurrentRound.id, {
+      optionIds: [...idealOrder].reverse(),
+    });
+
+    expect(idealOrder).toHaveLength(itemIds.length);
+    expect(revealed.status).toBe('round_revealed');
+    expect(revealed.currentRound?.gameType).toBe('priority_order');
+    expect(revealed.aggregatedResult).toBeNull();
+    expect(revealed.leaderboard).toHaveLength(2);
+    if (revealed.currentRound?.gameType !== 'priority_order') return;
+    expect(revealed.currentRound.reveal?.idealOrder).toHaveLength(itemIds.length);
+    expect(revealed.currentRound.reveal?.answerSummaries).toHaveLength(2);
+    const perfectSummary = revealed.currentRound.reveal?.answerSummaries.find((summary) =>
+      summary.optionIds.every((optionId, index) => optionId === idealOrder[index]));
+    expect(perfectSummary).toMatchObject({
+      correctPositionCount: itemIds.length,
+      maxDistance: Math.floor((itemIds.length * itemIds.length) / 2),
+      totalDistance: 0,
+      basePoints: 1000,
+    });
+    expect(perfectSummary?.points).toBe((perfectSummary?.basePoints ?? 0) + (perfectSummary?.speedBonus ?? 0));
   });
 
   it('scores true_false questions through the question handler', () => {

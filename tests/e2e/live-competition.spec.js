@@ -34,6 +34,17 @@ async function answerFirstOption(page) {
   await expect(page.locator('main').getByText(/Resposta enviada|Resposta correta/).first()).toBeVisible();
 }
 
+async function answerWorkSituationRound(host, ana, bia) {
+  await expect(ana.getByText('Situacao Profissional').first()).toBeVisible();
+  await ana.locator('main button[aria-pressed]').first().click();
+  await expect(ana.getByText(/Decisao enviada/)).toBeVisible();
+  await bia.locator('main button[aria-pressed]').nth(1).click();
+  await expect(ana.getByText(/Melhor decisao:/)).toBeVisible();
+  await expect(host.getByText(/Melhor decisao:/)).toBeVisible();
+  await expect(host.getByText('Distribuicao das escolhas')).toBeVisible();
+  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+}
+
 async function nextRound(hostPage) {
   const advanceButton = hostPage.getByRole('button', { name: /xima rodada|Finalizar match|Ver ranking parcial/ });
   const advanceLabel = await advanceButton.textContent();
@@ -136,13 +147,23 @@ test('live competition supports competitive and participatory UI flows', async (
   await expect(ana.getByText(/1 voto/).first()).toBeVisible();
 
   await nextRound(host);
-  await expect(ana.getByText('Situacao Profissional').first()).toBeVisible();
-  await ana.locator('main button[aria-pressed]').first().click();
-  await expect(ana.getByText(/Decisao enviada/)).toBeVisible();
-  await bia.locator('main button[aria-pressed]').nth(1).click();
-  await expect(ana.getByText(/Melhor decisao:/)).toBeVisible();
-  await expect(host.getByText(/Melhor decisao:/)).toBeVisible();
-  await expect(host.getByText('Distribuicao das escolhas')).toBeVisible();
+  await answerWorkSituationRound(host, ana, bia);
+
+  await nextRound(host);
+  await answerWorkSituationRound(host, ana, bia);
+
+  await nextRound(host);
+  await answerWorkSituationRound(host, ana, bia);
+
+  await nextRound(host);
+  await expect(ana.getByText('Ordem de Prioridade').first()).toBeVisible();
+  await ana.getByRole('button', { name: /para baixo/ }).first().click();
+  await ana.getByRole('button', { name: 'Confirmar ordem' }).click();
+  await expect(ana.getByRole('button', { name: 'Ordem enviada' })).toBeDisabled();
+  await bia.getByRole('button', { name: 'Confirmar ordem' }).click();
+  await expect(ana.getByText('Ordem ideal').first()).toBeVisible();
+  await expect(ana.getByText('Posicoes certas')).toBeVisible();
+  await expect(host.getByText('Ordem ideal').first()).toBeVisible();
   await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
 
   await context.close();

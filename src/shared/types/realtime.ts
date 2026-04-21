@@ -39,7 +39,7 @@ export type MatchGame = {
   active: boolean;
 };
 
-export type MatchRoundGameType = 'quick_quiz' | 'work_situation';
+export type MatchRoundGameType = 'quick_quiz' | 'work_situation' | 'priority_order';
 
 export type OnlineMatch = {
   selectedGames: MatchGame[];
@@ -125,6 +125,52 @@ export type WorkSituationReveal = {
   options: WorkSituationRevealOption[];
 };
 
+export type PriorityOrderItem = {
+  id: string;
+  text: string;
+  idealPosition: number;
+  explanation?: string;
+};
+
+export type PriorityOrderScenario = {
+  id: string;
+  title: string;
+  topic: string;
+  scenario: string;
+  items: PriorityOrderItem[];
+  explanation: string;
+};
+
+export type PublicPriorityOrderItem = Pick<PriorityOrderItem, 'id' | 'text'>;
+
+export type PublicPriorityOrderScenario = Omit<PriorityOrderScenario, 'items' | 'explanation'> & {
+  items: PublicPriorityOrderItem[];
+};
+
+export type PriorityOrderRevealItem = {
+  itemId: string;
+  text: string;
+  idealPosition: number;
+  explanation?: string;
+};
+
+export type PriorityOrderAnswerSummary = {
+  optionIds: string[];
+  correctPositionCount: number;
+  totalDistance: number;
+  maxDistance: number;
+  basePoints: number;
+  speedBonus: number;
+  points: number;
+};
+
+export type PriorityOrderReveal = {
+  explanation: string;
+  idealOrder: PriorityOrderRevealItem[];
+  totalResponses: number;
+  answerSummaries: PriorityOrderAnswerSummary[];
+};
+
 export type PublicMatchRound =
   | {
       id: string;
@@ -136,6 +182,12 @@ export type PublicMatchRound =
       gameType: 'work_situation';
       situation: PublicWorkSituation;
       reveal?: WorkSituationReveal;
+    }
+  | {
+      id: string;
+      gameType: 'priority_order';
+      scenario: PublicPriorityOrderScenario;
+      reveal?: PriorityOrderReveal;
     };
 
 export type LivePlayer = {

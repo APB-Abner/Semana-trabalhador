@@ -220,6 +220,7 @@ describe('socket live quiz question types', () => {
         liveQuestionsFixture[7],
       ],
       workSituations: [],
+      priorityOrderScenarios: [],
       roundMs: 5_000,
     });
     httpServer = app.httpServer;

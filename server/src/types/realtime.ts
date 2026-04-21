@@ -5,6 +5,7 @@ import type {
   LivePlayer,
   LiveQuestion,
   MatchGame,
+  PriorityOrderScenario,
   PublicMatchRound,
   RoomState,
   WorkSituation,
@@ -33,6 +34,13 @@ export type {
   MatchStatus,
   MiniGameType,
   OnlineMatch,
+  PriorityOrderAnswerSummary,
+  PriorityOrderItem,
+  PriorityOrderReveal,
+  PriorityOrderRevealItem,
+  PriorityOrderScenario,
+  PublicPriorityOrderItem,
+  PublicPriorityOrderScenario,
   PublicLiveQuestion,
   PublicMatchRound,
   PublicWorkSituation,
@@ -84,7 +92,14 @@ export type WorkSituationMatchRound = {
   situation: WorkSituation;
 };
 
-export type MatchRoundInternal = QuickQuizMatchRound | WorkSituationMatchRound;
+export type PriorityOrderMatchRound = {
+  id: string;
+  gameType: 'priority_order';
+  scenario: PriorityOrderScenario;
+  publicItems: Array<Pick<PriorityOrderScenario['items'][number], 'id' | 'text'>>;
+};
+
+export type MatchRoundInternal = QuickQuizMatchRound | WorkSituationMatchRound | PriorityOrderMatchRound;
 
 export type LiveRoomInternal = {
   pin: string;

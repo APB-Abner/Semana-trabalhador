@@ -1,6 +1,18 @@
-import type { LiveQuestion, MatchGame, MatchRoundInternal, WorkSituation } from '../../types/realtime.ts';
+import type {
+  LiveQuestion,
+  MatchGame,
+  MatchRoundInternal,
+  PriorityOrderScenario,
+  WorkSituation,
+} from '../../types/realtime.ts';
+import {
+  buildPriorityOrderGame,
+  PRIORITY_ORDER_ROUNDS_PER_MATCH,
+  priorityOrderDefinition,
+  validatePriorityOrderScenario,
+} from './minigames/priorityOrder.ts';
+import { getPriorityOrderCatalog } from './minigames/priorityOrderCatalog.ts';
 import { buildQuickQuizGame, quickQuizDefinition } from './minigames/quickQuiz.ts';
-import { priorityOrderDefinition } from './minigames/priorityOrder.ts';
 import {
   buildWorkSituationGame,
   WORK_SITUATION_ROUNDS_PER_MATCH,
@@ -11,8 +23,7 @@ import { getWorkSituationCatalog } from './minigames/workSituationCatalog.ts';
 
 export const MATCH_GAME_COUNT = 3;
 
-const FIRST_QUICK_QUIZ_ROUNDS = 4;
-const SECOND_QUICK_QUIZ_ROUNDS = 3;
+const QUICK_QUIZ_ROUNDS_PER_MATCH = 4;
 const QUICK_ONLY_SIZES = [4, 3, 3];
 
 export const matchMiniGameDefinitions = [
@@ -24,6 +35,7 @@ export const matchMiniGameDefinitions = [
 export type MatchSessionSelectionOptions = {
   questions: LiveQuestion[];
   workSituations?: WorkSituation[];
+  priorityOrderScenarios?: PriorityOrderScenario[];
 };
 
 export type MatchSessionSelection = {
@@ -44,6 +56,21 @@ function toWorkSituationRounds(situations: WorkSituation[]): MatchRoundInternal[
     id: situation.id,
     gameType: 'work_situation',
     situation,
+  }));
+}
+
+function shufflePriorityOrderItems(scenario: PriorityOrderScenario) {
+  return [...scenario.items]
+    .sort(() => Math.random() - 0.5)
+    .map(({ id, text }) => ({ id, text }));
+}
+
+function toPriorityOrderRounds(scenarios: PriorityOrderScenario[]): MatchRoundInternal[] {
+  return scenarios.map((scenario) => ({
+    id: scenario.id,
+    gameType: 'priority_order',
+    scenario,
+    publicItems: shufflePriorityOrderItems(scenario),
   }));
 }
 
@@ -70,8 +97,16 @@ function shuffleWorkSituations(situations: WorkSituation[]) {
   return [...situations].sort(() => Math.random() - 0.5);
 }
 
+function shufflePriorityOrderScenarios(scenarios: PriorityOrderScenario[]) {
+  return [...scenarios].sort(() => Math.random() - 0.5);
+}
+
 function selectWorkSituationsForMatch(situations: WorkSituation[]) {
   return shuffleWorkSituations(situations).slice(0, WORK_SITUATION_ROUNDS_PER_MATCH);
+}
+
+function selectPriorityOrderScenariosForMatch(scenarios: PriorityOrderScenario[]) {
+  return shufflePriorityOrderScenarios(scenarios).slice(0, PRIORITY_ORDER_ROUNDS_PER_MATCH);
 }
 
 function selectQuickOnlySession(questions: LiveQuestion[]): MatchSessionSelection {
@@ -101,32 +136,32 @@ function selectQuickOnlySession(questions: LiveQuestion[]): MatchSessionSelectio
 export function selectMatchSession({
   questions,
   workSituations = getWorkSituationCatalog(),
+  priorityOrderScenarios = getPriorityOrderCatalog(),
 }: MatchSessionSelectionOptions): MatchSessionSelection {
   if (!questions.length) {
     throw new Error('Nao ha perguntas para montar o match online.');
   }
 
-  const canUseWorkSituation = questions.length >= FIRST_QUICK_QUIZ_ROUNDS + SECOND_QUICK_QUIZ_ROUNDS
-    && workSituations.length >= WORK_SITUATION_ROUNDS_PER_MATCH;
+  const canUseFullMatch = questions.length >= QUICK_QUIZ_ROUNDS_PER_MATCH
+    && workSituations.length >= WORK_SITUATION_ROUNDS_PER_MATCH
+    && priorityOrderScenarios.length >= PRIORITY_ORDER_ROUNDS_PER_MATCH;
 
-  if (!canUseWorkSituation) {
+  if (!canUseFullMatch) {
     return selectQuickOnlySession(questions);
   }
 
   workSituations.forEach(validateWorkSituation);
+  priorityOrderScenarios.forEach(validatePriorityOrderScenario);
 
-  const firstQuickQuestions = questions.slice(0, FIRST_QUICK_QUIZ_ROUNDS);
-  const secondQuickQuestions = questions.slice(
-    FIRST_QUICK_QUIZ_ROUNDS,
-    FIRST_QUICK_QUIZ_ROUNDS + SECOND_QUICK_QUIZ_ROUNDS,
-  );
+  const quickQuestions = questions.slice(0, QUICK_QUIZ_ROUNDS_PER_MATCH);
   const selectedWorkSituations = selectWorkSituationsForMatch(workSituations);
+  const selectedPriorityOrderScenarios = selectPriorityOrderScenariosForMatch(priorityOrderScenarios);
 
-  const firstQuickGame = buildQuickQuizGame({
+  const quickQuizGame = buildQuickQuizGame({
     id: 'quick_quiz_1',
     title: quickQuizDefinition.title,
     description: quickQuizDefinition.description,
-    questions: firstQuickQuestions,
+    questions: quickQuestions,
   });
   const workSituationGame = buildWorkSituationGame({
     id: 'work_situation_1',
@@ -134,19 +169,19 @@ export function selectMatchSession({
     description: workSituationDefinition.description,
     situations: selectedWorkSituations,
   });
-  const secondQuickGame = buildQuickQuizGame({
-    id: 'quick_quiz_2',
-    title: `${quickQuizDefinition.title} Final`,
-    description: 'Ultimo bloco rapido para recuperar pontos antes do podio final.',
-    questions: secondQuickQuestions,
+  const priorityOrderGame = buildPriorityOrderGame({
+    id: 'priority_order_1',
+    title: priorityOrderDefinition.title,
+    description: priorityOrderDefinition.description,
+    scenarios: selectedPriorityOrderScenarios,
   });
 
   return {
-    selectedGames: [firstQuickGame, workSituationGame, secondQuickGame],
+    selectedGames: [quickQuizGame, workSituationGame, priorityOrderGame],
     rounds: [
-      ...toQuickQuizRounds(firstQuickQuestions),
+      ...toQuickQuizRounds(quickQuestions),
       ...toWorkSituationRounds(selectedWorkSituations),
-      ...toQuickQuizRounds(secondQuickQuestions),
+      ...toPriorityOrderRounds(selectedPriorityOrderScenarios),
     ],
   };
 }

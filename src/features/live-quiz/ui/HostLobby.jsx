@@ -6,6 +6,7 @@ import BetweenGamesPanel from '../../live-match/ui/BetweenGamesPanel.jsx';
 import FinalPodium from '../../live-match/ui/FinalPodium.jsx';
 import MatchGameShell from '../../live-match/ui/MatchGameShell.jsx';
 import MatchLobby from '../../live-match/ui/MatchLobby.jsx';
+import PriorityOrderView from '../../live-match/ui/minigames/PriorityOrderView.jsx';
 import WorkSituationView from '../../live-match/ui/minigames/WorkSituationView.jsx';
 import LiveQuestionCard from './LiveQuestionCard.jsx';
 import PresenceList from './PresenceList.jsx';
@@ -42,6 +43,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
       ? `${statusLabels[state.status] || state.status} ${Math.max(0, state.currentGameIndex) + 1}/${state.selectedGames.length}`
       : `${statusLabels[state.status] || state.status} ${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
   const isWorkSituationRound = state.currentRound?.gameType === 'work_situation';
+  const isPriorityOrderRound = state.currentRound?.gameType === 'priority_order';
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
@@ -86,6 +88,14 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
                 serverNow={state.serverNow}
                 disabled
               />
+            ) : isPriorityOrderRound ? (
+              <PriorityOrderView
+                round={state.currentRound}
+                startedAt={state.startedAt}
+                closesAt={state.closesAt}
+                serverNow={state.serverNow}
+                disabled
+              />
             ) : (
               <LiveQuestionCard
                 question={state.currentQuestion}
@@ -107,6 +117,15 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
           <>
             {isWorkSituationRound ? (
               <WorkSituationView
+                round={state.currentRound}
+                startedAt={state.startedAt}
+                closesAt={state.closesAt}
+                serverNow={state.serverNow}
+                disabled
+                showAnswer
+              />
+            ) : isPriorityOrderRound ? (
+              <PriorityOrderView
                 round={state.currentRound}
                 startedAt={state.startedAt}
                 closesAt={state.closesAt}

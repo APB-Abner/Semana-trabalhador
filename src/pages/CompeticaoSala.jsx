@@ -3,6 +3,7 @@ import usePlayerRoom from '../features/live-match/model/usePlayerMatch';
 import BetweenGamesPanel from '../features/live-match/ui/BetweenGamesPanel.jsx';
 import FinalPodium from '../features/live-match/ui/FinalPodium.jsx';
 import MatchGameShell from '../features/live-match/ui/MatchGameShell.jsx';
+import PriorityOrderView from '../features/live-match/ui/minigames/PriorityOrderView.jsx';
 import WorkSituationView from '../features/live-match/ui/minigames/WorkSituationView.jsx';
 import LiveQuestionCard from '../features/live-quiz/ui/LiveQuestionCard.jsx';
 import PlayerJoinForm from '../features/live-quiz/ui/PlayerJoinForm.jsx';
@@ -119,6 +120,16 @@ export default function CompeticaoSala() {
             hasSubmitted={hasSubmitted}
             onSubmit={submitAnswer}
           />
+        ) : state.currentRound?.gameType === 'priority_order' ? (
+          <PriorityOrderView
+            round={state.currentRound}
+            startedAt={state.startedAt}
+            closesAt={state.closesAt}
+            serverNow={state.serverNow}
+            selectedOptionIds={selectedOptionIds}
+            hasSubmitted={hasSubmitted}
+            onSubmit={submitAnswer}
+          />
         ) : (
           <LiveQuestionCard
             question={state.currentQuestion}
@@ -138,6 +149,16 @@ export default function CompeticaoSala() {
         <div className="space-y-6">
           {state.currentRound?.gameType === 'work_situation' ? (
             <WorkSituationView
+              round={state.currentRound}
+              startedAt={state.startedAt}
+              closesAt={state.closesAt}
+              serverNow={state.serverNow}
+              selectedOptionIds={selectedOptionIds}
+              hasSubmitted={hasSubmitted}
+              showAnswer
+            />
+          ) : state.currentRound?.gameType === 'priority_order' ? (
+            <PriorityOrderView
               round={state.currentRound}
               startedAt={state.startedAt}
               closesAt={state.closesAt}

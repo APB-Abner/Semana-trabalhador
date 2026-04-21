@@ -143,12 +143,15 @@ export default function usePlayerRoom(pin?: string) {
     const text = isObjectAnswer && 'text' in answer ? answer.text : undefined;
     const value = isObjectAnswer && 'value' in answer ? answer.value : undefined;
     const isWorkSituation = currentRound.gameType === 'work_situation';
+    const isPriorityOrder = currentRound.gameType === 'priority_order';
     const payload: AnswerSubmitPayload = {
       pin,
       playerToken,
       questionId: currentRound.id,
       ...(isWorkSituation
         ? { optionId: optionIds[0] }
+        : isPriorityOrder
+        ? { optionIds }
         : currentQuestion?.type === 'word_cloud' || currentQuestion?.type === 'qna'
         ? { text }
         : currentQuestion?.type === 'scale'

@@ -1,4 +1,10 @@
-import type { LiveQuestion, MatchGame, MiniGameType, WorkSituation } from '../../../types/realtime.ts';
+import type {
+  LiveQuestion,
+  MatchGame,
+  MiniGameType,
+  PriorityOrderScenario,
+  WorkSituation,
+} from '../../../types/realtime.ts';
 
 export type MiniGameDefinition = {
   type: MiniGameType;
@@ -19,6 +25,13 @@ export type BuildWorkSituationGameOptions = {
   title?: string;
   description?: string;
   situations: WorkSituation[];
+};
+
+export type BuildPriorityOrderGameOptions = {
+  id: string;
+  title?: string;
+  description?: string;
+  scenarios: PriorityOrderScenario[];
 };
 
 export type BuiltMatchGame = MatchGame;

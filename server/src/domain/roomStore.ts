@@ -21,6 +21,13 @@ import {
   normalizeWorkSituationAnswer,
 } from './match/minigames/workSituation.ts';
 import { getWorkSituationCatalog } from './match/minigames/workSituationCatalog.ts';
+import {
+  calculatePriorityOrderScore,
+  createPriorityOrderReveal,
+  getPublicPriorityOrderScenario,
+  normalizePriorityOrderAnswer,
+} from './match/minigames/priorityOrder.ts';
+import { getPriorityOrderCatalog } from './match/minigames/priorityOrderCatalog.ts';
 import type {
   LeaderboardEntry,
   LiveAnswerPayload,
@@ -28,6 +35,7 @@ import type {
   LiveRoomInternal,
   MatchRoundInternal,
   PlayerAnswer,
+  PriorityOrderScenario,
   PublicMatchRound,
   RoomEvent,
   RoomEventName,
@@ -39,6 +47,7 @@ import type { PigeonAvatarState } from '../../../src/shared/types/pigeonAvatar.t
 type RoomStoreOptions = {
   questions: LiveQuestion[];
   workSituations?: WorkSituation[];
+  priorityOrderScenarios?: PriorityOrderScenario[];
   selectQuestions?: (context: { recentQuestionIds: string[] }) => LiveQuestion[];
   recentQuestionHistorySize?: number;
   roundMs?: number;
@@ -115,6 +124,7 @@ function toAnswerPayload(answer: string | LiveAnswerPayload): LiveAnswerPayload 
 export function createRoomStore({
   questions,
   workSituations = getWorkSituationCatalog(),
+  priorityOrderScenarios = getPriorityOrderCatalog(),
   selectQuestions,
   recentQuestionHistorySize = 30,
   roundMs = 20_000,
@@ -203,6 +213,17 @@ export function createRoomStore({
         id: matchRound.id,
         gameType: 'quick_quiz',
         question: toPublicQuestion(matchRound.question, revealAnswer),
+      };
+    }
+
+    if (matchRound.gameType === 'priority_order') {
+      return {
+        id: matchRound.id,
+        gameType: 'priority_order',
+        scenario: getPublicPriorityOrderScenario(matchRound.scenario, matchRound.publicItems),
+        ...(revealAnswer
+          ? { reveal: createPriorityOrderReveal(matchRound.scenario, answers, roundMs) }
+          : {}),
       };
     }
 
@@ -368,7 +389,7 @@ export function createRoomStore({
     const currentQuestion = getQuickQuestion(currentRound);
     const answers = [...room.round!.answers.values()];
 
-    if (currentRound?.gameType === 'work_situation') {
+    if (currentRound?.gameType === 'work_situation' || currentRound?.gameType === 'priority_order') {
       room.aggregatedResult = null;
       room.leaderboard = createRoundLeaderboard(room);
       emit(room, 'round:revealed');
@@ -452,6 +473,7 @@ export function createRoomStore({
     const matchSession = selectMatchSession({
       questions: sessionQuestions,
       workSituations,
+      priorityOrderScenarios,
     });
     const room: LiveRoomInternal = {
       pin,
@@ -671,6 +693,17 @@ export function createRoomStore({
           startedAt: room.round.startedAt,
           limitMs: roundMs,
         });
+      } else if (currentRound.gameType === 'priority_order') {
+        const normalizedAnswer = normalizePriorityOrderAnswer(currentRound.scenario, toAnswerPayload(answer));
+        const score = calculatePriorityOrderScore({
+          optionIds: normalizedAnswer.optionIds,
+          scenario: currentRound.scenario,
+          responseMs,
+          limitMs: roundMs,
+        });
+        optionIds = normalizedAnswer.optionIds;
+        isCorrect = score.correctPositionCount === currentRound.scenario.items.length;
+        points = score.points;
       } else if (question) {
         const normalizedAnswer = normalizeLiveAnswer(question, toAnswerPayload(answer));
         optionIds = normalizedAnswer.optionIds;
