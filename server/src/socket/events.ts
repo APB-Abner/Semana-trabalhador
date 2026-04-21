@@ -1,6 +1,7 @@
 export const ClientEvents = {
   ROOM_CREATE: 'room:create',
   ROOM_JOIN: 'room:join',
+  ROOM_VIEW: 'room:view',
   GAME_START: 'game:start',
   ROUND_NEXT: 'round:next',
   ANSWER_SUBMIT: 'answer:submit',

@@ -196,6 +196,38 @@ describe('socket live quiz flow', () => {
     expect(finished.finalRanking[0].name).toBe('Ana');
   });
 
+  it('allows a read-only display client to watch room state by PIN', async () => {
+    const host = await connectClient();
+    const player = await connectClient();
+    const display = await connectClient();
+    const created = await emitAck<RoomCreateAck>(host, 'room:create');
+
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const displayAck = await emitAck<BasicAck>(display, 'room:view', { pin: created.pin });
+    expect(displayAck.ok).toBe(true);
+    if (!displayAck.ok) return;
+    expect(displayAck.state.pin).toBe(created.pin);
+    expect(displayAck.state.status).toBe('lobby');
+
+    const displayPresencePromise = once<RoomState>(display, 'presence:update');
+    const joined = await emitAck<RoomJoinAck>(player, 'room:join', {
+      pin: created.pin,
+      role: 'player',
+      name: 'Ana',
+    });
+
+    expect(joined.ok).toBe(true);
+    const displayPresence = await displayPresencePromise;
+    expect(displayPresence.players.some((candidate) => candidate.name === 'Ana')).toBe(true);
+
+    const openedPromise = once<RoomState>(display, 'round:opened');
+    await startMatchAndOpenFirstRound(host, player, created.pin, created.hostToken);
+    const opened = await openedPromise;
+    expect(opened.status).toBe('round_open');
+  });
+
   it('keeps a multiple choice round answerable for remaining players after the first submission', async () => {
     const host = await connectClient();
     const anaSocket = await connectClient();

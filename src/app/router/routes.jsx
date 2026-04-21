@@ -13,6 +13,7 @@ const Competicao = lazy(() => import('../../pages/Competicao.jsx'));
 const CompeticaoHost = lazy(() => import('../../pages/CompeticaoHost.jsx'));
 const CompeticaoEntrar = lazy(() => import('../../pages/CompeticaoEntrar.jsx'));
 const CompeticaoSala = lazy(() => import('../../pages/CompeticaoSala.jsx'));
+const CompeticaoExibicao = lazy(() => import('../../pages/CompeticaoExibicao.jsx'));
 
 function lazyRoute(routeComponent) {
   return (
@@ -23,6 +24,10 @@ function lazyRoute(routeComponent) {
 }
 
 export const routes = [
+  {
+    path: '/competicao/exibicao/:pin',
+    element: lazyRoute(CompeticaoExibicao),
+  },
   {
     path: '/',
     element: <MainLayout />,

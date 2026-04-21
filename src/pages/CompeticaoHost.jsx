@@ -40,7 +40,7 @@ export default function CompeticaoHost() {
         />
         <ResultPanel>
           <p className="text-gray-600 dark:text-gray-300">
-            Use esta tela no projetor ou na máquina do mediador. Depois de criar a sala, espere os jogadores entrarem.
+            Esta tela é o controle do mediador. Depois de criar a sala, abra a exibição em outra aba ou projetor.
           </p>
           {error && <FeedbackNotice tone="danger" className="mt-4">{error}</FeedbackNotice>}
           <CtaButtonRow
@@ -81,11 +81,12 @@ export default function CompeticaoHost() {
   return (
     <PageShell size="wide" className="text-gray-900 dark:text-white">
       <PageHeader
-        eyebrow="Painel do host"
+        eyebrow="Host controle"
         title={pin ? `Sala ${pin}` : 'Sala ao vivo'}
       />
       <HostLobby
         state={state}
+        displayHref={pin ? `/competicao/exibicao/${pin}` : undefined}
         error={error}
         onStart={startGame}
         onNextRound={nextRound}

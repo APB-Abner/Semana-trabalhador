@@ -102,6 +102,22 @@ h3 {
 }
 
 @layer utilities {
+  @keyframes display-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-display-fade-up {
+    animation: display-fade-up 320ms ease-out both;
+  }
+
   .perspective {
     perspective: 1000px;
   }

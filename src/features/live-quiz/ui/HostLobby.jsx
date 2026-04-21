@@ -25,11 +25,14 @@ const statusLabels = {
 function HostControlPanel({
   answeredCount,
   connectedCount,
+  displayHref,
   pin,
   primaryAction,
   statusLabel,
   totalPlayers,
 }) {
+  const actionLabel = primaryAction?.label ?? 'Acompanhar rodada';
+
   return (
     <ResultPanel
       tone="info"
@@ -57,23 +60,35 @@ function HostControlPanel({
             <p className="mt-1 text-sm font-bold text-gray-950 dark:text-white">{answeredCount}</p>
           </div>
           <div className="rounded-lg border border-blue-200 bg-white/80 p-3 dark:border-blue-900 dark:bg-zinc-950/60">
-            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Controle</p>
-            <p className="mt-1 text-sm font-bold text-gray-950 dark:text-white">Host</p>
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Próxima ação</p>
+            <p className="mt-1 text-sm font-bold text-gray-950 dark:text-white">{actionLabel}</p>
           </div>
         </div>
 
-        {primaryAction && (
-          <CtaButtonRow
-            className="justify-start xl:justify-end"
-            actions={[primaryAction]}
-          />
-        )}
+        <div className="flex flex-wrap gap-3 xl:justify-end">
+          {primaryAction && (
+            <CtaButtonRow
+              className="justify-start xl:justify-end"
+              actions={[primaryAction]}
+            />
+          )}
+          {displayHref && (
+            <a
+              href={displayHref}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-10 items-center justify-center rounded-md bg-gray-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-950 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:focus:ring-offset-zinc-900"
+            >
+              Abrir exibição
+            </a>
+          )}
+        </div>
       </div>
     </ResultPanel>
   );
 }
 
-export default function HostLobby({ state, error, onStart, onNextRound }) {
+export default function HostLobby({ state, displayHref, error, onStart, onNextRound }) {
   if (!state) {
     return <WaitingScreen title="Conectando sala do host" />;
   }
@@ -107,6 +122,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
         <HostControlPanel
           answeredCount={state.answeredCount}
           connectedCount={connectedPlayers}
+          displayHref={displayHref}
           pin={state.pin}
           primaryAction={primaryAction}
           statusLabel={statusLabel}

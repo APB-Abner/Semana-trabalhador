@@ -11,6 +11,7 @@ import {
   validateHostActionPayload,
   validateRoomJoinPayload,
   validateRoomLeavePayload,
+  validateRoomViewPayload,
 } from './payloadValidation.ts';
 import { RoomStoreError, type RoomStore } from '../domain/roomStore.ts';
 import type {
@@ -110,6 +111,21 @@ export function registerSocketHandlers(
         attachSocketToRoom(socket, cleanPayload.pin, { playerToken: room.playerToken });
         ack?.({ ok: true, pin: cleanPayload.pin, playerToken: room.playerToken, state: room.state });
         emitRoom(io, cleanPayload.pin, ServerEvents.PRESENCE_UPDATE, room.state);
+      } catch (error) {
+        ackError(ack, error);
+        socket.emit(ServerEvents.ROOM_ERROR, {
+          message: getPublicErrorMessage(error),
+        });
+      }
+    });
+
+    socket.on(ClientEvents.ROOM_VIEW, (payload: unknown, ack: Ack<BasicAck>) => {
+      try {
+        rateLimiter.consume(socket, ClientEvents.ROOM_VIEW);
+        const cleanPayload = validateRoomViewPayload(payload);
+        const state = store.getState(cleanPayload.pin);
+        attachSocketToRoom(socket, cleanPayload.pin, {});
+        ackSuccess(ack, state);
       } catch (error) {
         ackError(ack, error);
         socket.emit(ServerEvents.ROOM_ERROR, {

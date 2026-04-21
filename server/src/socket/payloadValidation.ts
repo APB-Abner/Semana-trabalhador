@@ -3,6 +3,7 @@ import type {
   HostActionPayload,
   RoomJoinPayload,
   RoomLeavePayload,
+  RoomViewPayload,
 } from '../types/realtime.ts';
 
 type PayloadRecord = Record<string, unknown>;
@@ -179,6 +180,14 @@ export function validateHostActionPayload(payload: unknown): HostActionPayload {
   return {
     pin: readPin(data),
     hostToken: readToken(data, 'hostToken'),
+  };
+}
+
+export function validateRoomViewPayload(payload: unknown): RoomViewPayload {
+  const data = requireRecord(payload);
+
+  return {
+    pin: readPin(data),
   };
 }
 

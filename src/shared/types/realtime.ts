@@ -317,6 +317,10 @@ export type RoomJoinAck =
   | { ok: true; pin: string; playerToken?: string; hostToken?: string; state: RoomState }
   | { ok: false; message: string };
 
+export type RoomViewPayload = {
+  pin: string;
+};
+
 export type HostActionPayload = {
   pin: string;
   hostToken: string;

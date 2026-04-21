@@ -44,6 +44,7 @@ function SortablePriorityItem({
   item,
   index,
   locked,
+  presentationMode = false,
   total,
   onMoveDown,
   onMoveUp,
@@ -65,7 +66,7 @@ function SortablePriorityItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`grid touch-none grid-cols-[2.5rem_3rem_1fr_auto] items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 transition focus:outline-none focus:ring-2 focus:ring-purple-400 dark:border-zinc-700 dark:bg-zinc-950 ${
+      className={`grid touch-none ${presentationMode ? 'grid-cols-[2.5rem_3rem_1fr]' : 'grid-cols-[2.5rem_3rem_1fr_auto]'} items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 transition focus:outline-none focus:ring-2 focus:ring-purple-400 dark:border-zinc-700 dark:bg-zinc-950 ${
         isDragging ? 'z-10 scale-[1.01] shadow-lg ring-2 ring-purple-300 dark:ring-purple-700' : ''
       } ${locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
       aria-label={`Arrastar ${item?.text ?? itemId}`}
@@ -79,28 +80,30 @@ function SortablePriorityItem({
       </span>
       <Badge tone="purple">#{index + 1}</Badge>
       <p className="text-sm font-semibold text-gray-900 dark:text-white">{item?.text ?? itemId}</p>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          disabled={locked || index === 0}
-          onClick={onMoveUp}
-          onPointerDown={(event) => event.stopPropagation()}
-          className="rounded-md border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-purple-400 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-gray-200"
-          aria-label={`Mover ${item?.text ?? itemId} para cima`}
-        >
-          Subir
-        </button>
-        <button
-          type="button"
-          disabled={locked || index === total - 1}
-          onClick={onMoveDown}
-          onPointerDown={(event) => event.stopPropagation()}
-          className="rounded-md border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-purple-400 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-gray-200"
-          aria-label={`Mover ${item?.text ?? itemId} para baixo`}
-        >
-          Descer
-        </button>
-      </div>
+      {!presentationMode && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            disabled={locked || index === 0}
+            onClick={onMoveUp}
+            onPointerDown={(event) => event.stopPropagation()}
+            className="rounded-md border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-purple-400 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-gray-200"
+            aria-label={`Mover ${item?.text ?? itemId} para cima`}
+          >
+            Subir
+          </button>
+          <button
+            type="button"
+            disabled={locked || index === total - 1}
+            onClick={onMoveDown}
+            onPointerDown={(event) => event.stopPropagation()}
+            className="rounded-md border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-purple-400 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-gray-200"
+            aria-label={`Mover ${item?.text ?? itemId} para baixo`}
+          >
+            Descer
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -109,6 +112,7 @@ export default function PriorityOrderView({
   disabled = false,
   hasSubmitted = false,
   onSubmit,
+  presentationMode = false,
   round,
   selectedOptionIds = [],
   serverNow,
@@ -218,6 +222,7 @@ export default function PriorityOrderView({
                 item={itemsById.get(itemId)}
                 index={index}
                 locked={locked}
+                presentationMode={presentationMode}
                 total={orderedIds.length}
                 onMoveUp={() => setOrderedIds((ids) => moveItem(ids, index, -1))}
                 onMoveDown={() => setOrderedIds((ids) => moveItem(ids, index, 1))}

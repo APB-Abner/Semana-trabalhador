@@ -48,6 +48,7 @@ export type {
   RoomJoinAck,
   RoomJoinPayload,
   RoomLeavePayload,
+  RoomViewPayload,
   RoomState,
   WorkSituation,
   WorkSituationOption,

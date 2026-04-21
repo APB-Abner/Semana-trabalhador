@@ -104,6 +104,7 @@ test.afterAll(() => {
 test('live competition supports balanced match minigames', async ({ browser }) => {
   const context = await browser.newContext();
   const host = await context.newPage();
+  const display = await context.newPage();
   const ana = await context.newPage();
   const bia = await context.newPage();
 
@@ -111,6 +112,11 @@ test('live competition supports balanced match minigames', async ({ browser }) =
   await host.getByRole('button', { name: 'Criar sala' }).click();
   await expect(host).toHaveURL(/\/competicao\/host\/\d{6}$/);
   const pin = host.url().split('/').pop();
+
+  await display.goto(`/competicao/exibicao/${pin}`);
+  await expect(display.getByText('Entre na sala')).toBeVisible();
+  await expect(display.locator('section').getByText(pin)).toBeVisible();
+  await expect(display.getByRole('button', { name: 'Iniciar match' })).toHaveCount(0);
 
   for (const [page, name] of [[ana, 'Ana'], [bia, 'Bia']]) {
     await page.goto('/competicao/entrar');
@@ -125,6 +131,7 @@ test('live competition supports balanced match minigames', async ({ browser }) =
 
   await host.getByRole('button', { name: 'Iniciar match' }).click();
   await expect(host.getByRole('button', { name: /Iniciar Quiz Relâmpago/ })).toBeVisible();
+  await expect(display.getByText('Quiz Relâmpago').first()).toBeVisible();
   await host.getByRole('button', { name: /Iniciar Quiz Relâmpago/ }).click();
   await expect(ana.getByRole('heading', { level: 3 })).toBeVisible();
   await answerFirstOption(ana);
