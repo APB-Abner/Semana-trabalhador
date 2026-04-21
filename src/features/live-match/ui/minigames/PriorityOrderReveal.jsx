@@ -27,7 +27,7 @@ export default function PriorityOrderReveal({ reveal, selectedOptionIds = [] }) 
       {selectedSummary && (
         <div className="grid gap-3 sm:grid-cols-4">
           <div className="rounded-lg border border-gray-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
-            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Posicoes certas</p>
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Posições certas</p>
             <p className="mt-1 text-2xl font-bold text-gray-950 dark:text-white">
               {selectedSummary.correctPositionCount}
             </p>
@@ -37,7 +37,7 @@ export default function PriorityOrderReveal({ reveal, selectedOptionIds = [] }) 
             <p className="mt-1 text-2xl font-bold text-gray-950 dark:text-white">{selectedSummary.basePoints}</p>
           </div>
           <div className="rounded-lg border border-gray-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
-            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Bonus</p>
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Bônus</p>
             <p className="mt-1 text-2xl font-bold text-gray-950 dark:text-white">{selectedSummary.speedBonus}</p>
           </div>
           <div className="rounded-lg border border-gray-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
@@ -84,8 +84,8 @@ export default function PriorityOrderReveal({ reveal, selectedOptionIds = [] }) 
                         <p className="font-semibold text-gray-950 dark:text-white">{item?.text ?? itemId}</p>
                         <p className="mt-1 text-gray-600 dark:text-gray-300">
                           {isCorrect
-                            ? 'Ficou na posicao ideal.'
-                            : `Ideal: posicao ${item?.idealPosition ?? '-'}.`}
+                            ? 'Ficou na posição ideal.'
+                            : `Ideal: posição ${item?.idealPosition ?? '-'}.`}
                         </p>
                       </div>
                     </div>

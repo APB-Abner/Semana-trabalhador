@@ -2,7 +2,7 @@ import Badge from '../../../shared/ui/Badge.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 import PigeonAvatar from '../../pigeon-avatar/ui/PigeonAvatar';
 
-export default function LeaderboardPanel({ entries = [], title = 'Leaderboard' }) {
+export default function LeaderboardPanel({ entries = [], title = 'Placar' }) {
   return (
     <ResultPanel>
       <div className="flex items-center justify-between gap-3">
@@ -23,8 +23,8 @@ export default function LeaderboardPanel({ entries = [], title = 'Leaderboard' }
             <div>
               <p className="font-semibold text-gray-900 dark:text-white">{entry.name}</p>
               <p className="text-xs text-gray-600 dark:text-gray-300">
-                Rodada: {entry.roundPoints} ponto(s)
-                {entry.responseMs !== null ? ` - ${entry.responseMs}ms` : ''}
+                Rodada: {entry.roundPoints} pontos
+                {entry.responseMs !== null ? ` · ${entry.responseMs}ms` : ''}
               </p>
             </div>
             <Badge tone={entry.lastAnswerCorrect ? 'green' : 'gray'}>
@@ -33,7 +33,7 @@ export default function LeaderboardPanel({ entries = [], title = 'Leaderboard' }
           </div>
         )) : (
           <p className="rounded-md border border-dashed border-gray-300 px-3 py-4 text-sm text-gray-600 dark:border-zinc-700 dark:text-gray-300">
-            O ranking aparece após a rodada ser revelada.
+            O placar aparece quando a rodada terminar.
           </p>
         )}
       </div>

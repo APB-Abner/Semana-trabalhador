@@ -10,7 +10,7 @@ import type { BuildPriorityOrderGameOptions, BuiltMatchGame, MiniGameDefinition 
 export const priorityOrderDefinition: MiniGameDefinition = {
   type: 'priority_order',
   title: 'Ordem de Prioridade',
-  description: 'Ordene acoes profissionais da mais urgente para a menos prioritaria.',
+  description: 'Ordene ações profissionais da mais urgente para a menos prioritária.',
   active: true,
 };
 
@@ -42,26 +42,26 @@ export function getPriorityOrderMaxDistance(itemCount: number) {
 
 export function validatePriorityOrderScenario(scenario: PriorityOrderScenario) {
   if (!scenario.id || !scenario.title || !scenario.topic || !scenario.scenario || !scenario.explanation) {
-    throw new Error('Cenario de ordem de prioridade incompleto no catalogo.');
+    throw new Error('Cenário de ordem de prioridade incompleto no catálogo.');
   }
 
   if (scenario.items.length < 3 || scenario.items.length > 4) {
-    throw new Error(`Cenario de ordem de prioridade precisa ter 3 ou 4 itens: ${scenario.id}`);
+    throw new Error(`Cenário de ordem de prioridade precisa ter 3 ou 4 itens: ${scenario.id}`);
   }
 
   const itemIds = new Set(scenario.items.map((item) => item.id));
   if (itemIds.size !== scenario.items.length) {
-    throw new Error(`Cenario de ordem de prioridade tem itens duplicados: ${scenario.id}`);
+    throw new Error(`Cenário de ordem de prioridade tem itens duplicados: ${scenario.id}`);
   }
 
   const idealPositions = new Set(scenario.items.map((item) => item.idealPosition));
   if (idealPositions.size !== scenario.items.length) {
-    throw new Error(`Cenario de ordem de prioridade tem posicoes ideais duplicadas: ${scenario.id}`);
+    throw new Error(`Cenário de ordem de prioridade tem posições ideais duplicadas: ${scenario.id}`);
   }
 
   for (let position = 1; position <= scenario.items.length; position += 1) {
     if (!idealPositions.has(position)) {
-      throw new Error(`Cenario de ordem de prioridade precisa usar posicoes de 1 a ${scenario.items.length}: ${scenario.id}`);
+      throw new Error(`Cenário de ordem de prioridade precisa usar posições de 1 a ${scenario.items.length}: ${scenario.id}`);
     }
   }
 }
@@ -94,7 +94,7 @@ export function normalizePriorityOrderAnswer(scenario: PriorityOrderScenario, pa
 
   const hasOnlyScenarioItems = optionIds.every((optionId) => expectedIds.has(optionId));
   if (!hasOnlyScenarioItems || submittedIds.size !== expectedIds.size) {
-    throw new Error('A ordem enviada precisa conter exatamente os itens do cenario.');
+    throw new Error('A ordem enviada precisa conter exatamente os itens do cenário.');
   }
 
   return {

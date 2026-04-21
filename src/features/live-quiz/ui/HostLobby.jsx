@@ -16,10 +16,10 @@ import ParticipatoryResultView from './result-renderers/ParticipatoryResultView.
 
 const statusLabels = {
   lobby: 'Lobby',
-  game_intro: 'Intro do jogo',
+  game_intro: 'Preparando desafio',
   round_open: 'Rodada aberta',
-  round_revealed: 'Rodada revelada',
-  between_games: 'Entre jogos',
+  round_revealed: 'Resultado da rodada',
+  between_games: 'Intervalo',
   finished: 'Finalizada',
 };
 
@@ -33,7 +33,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
     ? state.currentGameRoundIndex + 1 >= state.currentGame.roundCount
     : false;
   const nextRoundLabel = isLastQuestion
-    ? 'Finalizar match'
+      ? 'Finalizar match'
     : isLastRoundInGame
       ? 'Ver ranking parcial'
       : 'Próxima rodada';
@@ -64,7 +64,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
             <ResultPanel>
               <h2 className="text-xl font-bold text-gray-950 dark:text-white">Sala pronta</h2>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                Compartilhe o PIN com os jogadores. Quando todos estiverem no lobby, inicie o match.
+                Compartilhe o PIN. Quando todo mundo entrar, inicie o match.
               </p>
               <CtaButtonRow
                 className="mt-5 justify-start"
@@ -146,7 +146,7 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
             {state.aggregatedResult ? (
               <ParticipatoryResultView result={state.aggregatedResult} />
             ) : (
-              <CompetitiveResultView entries={state.leaderboard} title="Leaderboard da rodada" />
+              <CompetitiveResultView entries={state.leaderboard} title="Placar da rodada" />
             )}
             <CtaButtonRow
               className="justify-start"

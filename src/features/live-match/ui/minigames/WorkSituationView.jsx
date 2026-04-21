@@ -55,7 +55,7 @@ export default function WorkSituationView({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap gap-2">
           <Badge tone="blue">{situation.topic}</Badge>
-          <Badge tone="amber">Situacao Profissional</Badge>
+          <Badge tone="amber">Situação Profissional</Badge>
         </div>
         {closesAt && (
           <Badge tone={remainingMs <= 5_000 ? 'red' : 'gray'}>
@@ -103,7 +103,7 @@ export default function WorkSituationView({
               } disabled:cursor-not-allowed disabled:opacity-85`}
             >
               <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                Acao {index + 1}
+                Ação {index + 1}
               </span>
               <span className="mt-1 block font-semibold">{option.text}</span>
             </button>
@@ -113,7 +113,7 @@ export default function WorkSituationView({
 
       {hasSubmitted && !showAnswer && (
         <FeedbackNotice tone="info" className="mt-4 text-sm">
-          Decisao enviada. Aguarde o fechamento da rodada para ver a melhor escolha.
+          Decisão enviada. Aguarde o resultado da rodada para ver a melhor escolha.
         </FeedbackNotice>
       )}
 
@@ -123,4 +123,3 @@ export default function WorkSituationView({
     </ResultPanel>
   );
 }
-

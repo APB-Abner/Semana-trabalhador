@@ -8,8 +8,8 @@ import type { BuildWorkSituationGameOptions, BuiltMatchGame, MiniGameDefinition 
 
 export const workSituationDefinition: MiniGameDefinition = {
   type: 'work_situation',
-  title: 'Situacao Profissional',
-  description: 'Cenas de decisao rapida sobre postura, comunicacao e rotina de trabalho.',
+  title: 'Situação Profissional',
+  description: 'Cenas de decisão rápida sobre postura, comunicação e rotina de trabalho.',
   active: true,
 };
 
@@ -36,24 +36,24 @@ export function buildWorkSituationGame({
 
 export function validateWorkSituation(situation: WorkSituation) {
   if (!situation.id || !situation.title || !situation.scenario) {
-    throw new Error('Situacao profissional incompleta no catalogo.');
+    throw new Error('Situação profissional incompleta no catálogo.');
   }
 
   if (situation.options.length < 3 || situation.options.length > 4) {
-    throw new Error(`Situacao profissional precisa ter 3 ou 4 opcoes: ${situation.id}`);
+    throw new Error(`Situação profissional precisa ter 3 ou 4 opções: ${situation.id}`);
   }
 
   const optionIds = new Set(situation.options.map((option) => option.id));
   if (optionIds.size !== situation.options.length) {
-    throw new Error(`Situacao profissional tem opcoes duplicadas: ${situation.id}`);
+    throw new Error(`Situação profissional tem opções duplicadas: ${situation.id}`);
   }
 
   if (!optionIds.has(situation.bestOptionId)) {
-    throw new Error(`Situacao profissional sem melhor opcao valida: ${situation.id}`);
+    throw new Error(`Situação profissional sem melhor opção válida: ${situation.id}`);
   }
 
   if (!situation.options.some((option) => option.quality === 'best')) {
-    throw new Error(`Situacao profissional precisa ter uma opcao best: ${situation.id}`);
+    throw new Error(`Situação profissional precisa ter uma opção best: ${situation.id}`);
   }
 }
 
@@ -71,13 +71,13 @@ export function normalizeWorkSituationAnswer(situation: WorkSituation, payload: 
   const optionId = payload.optionId ?? payload.optionIds?.[0];
 
   if (!optionId) {
-    throw new Error('Escolha uma acao para esta situacao.');
+    throw new Error('Escolha uma ação para esta situação.');
   }
 
   const option = situation.options.find((candidate) => candidate.id === optionId);
 
   if (!option) {
-    throw new Error('Opcao invalida para esta situacao.');
+    throw new Error('Opção inválida para esta situação.');
   }
 
   return {

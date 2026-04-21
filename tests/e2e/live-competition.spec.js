@@ -50,14 +50,14 @@ async function answerFirstOption(page) {
 }
 
 async function answerWorkSituationRound(host, ana, bia) {
-  await expect(ana.getByText('Situacao Profissional').first()).toBeVisible();
+  await expect(ana.getByText('Situação Profissional').first()).toBeVisible();
   await ana.locator('main button[aria-pressed]').first().click();
-  await expect(ana.getByText(/Decisao enviada/)).toBeVisible();
+  await expect(ana.getByText(/Decisão enviada/)).toBeVisible();
   await bia.locator('main button[aria-pressed]').nth(1).click();
-  await expect(ana.getByText(/Melhor decisao:/)).toBeVisible();
-  await expect(host.getByText(/Melhor decisao:/)).toBeVisible();
-  await expect(host.getByText('Distribuicao das escolhas')).toBeVisible();
-  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+  await expect(ana.getByText(/Melhor decisão:/)).toBeVisible();
+  await expect(host.getByText(/Melhor decisão:/)).toBeVisible();
+  await expect(host.getByText('Distribuição das escolhas')).toBeVisible();
+  await expect(host.getByText('Placar da rodada')).toBeVisible();
 }
 
 async function nextRound(hostPage) {
@@ -124,18 +124,18 @@ test('live competition supports balanced match minigames', async ({ browser }) =
   await expect(host.locator('main').getByText('Bia', { exact: true })).toBeVisible();
 
   await host.getByRole('button', { name: 'Iniciar match' }).click();
-  await expect(host.getByRole('button', { name: /Iniciar Quiz Rel.mpago/ })).toBeVisible();
-  await host.getByRole('button', { name: /Iniciar Quiz Rel.mpago/ }).click();
+  await expect(host.getByRole('button', { name: /Iniciar Quiz Relâmpago/ })).toBeVisible();
+  await host.getByRole('button', { name: /Iniciar Quiz Relâmpago/ }).click();
   await expect(ana.getByRole('heading', { level: 3 })).toBeVisible();
   await answerFirstOption(ana);
   await answerFirstOption(bia);
-  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+  await expect(host.getByText('Placar da rodada')).toBeVisible();
 
   for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {
     await nextRound(host);
     await answerFirstOption(ana);
     await answerFirstOption(bia);
-    await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+    await expect(host.getByText('Placar da rodada')).toBeVisible();
   }
 
   await nextRound(host);
@@ -154,9 +154,9 @@ test('live competition supports balanced match minigames', async ({ browser }) =
   await expect(ana.getByRole('button', { name: 'Ordem enviada' })).toBeDisabled();
   await bia.getByRole('button', { name: 'Confirmar ordem' }).click();
   await expect(ana.getByText('Ordem ideal').first()).toBeVisible();
-  await expect(ana.getByText('Posicoes certas')).toBeVisible();
+  await expect(ana.getByText('Posições certas')).toBeVisible();
   await expect(host.getByText('Ordem ideal').first()).toBeVisible();
-  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+  await expect(host.getByText('Placar da rodada')).toBeVisible();
 
   await context.close();
 });

@@ -152,7 +152,7 @@ function selectQuickOnlySession(questions: LiveQuestion[]): MatchSessionSelectio
       title: `${quickQuizDefinition.title} ${index + 1}`,
       description: index === 0
         ? quickQuizDefinition.description
-        : 'Novo bloco de rodadas rapidas mantendo o placar acumulado do match.',
+        : 'Novo bloco de rodadas rápidas mantendo o placar acumulado.',
       questions: chunk,
     }),
   );
@@ -175,7 +175,7 @@ export function selectMatchSession({
   priorityOrderScenarios = getPriorityOrderCatalog(),
 }: MatchSessionSelectionOptions): MatchSessionSelection {
   if (!questions.length) {
-    throw new Error('Nao ha perguntas para montar o match online.');
+    throw new Error('Não há perguntas para montar o match online.');
   }
 
   const quickQuizCandidateCount = questions.filter(isQuickQuizCompetitiveQuestion).length;

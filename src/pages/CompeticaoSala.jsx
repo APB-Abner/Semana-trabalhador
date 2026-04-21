@@ -18,10 +18,10 @@ import PageShell from '../shared/ui/PageShell.jsx';
 
 const statusLabels = {
   lobby: 'Lobby',
-  game_intro: 'Intro do jogo',
+  game_intro: 'Preparando desafio',
   round_open: 'Rodada aberta',
-  round_revealed: 'Rodada revelada',
-  between_games: 'Entre jogos',
+  round_revealed: 'Resultado da rodada',
+  between_games: 'Intervalo',
   finished: 'Finalizada',
 };
 
@@ -60,7 +60,7 @@ export default function CompeticaoSala() {
         <PageHeader
           eyebrow="Sala ao vivo"
           title="Entrar na sala"
-          description="Informe seu nome para recuperar ou iniciar sua participação nesta sala."
+          description="Informe seu nome para entrar na partida."
           align="center"
         />
         {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
@@ -82,7 +82,7 @@ export default function CompeticaoSala() {
       <PageHeader
         eyebrow="Sala"
         title={pin}
-        description="Responda quando a pergunta abrir. O tempo e a pontuação seguem o relógio oficial do servidor."
+        description="Responda quando a rodada abrir. O placar aparece a cada resultado."
         actions={state && <Badge tone="blue">{statusLabels[state.status] || state.status}</Badge>}
       />
 
@@ -90,7 +90,7 @@ export default function CompeticaoSala() {
 
       {state && !state.hostConnected && state.status !== 'finished' && (
         <FeedbackNotice tone="info" className="mb-4">
-          Host desconectado. Aguarde a reconexão para continuar.
+          Host desconectado. A partida continua quando ele voltar.
         </FeedbackNotice>
       )}
 
@@ -99,7 +99,7 @@ export default function CompeticaoSala() {
       {state?.status === 'lobby' && (
         <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
           <WaitingScreen title="Aguardando o host iniciar">
-            Você já está no lobby. A pergunta aparecerá automaticamente quando a partida começar.
+            Você já está no lobby. A primeira rodada aparece quando a partida começar.
           </WaitingScreen>
           <PresenceList players={state.players} />
         </div>
@@ -183,7 +183,7 @@ export default function CompeticaoSala() {
           {state.aggregatedResult ? (
             <ParticipatoryResultView result={state.aggregatedResult} />
           ) : (
-            <CompetitiveResultView entries={state.leaderboard} title="Leaderboard da rodada" />
+            <CompetitiveResultView entries={state.leaderboard} title="Placar da rodada" />
           )}
           <WaitingScreen title="Aguardando próxima rodada" />
         </div>

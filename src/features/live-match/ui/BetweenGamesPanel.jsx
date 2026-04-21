@@ -13,7 +13,7 @@ export default function BetweenGamesPanel({ state, host = false, onContinue }) {
           {nextGame ? `Próximo jogo: ${nextGame.title}` : 'Preparando próximo jogo'}
         </h2>
         <p className="mt-2 text-sm text-gray-700 dark:text-gray-200">
-          O placar acumulado segue para o próximo bloco. Cada jogo adiciona pontos ao total do match.
+          O placar segue acumulado. Respire um pouco antes da próxima etapa.
         </p>
         {host ? (
           <CtaButtonRow
@@ -30,4 +30,3 @@ export default function BetweenGamesPanel({ state, host = false, onContinue }) {
     </div>
   );
 }
-

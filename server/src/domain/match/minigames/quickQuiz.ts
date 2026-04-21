@@ -4,7 +4,7 @@ import { LIVE_SCORE_MAX_POINTS } from '../../scoring.ts';
 export const quickQuizDefinition: MiniGameDefinition = {
   type: 'quick_quiz',
   title: 'Quiz Relâmpago',
-  description: 'Rodadas rápidas com perguntas objetivas e participativas de leitura imediata.',
+  description: 'Perguntas rápidas para responder no ritmo da partida.',
   active: true,
 };
 

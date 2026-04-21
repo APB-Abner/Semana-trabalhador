@@ -36,11 +36,11 @@ export default function CompeticaoHost() {
         <PageHeader
           eyebrow="Host"
           title="Criar competição ao vivo"
-          description="O servidor cria uma sala em memória e retorna um PIN de seis dígitos para os jogadores."
+          description="Crie uma sala, compartilhe o PIN e conduza a partida."
         />
         <ResultPanel>
           <p className="text-gray-600 dark:text-gray-300">
-            Use esta tela no projetor ou na máquina do mediador. Depois de criar a sala, compartilhe o PIN com a turma.
+            Use esta tela no projetor ou na máquina do mediador. Depois de criar a sala, espere os jogadores entrarem.
           </p>
           {error && <FeedbackNotice tone="danger" className="mt-4">{error}</FeedbackNotice>}
           <CtaButtonRow
@@ -73,7 +73,7 @@ export default function CompeticaoHost() {
   if (!connected && !state) {
     return (
       <PageShell size="narrow">
-        <WaitingScreen title="Conectando ao servidor" />
+        <WaitingScreen title="Conectando à sala" />
       </PageShell>
     );
   }
@@ -83,7 +83,7 @@ export default function CompeticaoHost() {
       <PageHeader
         eyebrow="Painel do host"
         title={pin ? `Sala ${pin}` : 'Sala ao vivo'}
-        description="Acompanhe presença, respostas recebidas e avanço das rodadas em tempo real."
+        description="Acompanhe a presença, libere rodadas e conduza o placar."
       />
       <HostLobby
         state={state}

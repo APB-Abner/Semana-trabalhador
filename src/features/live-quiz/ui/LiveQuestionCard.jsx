@@ -43,8 +43,8 @@ const typeLabels = {
 const submittedMessages = {
   poll: 'Voto enviado. Aguarde o resultado coletivo.',
   word_cloud: 'Termo enviado. Aguarde a nuvem da rodada.',
-  scale: 'Valor enviado. Aguarde a distribuição do grupo.',
-  ranking: 'Ranking enviado. Aguarde a agregação coletiva.',
+  scale: 'Valor enviado. Aguarde o resumo do grupo.',
+  ranking: 'Ranking enviado. Aguarde o resultado coletivo.',
   qna: 'Ideia enviada. Aguarde a lista de respostas da rodada.',
 };
 
@@ -126,7 +126,7 @@ export default function LiveQuestionCard({
     .filter((option) => correctOptionIds.includes(option.id))
     .map((option) => option.text)
     .join(', ');
-  const submittedMessage = submittedMessages[question.type] ?? 'Resposta enviada. Aguarde o fechamento da rodada.';
+  const submittedMessage = submittedMessages[question.type] ?? 'Resposta enviada. Aguarde o resultado da rodada.';
 
   return (
     <ResultPanel>

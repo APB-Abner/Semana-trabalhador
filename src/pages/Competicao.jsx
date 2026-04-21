@@ -10,9 +10,9 @@ export default function Competicao() {
       <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
         <div>
           <PageHeader
-            eyebrow="Socket.IO ao vivo"
+            eyebrow="Competição online"
             title="Competição Jovem Trabalhador"
-            description="Crie uma sala, compartilhe o PIN e conduza um quiz sincronizado com pontuação por acerto e velocidade."
+            description="Crie uma sala, compartilhe o PIN e conduza uma partida com 3 desafios rápidos."
             className="mb-0"
             actions={(
               <CtaButtonRow
@@ -31,15 +31,15 @@ export default function Competicao() {
           <ol className="mt-4 space-y-3 text-sm text-blue-900 dark:text-blue-100">
             <li>1. Host cria uma sala e recebe um PIN de 6 dígitos.</li>
             <li>2. Jogadores entram com nome e PIN.</li>
-            <li>3. O host inicia, cada rodada abre por tempo limitado.</li>
-            <li>4. O servidor calcula leaderboard e ranking final.</li>
+            <li>3. O host libera as rodadas no ritmo da turma.</li>
+            <li>4. O placar acumula até o pódio final.</li>
           </ol>
         </ResultPanel>
       </section>
 
       <div className="mt-10 text-sm text-gray-600 dark:text-gray-400">
         <Link to="/game" className="font-semibold text-blue-600 hover:underline dark:text-blue-300">
-          O modo clássico continua disponível.
+          O modo solo continua disponível.
         </Link>
       </div>
     </PageShell>

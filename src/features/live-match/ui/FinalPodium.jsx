@@ -9,7 +9,7 @@ export default function FinalPodium({ entries = [] }) {
     <div className="space-y-5">
       <ResultPanel tone="success">
         <p className="text-sm uppercase tracking-wide text-green-700 dark:text-green-200">Pódio final</p>
-        <h2 className="mt-2 text-3xl font-extrabold text-gray-950 dark:text-white">Resultado do match</h2>
+        <h2 className="mt-2 text-3xl font-extrabold text-gray-950 dark:text-white">Resultado final</h2>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {topThree.map((entry, index) => (
             <div key={entry.playerId} className="rounded-lg border border-green-200 bg-white/80 p-4 dark:border-green-800 dark:bg-zinc-950/60">
@@ -24,4 +24,3 @@ export default function FinalPodium({ entries = [] }) {
     </div>
   );
 }
-

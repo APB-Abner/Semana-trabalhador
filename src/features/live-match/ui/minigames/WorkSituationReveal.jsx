@@ -3,8 +3,8 @@ import FeedbackNotice from '../../../../shared/ui/FeedbackNotice.jsx';
 import ProgressBar from '../../../../shared/ui/ProgressBar.jsx';
 
 const qualityLabels = {
-  best: 'Melhor decisao',
-  ok: 'Decisao aceitavel',
+  best: 'Melhor decisão',
+  ok: 'Decisão aceitável',
   poor: 'Risco alto',
 };
 
@@ -25,7 +25,7 @@ export default function WorkSituationReveal({ reveal, selectedOptionId }) {
   return (
     <div className="mt-5 space-y-4">
       <FeedbackNotice tone="success" className="text-sm">
-        <p className="font-semibold">Melhor decisao: {bestOption?.text ?? 'Opcao principal'}</p>
+        <p className="font-semibold">Melhor decisão: {bestOption?.text ?? 'Opção principal'}</p>
         <p className="mt-1">{reveal.explanation}</p>
       </FeedbackNotice>
 
@@ -38,7 +38,7 @@ export default function WorkSituationReveal({ reveal, selectedOptionId }) {
 
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/70">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h4 className="font-semibold text-gray-950 dark:text-white">Distribuicao das escolhas</h4>
+          <h4 className="font-semibold text-gray-950 dark:text-white">Distribuição das escolhas</h4>
           <Badge tone="purple">{reveal.totalResponses} respostas</Badge>
         </div>
         <div className="mt-4 space-y-3">
@@ -68,4 +68,3 @@ export default function WorkSituationReveal({ reveal, selectedOptionId }) {
     </div>
   );
 }
-

@@ -22,7 +22,7 @@ export default function CompeticaoEntrar() {
       <PageHeader
         eyebrow="Jogador"
         title="Entrar na competição"
-        description="Digite seu nome e o PIN informado pelo host para entrar no lobby em tempo real."
+        description="Digite seu nome e o PIN informado pelo host para entrar no lobby."
         align="center"
       />
       {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
