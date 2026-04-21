@@ -37,14 +37,18 @@ describe('roomStore', () => {
     expect(secondRoom.pin).not.toBe(firstRoom.pin);
   });
 
-  it('creates a match with authoritative selected quick quiz games', () => {
+  it('creates a match with authoritative quick quiz and work situation games', () => {
     const room = store.createRoom();
 
     expect(room.state.status).toBe('lobby');
     expect(room.state.selectedGames).toHaveLength(3);
     expect(room.state.match.selectedGames).toEqual(room.state.selectedGames);
-    expect(room.state.selectedGames.every((game) => game.type === 'quick_quiz')).toBe(true);
-    expect(room.state.selectedGames.map((game) => game.roundCount)).toEqual([4, 3, 1]);
+    expect(room.state.selectedGames.map((game) => game.type)).toEqual([
+      'quick_quiz',
+      'work_situation',
+      'quick_quiz',
+    ]);
+    expect(room.state.selectedGames.map((game) => game.roundCount)).toEqual([4, 3, 3]);
   });
 
   it('adds a player and rejects invalid joins', () => {
@@ -252,6 +256,65 @@ describe('roomStore', () => {
     const nextGameRound = store.nextRound(room.pin, room.hostToken);
     expect(nextGameRound.status).toBe('round_open');
     expect(nextGameRound.currentQuestion?.id).toBe('q5');
+  });
+
+  it('plays work_situation rounds with quality score and reveal distribution', () => {
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+
+    startFirstRound(room);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q1', 'q1-a');
+    store.submitAnswer(room.pin, bia.playerToken, 'q1', 'q1-b');
+
+    store.nextRound(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q2', 'q2-a');
+    store.submitAnswer(room.pin, bia.playerToken, 'q2', 'q2-b');
+
+    store.nextRound(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b', 'q3-d'] });
+    store.submitAnswer(room.pin, bia.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b'] });
+
+    store.nextRound(room.pin, room.hostToken);
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, 'q4', 'q4-a');
+    store.submitAnswer(room.pin, bia.playerToken, 'q4', 'q4-b');
+
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('between_games');
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('game_intro');
+    const workRound = store.nextRound(room.pin, room.hostToken);
+
+    expect(workRound.status).toBe('round_open');
+    expect(workRound.currentRound?.gameType).toBe('work_situation');
+    expect(workRound.currentQuestion).toBeNull();
+    if (workRound.currentRound?.gameType !== 'work_situation') return;
+
+    const [bestOption, okOption] = workRound.currentRound.situation.options;
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, workRound.currentRound.id, bestOption.id);
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, bia.playerToken, workRound.currentRound.id, okOption.id);
+
+    expect(revealed.status).toBe('round_revealed');
+    expect(revealed.currentRound?.gameType).toBe('work_situation');
+    expect(revealed.aggregatedResult).toBeNull();
+    expect(revealed.leaderboard[0].name).toBe('Ana');
+    expect(revealed.leaderboard[0].roundPoints).toBeGreaterThan(revealed.leaderboard[1].roundPoints);
+    if (revealed.currentRound?.gameType !== 'work_situation') return;
+    expect(revealed.currentRound.reveal?.totalResponses).toBe(2);
+    expect(revealed.currentRound.reveal?.options.find((option) => option.optionId === bestOption.id)).toMatchObject({
+      count: 1,
+      percentage: 50,
+      basePoints: 1000,
+    });
+    expect(revealed.currentRound.reveal?.options.find((option) => option.optionId === okOption.id)).toMatchObject({
+      count: 1,
+      percentage: 50,
+      basePoints: 600,
+    });
   });
 
   it('scores true_false questions through the question handler', () => {

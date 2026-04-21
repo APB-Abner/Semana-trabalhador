@@ -35,17 +35,19 @@ async function answerFirstOption(page) {
 }
 
 async function nextRound(hostPage) {
-  await hostPage.getByRole('button', { name: /xima rodada|Finalizar match|Ver ranking parcial/ }).click();
+  const advanceButton = hostPage.getByRole('button', { name: /xima rodada|Finalizar match|Ver ranking parcial/ });
+  const advanceLabel = await advanceButton.textContent();
+  await advanceButton.click();
 
-  const continueButton = hostPage.getByRole('button', { name: /Liberar pr.ximo jogo/ });
-  if (await continueButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await continueButton.click();
+  if (!/Ver ranking parcial/.test(advanceLabel ?? '')) {
+    return;
   }
 
-  const introButton = hostPage.getByRole('button', { name: /Iniciar Quiz Rel.mpago/ });
-  if (await introButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await introButton.click();
-  }
+  const continueButton = hostPage.getByRole('button', { name: /Liberar.*jogo/ });
+  await continueButton.click();
+
+  const introButton = hostPage.getByRole('button', { name: /^Iniciar / });
+  await introButton.click();
 }
 
 test.beforeAll(async () => {
@@ -134,49 +136,14 @@ test('live competition supports competitive and participatory UI flows', async (
   await expect(ana.getByText(/1 voto/).first()).toBeVisible();
 
   await nextRound(host);
-  await expect(ana.getByText('Escala').first()).toBeVisible();
-  await ana.getByRole('button', { name: '4' }).click();
-  await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
-  await bia.getByRole('button', { name: '2' }).click();
-  await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
-  await expect(host.getByText('Resultado da escala')).toBeVisible();
-  await expect(ana.getByText(/M.dia do grupo/)).toBeVisible();
-
-  await nextRound(host);
-  await expect(ana.getByText('Ranking').first()).toBeVisible();
-  await ana.getByRole('button', { name: 'Confirmar ranking' }).click();
-  await bia.getByRole('button', { name: 'Confirmar ranking' }).click();
-  await expect(host.getByText('Ranking coletivo')).toBeVisible();
-
-  await nextRound(host);
-  await expect(ana.getByText(/M.ltipla escolha/).first()).toBeVisible();
-  await answerFirstOption(ana);
-  await answerFirstOption(bia);
-  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
-
-  await nextRound(host);
-  await expect(ana.getByText(/M.ltipla sele..o/)).toBeVisible();
-  await ana.locator('main button[aria-pressed]').nth(0).click();
-  await ana.locator('main button[aria-pressed]').nth(1).click();
-  await ana.locator('main button[aria-pressed]').nth(2).click();
-  await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
-  await bia.locator('main button[aria-pressed]').first().click();
-  await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
-  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
-
-  await nextRound(host);
-  await expect(ana.getByText('Enquete').first()).toBeVisible();
+  await expect(ana.getByText('Situacao Profissional').first()).toBeVisible();
   await ana.locator('main button[aria-pressed]').first().click();
+  await expect(ana.getByText(/Decisao enviada/)).toBeVisible();
   await bia.locator('main button[aria-pressed]').nth(1).click();
-  await expect(host.getByText('Resultado da enquete')).toBeVisible();
-
-  await nextRound(host);
-  await expect(ana.getByText('Escala').first()).toBeVisible();
-  await ana.getByRole('button', { name: '5' }).click();
-  await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
-  await bia.getByRole('button', { name: '3' }).click();
-  await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
-  await expect(host.getByText('Resultado da escala')).toBeVisible();
+  await expect(ana.getByText(/Melhor decisao:/)).toBeVisible();
+  await expect(host.getByText(/Melhor decisao:/)).toBeVisible();
+  await expect(host.getByText('Distribuicao das escolhas')).toBeVisible();
+  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
 
   await context.close();
 });

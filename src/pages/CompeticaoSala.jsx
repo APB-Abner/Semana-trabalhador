@@ -3,6 +3,7 @@ import usePlayerRoom from '../features/live-match/model/usePlayerMatch';
 import BetweenGamesPanel from '../features/live-match/ui/BetweenGamesPanel.jsx';
 import FinalPodium from '../features/live-match/ui/FinalPodium.jsx';
 import MatchGameShell from '../features/live-match/ui/MatchGameShell.jsx';
+import WorkSituationView from '../features/live-match/ui/minigames/WorkSituationView.jsx';
 import LiveQuestionCard from '../features/live-quiz/ui/LiveQuestionCard.jsx';
 import PlayerJoinForm from '../features/live-quiz/ui/PlayerJoinForm.jsx';
 import PresenceList from '../features/live-quiz/ui/PresenceList.jsx';
@@ -36,8 +37,9 @@ export default function CompeticaoSala() {
     submittedAnswers,
   } = usePlayerRoom(pin);
 
-  const currentQuestionId = state?.currentQuestion?.id;
-  const submittedAnswer = currentQuestionId ? submittedAnswers[currentQuestionId] : null;
+  const currentRound = state?.currentRound;
+  const currentRoundId = currentRound?.id ?? state?.currentQuestion?.id;
+  const submittedAnswer = currentRoundId ? submittedAnswers[currentRoundId] : null;
   const selectedOptionIds = submittedAnswer?.optionIds ?? [];
   const selectedText = submittedAnswer?.text ?? '';
   const selectedValue = submittedAnswer?.value;
@@ -107,21 +109,17 @@ export default function CompeticaoSala() {
       )}
 
       {state?.status === 'round_open' && (
-        <LiveQuestionCard
-          question={state.currentQuestion}
-          startedAt={state.startedAt}
-          closesAt={state.closesAt}
-          serverNow={state.serverNow}
-          selectedOptionIds={selectedOptionIds}
-          selectedText={selectedText}
-          selectedValue={selectedValue}
-          hasSubmitted={hasSubmitted}
-          onSubmit={submitAnswer}
-        />
-      )}
-
-      {state?.status === 'round_revealed' && (
-        <div className="space-y-6">
+        state.currentRound?.gameType === 'work_situation' ? (
+          <WorkSituationView
+            round={state.currentRound}
+            startedAt={state.startedAt}
+            closesAt={state.closesAt}
+            serverNow={state.serverNow}
+            selectedOptionIds={selectedOptionIds}
+            hasSubmitted={hasSubmitted}
+            onSubmit={submitAnswer}
+          />
+        ) : (
           <LiveQuestionCard
             question={state.currentQuestion}
             startedAt={state.startedAt}
@@ -131,8 +129,36 @@ export default function CompeticaoSala() {
             selectedText={selectedText}
             selectedValue={selectedValue}
             hasSubmitted={hasSubmitted}
-            showAnswer
+            onSubmit={submitAnswer}
           />
+        )
+      )}
+
+      {state?.status === 'round_revealed' && (
+        <div className="space-y-6">
+          {state.currentRound?.gameType === 'work_situation' ? (
+            <WorkSituationView
+              round={state.currentRound}
+              startedAt={state.startedAt}
+              closesAt={state.closesAt}
+              serverNow={state.serverNow}
+              selectedOptionIds={selectedOptionIds}
+              hasSubmitted={hasSubmitted}
+              showAnswer
+            />
+          ) : (
+            <LiveQuestionCard
+              question={state.currentQuestion}
+              startedAt={state.startedAt}
+              closesAt={state.closesAt}
+              serverNow={state.serverNow}
+              selectedOptionIds={selectedOptionIds}
+              selectedText={selectedText}
+              selectedValue={selectedValue}
+              hasSubmitted={hasSubmitted}
+              showAnswer
+            />
+          )}
           {state.aggregatedResult ? (
             <ParticipatoryResultView result={state.aggregatedResult} />
           ) : (

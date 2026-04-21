@@ -5,7 +5,9 @@ import type {
   LivePlayer,
   LiveQuestion,
   MatchGame,
+  PublicMatchRound,
   RoomState,
+  WorkSituation,
 } from '../../../src/shared/types/realtime.ts';
 
 export type {
@@ -27,15 +29,23 @@ export type {
   LiveScaleConfig,
   LiveRoomStatus,
   MatchGame,
+  MatchRoundGameType,
   MatchStatus,
   MiniGameType,
   OnlineMatch,
   PublicLiveQuestion,
+  PublicMatchRound,
+  PublicWorkSituation,
   RoomCreateAck,
   RoomJoinAck,
   RoomJoinPayload,
   RoomLeavePayload,
   RoomState,
+  WorkSituation,
+  WorkSituationOption,
+  WorkSituationOptionQuality,
+  WorkSituationReveal,
+  WorkSituationRevealOption,
 } from '../../../src/shared/types/realtime.ts';
 
 export type PlayerAnswer = {
@@ -62,6 +72,20 @@ export type LiveRound = {
   answers: Map<string, PlayerAnswer>;
 };
 
+export type QuickQuizMatchRound = {
+  id: string;
+  gameType: 'quick_quiz';
+  question: LiveQuestion;
+};
+
+export type WorkSituationMatchRound = {
+  id: string;
+  gameType: 'work_situation';
+  situation: WorkSituation;
+};
+
+export type MatchRoundInternal = QuickQuizMatchRound | WorkSituationMatchRound;
+
 export type LiveRoomInternal = {
   pin: string;
   hostToken: string;
@@ -69,6 +93,7 @@ export type LiveRoomInternal = {
   status: RoomState['status'];
   players: Map<string, LivePlayerInternal>;
   questions: LiveQuestion[];
+  rounds: MatchRoundInternal[];
   selectedGames: MatchGame[];
   currentGameIndex: number;
   currentGameRoundIndex: number;

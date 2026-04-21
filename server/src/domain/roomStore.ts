@@ -9,25 +9,36 @@ import {
   validateLiveQuestion,
 } from './question-handlers/index.ts';
 import {
-  getCurrentGameForQuestionIndex,
-  isFirstQuestionOfGame,
-  selectMatchGamesForSession,
+  getCurrentGameForRoundIndex,
+  isFirstRoundOfGame,
+  selectMatchSession,
 } from './match/matchSelector.ts';
 import { sortMatchRanking } from './match/scoring.ts';
+import {
+  calculateWorkSituationScore,
+  createWorkSituationReveal,
+  getPublicWorkSituation,
+  normalizeWorkSituationAnswer,
+} from './match/minigames/workSituation.ts';
+import { getWorkSituationCatalog } from './match/minigames/workSituationCatalog.ts';
 import type {
   LeaderboardEntry,
   LiveAnswerPayload,
   LiveQuestion,
   LiveRoomInternal,
+  MatchRoundInternal,
   PlayerAnswer,
+  PublicMatchRound,
   RoomEvent,
   RoomEventName,
   RoomState,
+  WorkSituation,
 } from '../types/realtime.ts';
 import type { PigeonAvatarState } from '../../../src/shared/types/pigeonAvatar.ts';
 
 type RoomStoreOptions = {
   questions: LiveQuestion[];
+  workSituations?: WorkSituation[];
   selectQuestions?: (context: { recentQuestionIds: string[] }) => LiveQuestion[];
   recentQuestionHistorySize?: number;
   roundMs?: number;
@@ -93,12 +104,17 @@ function toPublicQuestion(question: LiveQuestion | null, revealAnswer: boolean) 
   };
 }
 
+function getQuickQuestion(round: MatchRoundInternal | null) {
+  return round?.gameType === 'quick_quiz' ? round.question : null;
+}
+
 function toAnswerPayload(answer: string | LiveAnswerPayload): LiveAnswerPayload {
   return typeof answer === 'string' ? { optionId: answer } : answer;
 }
 
 export function createRoomStore({
   questions,
+  workSituations = getWorkSituationCatalog(),
   selectQuestions,
   recentQuestionHistorySize = 30,
   roundMs = 20_000,
@@ -160,7 +176,7 @@ export function createRoomStore({
   }
 
   function getMatchProgress(room: LiveRoomInternal) {
-    return getCurrentGameForQuestionIndex(room.selectedGames, room.questions, room.currentQuestionIndex);
+    return getCurrentGameForRoundIndex(room.selectedGames, room.rounds, room.currentQuestionIndex);
   }
 
   function syncMatchProgress(room: LiveRoomInternal) {
@@ -169,10 +185,43 @@ export function createRoomStore({
     room.currentGameRoundIndex = currentGameRoundIndex;
   }
 
+  function getCurrentRound(room: LiveRoomInternal) {
+    return room.rounds[room.currentQuestionIndex] ?? null;
+  }
+
+  function toPublicMatchRound(
+    matchRound: MatchRoundInternal | null,
+    revealAnswer: boolean,
+    answers: PlayerAnswer[] = [],
+  ): PublicMatchRound | null {
+    if (!matchRound) {
+      return null;
+    }
+
+    if (matchRound.gameType === 'quick_quiz') {
+      return {
+        id: matchRound.id,
+        gameType: 'quick_quiz',
+        question: toPublicQuestion(matchRound.question, revealAnswer),
+      };
+    }
+
+    return {
+      id: matchRound.id,
+      gameType: 'work_situation',
+      situation: getPublicWorkSituation(matchRound.situation),
+      ...(revealAnswer
+        ? { reveal: createWorkSituationReveal(matchRound.situation, answers) }
+        : {}),
+    };
+  }
+
   function sanitizeRoom(room: LiveRoomInternal): RoomState {
-    const currentQuestion = room.questions[room.currentQuestionIndex] ?? null;
+    const currentRound = getCurrentRound(room);
+    const currentQuestion = getQuickQuestion(currentRound);
     const revealAnswer = room.status === 'round_revealed' || room.status === 'finished';
     const { currentGame, currentGameIndex, currentGameRoundIndex } = getMatchProgress(room);
+    const answers = room.round ? [...room.round.answers.values()] : [];
 
     return {
       pin: room.pin,
@@ -187,11 +236,12 @@ export function createRoomStore({
       currentGame,
       currentGameIndex,
       currentGameRoundIndex,
+      currentRound: toPublicMatchRound(currentRound, revealAnswer, answers),
       hostConnected: room.hostConnected,
       serverNow: now(),
       players: [...room.players.values()].map(({ token: _token, ...player }) => player),
       currentQuestionIndex: room.currentQuestionIndex,
-      totalQuestions: room.questions.length,
+      totalQuestions: room.rounds.length,
       currentQuestion: toPublicQuestion(currentQuestion, revealAnswer),
       startedAt: room.round?.startedAt ?? null,
       closesAt: room.round?.closesAt ?? null,
@@ -314,8 +364,17 @@ export function createRoomStore({
 
     clearRoundTimer(room);
     room.status = 'round_revealed';
-    const currentQuestion = room.questions[room.currentQuestionIndex];
+    const currentRound = getCurrentRound(room);
+    const currentQuestion = getQuickQuestion(currentRound);
     const answers = [...room.round!.answers.values()];
+
+    if (currentRound?.gameType === 'work_situation') {
+      room.aggregatedResult = null;
+      room.leaderboard = createRoundLeaderboard(room);
+      emit(room, 'round:revealed');
+      emit(room, 'leaderboard:update');
+      return;
+    }
 
     if (currentQuestion && isCompetitiveQuestion(currentQuestion)) {
       room.aggregatedResult = null;
@@ -339,9 +398,9 @@ export function createRoomStore({
 
   function openRound(room: LiveRoomInternal, questionIndex: number) {
     const startedAt = now();
-    const question = room.questions[questionIndex];
+    const matchRound = room.rounds[questionIndex];
 
-    if (!question) {
+    if (!matchRound) {
       finishGame(room);
       return;
     }
@@ -350,7 +409,7 @@ export function createRoomStore({
     room.currentQuestionIndex = questionIndex;
     syncMatchProgress(room);
     room.round = {
-      questionId: question.id,
+      questionId: matchRound.id,
       startedAt,
       closesAt: startedAt + roundMs,
       answers: new Map<string, PlayerAnswer>(),
@@ -390,7 +449,10 @@ export function createRoomStore({
     const pin = createPin(new Set(rooms.keys()));
     const hostToken = createToken();
     const sessionQuestions = getSessionQuestions();
-    const selectedGames = selectMatchGamesForSession(sessionQuestions);
+    const matchSession = selectMatchSession({
+      questions: sessionQuestions,
+      workSituations,
+    });
     const room: LiveRoomInternal = {
       pin,
       hostToken,
@@ -398,7 +460,8 @@ export function createRoomStore({
       status: 'lobby',
       players: new Map(),
       questions: sessionQuestions,
-      selectedGames,
+      rounds: matchSession.rounds,
+      selectedGames: matchSession.selectedGames,
       currentGameIndex: -1,
       currentGameRoundIndex: -1,
       currentQuestionIndex: -1,
@@ -531,14 +594,14 @@ export function createRoomStore({
 
     const nextQuestionIndex = room.currentQuestionIndex + 1;
 
-    if (nextQuestionIndex >= room.questions.length) {
+    if (nextQuestionIndex >= room.rounds.length) {
       finishGame(room);
       return sanitizeRoom(room);
     }
 
-    const nextQuestion = room.questions[nextQuestionIndex];
+    const nextRound = room.rounds[nextQuestionIndex];
 
-    if (nextQuestion && isFirstQuestionOfGame(room.selectedGames, nextQuestion.id)) {
+    if (nextRound && isFirstRoundOfGame(room.selectedGames, nextRound.id)) {
       clearRoundTimer(room);
       room.status = 'between_games';
       room.currentQuestionIndex = nextQuestionIndex;
@@ -567,14 +630,15 @@ export function createRoomStore({
     }
 
     const player = [...room.players.values()].find((candidate) => candidate.token === playerToken);
-    const question = room.questions[room.currentQuestionIndex];
+    const currentRound = getCurrentRound(room);
+    const question = getQuickQuestion(currentRound);
 
     if (!player) {
       throw new RoomStoreError('Jogador inválido para esta sala.');
     }
 
-    if (!question || question.id !== questionId) {
-      throw new RoomStoreError('Pergunta inválida para a rodada atual.');
+    if (!currentRound || currentRound.id !== questionId) {
+      throw new RoomStoreError('Rodada invalida para o match atual.');
     }
 
     if (room.round.answers.has(player.id)) {
@@ -594,29 +658,43 @@ export function createRoomStore({
     let displayText: string | undefined;
     let value: number | undefined;
     let isCorrect: boolean;
+    let points: number;
 
     try {
-      const normalizedAnswer = normalizeLiveAnswer(question, toAnswerPayload(answer));
-      optionIds = normalizedAnswer.optionIds;
-      text = normalizedAnswer.text;
-      normalizedText = normalizedAnswer.normalizedText;
-      displayText = normalizedAnswer.displayText;
-      value = normalizedAnswer.value;
-      isCorrect = isCompetitiveQuestion(question)
-        ? isLiveAnswerCorrect(question, normalizedAnswer)
-        : false;
-    } catch (error) {
-      throw new RoomStoreError(error instanceof Error ? error.message : 'Resposta inválida para esta pergunta.');
-    }
-
-    const points = isCompetitiveQuestion(question)
-      ? calculateLiveScore({
-          isCorrect,
+      if (currentRound.gameType === 'work_situation') {
+        const normalizedAnswer = normalizeWorkSituationAnswer(currentRound.situation, toAnswerPayload(answer));
+        optionIds = normalizedAnswer.optionIds;
+        isCorrect = normalizedAnswer.option.id === currentRound.situation.bestOptionId;
+        points = calculateWorkSituationScore({
+          basePoints: normalizedAnswer.option.basePoints,
           submittedAt,
           startedAt: room.round.startedAt,
           limitMs: roundMs,
-        })
-      : 0;
+        });
+      } else if (question) {
+        const normalizedAnswer = normalizeLiveAnswer(question, toAnswerPayload(answer));
+        optionIds = normalizedAnswer.optionIds;
+        text = normalizedAnswer.text;
+        normalizedText = normalizedAnswer.normalizedText;
+        displayText = normalizedAnswer.displayText;
+        value = normalizedAnswer.value;
+        isCorrect = isCompetitiveQuestion(question)
+          ? isLiveAnswerCorrect(question, normalizedAnswer)
+          : false;
+        points = isCompetitiveQuestion(question)
+          ? calculateLiveScore({
+              isCorrect,
+              submittedAt,
+              startedAt: room.round.startedAt,
+              limitMs: roundMs,
+            })
+          : 0;
+      } else {
+        throw new Error('Rodada sem pergunta configurada.');
+      }
+    } catch (error) {
+      throw new RoomStoreError(error instanceof Error ? error.message : 'Resposta invalida para esta rodada.');
+    }
 
     player.score += points;
     const { currentGame } = getMatchProgress(room);

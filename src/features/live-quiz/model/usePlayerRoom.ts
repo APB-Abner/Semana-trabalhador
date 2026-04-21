@@ -122,9 +122,12 @@ export default function usePlayerRoom(pin?: string) {
   }, [emitWithAck]);
 
   const submitAnswer = useCallback(async (answer: LiveAnswerInput) => {
-    const currentQuestion = state?.currentQuestion;
+    const currentRound = state?.currentRound;
+    const currentQuestion = currentRound?.gameType === 'quick_quiz'
+      ? currentRound.question
+      : state?.currentQuestion;
 
-    if (!pin || !currentQuestion) {
+    if (!pin || !currentRound) {
       return;
     }
 
@@ -139,15 +142,18 @@ export default function usePlayerRoom(pin?: string) {
     const optionIds = isObjectAnswer ? [] : (Array.isArray(answer) ? answer : [answer]);
     const text = isObjectAnswer && 'text' in answer ? answer.text : undefined;
     const value = isObjectAnswer && 'value' in answer ? answer.value : undefined;
+    const isWorkSituation = currentRound.gameType === 'work_situation';
     const payload: AnswerSubmitPayload = {
       pin,
       playerToken,
-      questionId: currentQuestion.id,
-      ...(currentQuestion.type === 'word_cloud' || currentQuestion.type === 'qna'
+      questionId: currentRound.id,
+      ...(isWorkSituation
+        ? { optionId: optionIds[0] }
+        : currentQuestion?.type === 'word_cloud' || currentQuestion?.type === 'qna'
         ? { text }
-        : currentQuestion.type === 'scale'
+        : currentQuestion?.type === 'scale'
           ? { value }
-          : currentQuestion.type === 'multiple_select' || currentQuestion.type === 'ranking'
+          : currentQuestion?.type === 'multiple_select' || currentQuestion?.type === 'ranking'
           ? { optionIds }
           : { optionId: optionIds[0] }),
     };
@@ -160,10 +166,10 @@ export default function usePlayerRoom(pin?: string) {
 
     setSubmittedAnswers((answers) => ({
       ...answers,
-      [currentQuestion.id]: { optionIds, text, value },
+      [currentRound.id]: { optionIds, text, value },
     }));
     setState(response.state);
-  }, [emitWithAck, pin, state?.currentQuestion]);
+  }, [emitWithAck, pin, state?.currentQuestion, state?.currentRound]);
 
   return {
     connected,

@@ -39,6 +39,8 @@ export type MatchGame = {
   active: boolean;
 };
 
+export type MatchRoundGameType = 'quick_quiz' | 'work_situation';
+
 export type OnlineMatch = {
   selectedGames: MatchGame[];
   currentGameIndex: number;
@@ -81,6 +83,60 @@ export type PublicLiveQuestion = Omit<LiveQuestion, 'correctOptionId' | 'correct
   correctOptionIds?: string[];
   explanation?: string;
 };
+
+export type WorkSituationOptionQuality = 'best' | 'ok' | 'poor';
+
+export type WorkSituationOption = {
+  id: string;
+  text: string;
+  quality: WorkSituationOptionQuality;
+  basePoints: number;
+  feedback: string;
+};
+
+export type WorkSituation = {
+  id: string;
+  title: string;
+  topic: string;
+  scenario: string;
+  options: WorkSituationOption[];
+  bestOptionId: string;
+  explanation: string;
+};
+
+export type PublicWorkSituation = Omit<WorkSituation, 'options' | 'bestOptionId' | 'explanation'> & {
+  options: Array<Pick<WorkSituationOption, 'id' | 'text'>>;
+};
+
+export type WorkSituationRevealOption = {
+  optionId: string;
+  text: string;
+  quality: WorkSituationOptionQuality;
+  basePoints: number;
+  feedback: string;
+  count: number;
+  percentage: number;
+};
+
+export type WorkSituationReveal = {
+  bestOptionId: string;
+  explanation: string;
+  totalResponses: number;
+  options: WorkSituationRevealOption[];
+};
+
+export type PublicMatchRound =
+  | {
+      id: string;
+      gameType: 'quick_quiz';
+      question: PublicLiveQuestion | null;
+    }
+  | {
+      id: string;
+      gameType: 'work_situation';
+      situation: PublicWorkSituation;
+      reveal?: WorkSituationReveal;
+    };
 
 export type LivePlayer = {
   id: string;
@@ -175,6 +231,7 @@ export type RoomState = {
   currentGame: MatchGame | null;
   currentGameIndex: number;
   currentGameRoundIndex: number;
+  currentRound: PublicMatchRound | null;
   hostConnected: boolean;
   serverNow: number;
   players: LivePlayer[];

@@ -106,7 +106,7 @@ server/
 
 O modo ao vivo usa `Node + Express + Socket.IO` com estado em memória. Reiniciar o backend apaga as salas abertas.
 
-A competição online agora roda como um `OnlineMatch`: o servidor monta uma sequência autoritativa de 3 jogos e mantém o placar acumulado da sala. Nesta fase, os 3 blocos usam o minigame funcional `quick_quiz`, reaproveitando os tipos e renderizadores do live quiz atual. Os minigames `work_situation` e `priority_order` já estão modelados na arquitetura, mas ainda não entram na rotação publicada.
+A competição online agora roda como um `OnlineMatch`: o servidor monta uma sequência autoritativa de 3 jogos e mantém o placar acumulado da sala. Nesta fase, o template publicado é `quick_quiz` -> `work_situation` -> `quick_quiz`. O `quick_quiz` reaproveita os tipos e renderizadores do live quiz atual; o `work_situation` adiciona decisões rápidas em situações profissionais com pontuação por qualidade da escolha. O minigame `priority_order` continua modelado na arquitetura, mas ainda não entra na rotação publicada.
 
 Rotas principais:
 
@@ -142,14 +142,24 @@ As rodadas competitivas (`multiple_choice`, `true_false`, `multiple_select`) ali
 - `ranking`: contagem Borda simples, média de posição e votos em primeiro lugar por item.
 - `qna`: respostas abertas agrupadas por texto normalizado, preservando uma versão legível para exibição.
 
-A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competição padrão usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotação principal. Cada sala recebe uma rotação de 10 perguntas: 5 competitivas e 5 participativas, com no máximo 2 perguntas do mesmo tipo. O match divide essa rotação em 3 blocos de `quick_quiz` no servidor. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
+A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competição padrão usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotação principal. Cada sala recebe uma rotação base de perguntas para o `quick_quiz`; o match usa 4 rodadas no primeiro bloco, sorteia 3 situações profissionais no bloco central e fecha com 3 rodadas rápidas. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
+
+No `work_situation`, cada rodada apresenta uma cena curta de trabalho e 3 ações possíveis. A pontuação usa qualidade da decisão mais velocidade:
+
+- melhor decisão: `1000` pontos base.
+- decisão aceitável: `600` pontos base.
+- decisão de risco: `0` ponto.
+- bônus de velocidade: até `300` pontos para escolhas com pontuação base maior que zero.
+
+O reveal mostra a melhor decisão, explicação, feedback da escolha do jogador e distribuição das respostas por opção para o host acompanhar o comportamento do grupo.
 
 Limitações desta fase:
 
 - As salas continuam em memória; reiniciar o backend apaga partidas abertas.
 - `multiple_select` existe apenas no modo ao vivo e não altera o quiz normal em `/game`.
 - `poll`, `word_cloud`, `scale`, `ranking` e `qna` existem apenas no modo ao vivo e não alteram os fluxos normais do site.
-- `work_situation` e `priority_order` estão preparados como tipos de minigame, mas ainda não têm conteúdo ativo nem UI de rodada própria nesta fase.
+- `work_situation` está ativo no match online com catálogo inicial em memória; ainda não existe modo solo específico para treinar esse minigame.
+- `priority_order` está preparado como tipo de minigame, mas ainda não tem conteúdo ativo nem UI de rodada própria nesta fase.
 - O backend segue pensado para uma instância única enquanto não houver Redis, banco ou coordenação entre processos.
 
 ## Deploy Produção
