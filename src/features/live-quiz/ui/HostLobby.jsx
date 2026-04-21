@@ -1,4 +1,3 @@
-import Badge from '../../../shared/ui/Badge.jsx';
 import CtaButtonRow from '../../../shared/ui/CtaButtonRow.jsx';
 import FeedbackNotice from '../../../shared/ui/FeedbackNotice.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
@@ -23,6 +22,57 @@ const statusLabels = {
   finished: 'Finalizada',
 };
 
+function HostControlPanel({
+  answeredCount,
+  connectedCount,
+  pin,
+  primaryAction,
+  statusLabel,
+  totalPlayers,
+}) {
+  return (
+    <ResultPanel
+      tone="info"
+      className="lg:sticky lg:top-24 lg:z-20"
+    >
+      <div className="grid gap-4 xl:grid-cols-[auto_1fr_auto] xl:items-center">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-200">PIN</p>
+          <p className="font-display mt-1 text-4xl font-extrabold tracking-[0.18em] text-gray-950 dark:text-white sm:text-5xl">
+            {pin}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="rounded-lg border border-blue-200 bg-white/80 p-3 dark:border-blue-900 dark:bg-zinc-950/60">
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Status</p>
+            <p className="mt-1 text-sm font-bold text-gray-950 dark:text-white">{statusLabel}</p>
+          </div>
+          <div className="rounded-lg border border-blue-200 bg-white/80 p-3 dark:border-blue-900 dark:bg-zinc-950/60">
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Online</p>
+            <p className="mt-1 text-sm font-bold text-gray-950 dark:text-white">{connectedCount}/{totalPlayers}</p>
+          </div>
+          <div className="rounded-lg border border-blue-200 bg-white/80 p-3 dark:border-blue-900 dark:bg-zinc-950/60">
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Respostas</p>
+            <p className="mt-1 text-sm font-bold text-gray-950 dark:text-white">{answeredCount}</p>
+          </div>
+          <div className="rounded-lg border border-blue-200 bg-white/80 p-3 dark:border-blue-900 dark:bg-zinc-950/60">
+            <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Controle</p>
+            <p className="mt-1 text-sm font-bold text-gray-950 dark:text-white">Host</p>
+          </div>
+        </div>
+
+        {primaryAction && (
+          <CtaButtonRow
+            className="justify-start xl:justify-end"
+            actions={[primaryAction]}
+          />
+        )}
+      </div>
+    </ResultPanel>
+  );
+}
+
 export default function HostLobby({ state, error, onStart, onNextRound }) {
   if (!state) {
     return <WaitingScreen title="Conectando sala do host" />;
@@ -44,34 +94,29 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
       : `${statusLabels[state.status] || state.status} ${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
   const isWorkSituationRound = state.currentRound?.gameType === 'work_situation';
   const isPriorityOrderRound = state.currentRound?.gameType === 'priority_order';
+  const connectedPlayers = state.players.filter((player) => player.connected).length;
+  const primaryAction = state.status === 'lobby'
+    ? { label: 'Iniciar match', onClick: onStart, tone: 'green' }
+    : state.status === 'round_revealed'
+      ? { label: nextRoundLabel, onClick: onNextRound, tone: 'blue' }
+      : null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
       <section className="space-y-4">
-        <ResultPanel tone="info">
-          <p className="text-sm uppercase tracking-wide text-blue-700 dark:text-blue-200">PIN da sala</p>
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-            <p className="font-display text-5xl font-extrabold tracking-[0.2em] text-gray-950 dark:text-white">{state.pin}</p>
-            <Badge tone="blue">{statusLabel}</Badge>
-          </div>
-        </ResultPanel>
+        <HostControlPanel
+          answeredCount={state.answeredCount}
+          connectedCount={connectedPlayers}
+          pin={state.pin}
+          primaryAction={primaryAction}
+          statusLabel={statusLabel}
+          totalPlayers={state.players.length}
+        />
 
         {error && <FeedbackNotice tone="danger">{error}</FeedbackNotice>}
 
         {state.status === 'lobby' && (
-          <>
-            <MatchLobby state={state} />
-            <ResultPanel>
-              <h2 className="text-xl font-bold text-gray-950 dark:text-white">Sala pronta</h2>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                Compartilhe o PIN. Quando todo mundo entrar, inicie o match.
-              </p>
-              <CtaButtonRow
-                className="mt-5 justify-start"
-                actions={[{ label: 'Iniciar match', onClick: onStart, tone: 'green' }]}
-              />
-            </ResultPanel>
-          </>
+          <MatchLobby state={state} />
         )}
 
         {state.status === 'game_intro' && (
@@ -148,14 +193,6 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
             ) : (
               <CompetitiveResultView entries={state.leaderboard} title="Placar da rodada" />
             )}
-            <CtaButtonRow
-              className="justify-start"
-              actions={[{
-                label: nextRoundLabel,
-                onClick: onNextRound,
-                tone: 'blue',
-              }]}
-            />
           </>
         )}
 
@@ -168,7 +205,9 @@ export default function HostLobby({ state, error, onStart, onNextRound }) {
         )}
       </section>
 
-      <PresenceList players={state.players} />
+      <aside className="xl:sticky xl:top-24 xl:self-start">
+        <PresenceList players={state.players} />
+      </aside>
     </div>
   );
 }

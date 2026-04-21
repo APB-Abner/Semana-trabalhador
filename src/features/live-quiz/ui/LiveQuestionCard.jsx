@@ -11,6 +11,7 @@ import RankingQuestionView from './question-renderers/RankingQuestionView.jsx';
 import ScaleQuestionView from './question-renderers/ScaleQuestionView.jsx';
 import TrueFalseQuestionView from './question-renderers/TrueFalseQuestionView.jsx';
 import WordCloudQuestionView from './question-renderers/WordCloudQuestionView.jsx';
+import { shuffleOptionsForPlayer } from '../lib/optionShuffle.js';
 
 function getClockOffset(serverNow) {
   return Number.isFinite(serverNow) ? serverNow - Date.now() : 0;
@@ -87,6 +88,7 @@ export default function LiveQuestionCard({
   disabled = false,
   hasSubmitted = false,
   onSubmit,
+  optionOrderSeed = '',
   selectedOptionIds = [],
   selectedText = '',
   selectedValue,
@@ -113,6 +115,16 @@ export default function LiveQuestionCard({
     () => (startedAt && closesAt ? Math.max(1, closesAt - startedAt) : 1),
     [closesAt, startedAt],
   );
+  const displayedQuestion = useMemo(() => {
+    if (!question) {
+      return null;
+    }
+
+    return {
+      ...question,
+      options: shuffleOptionsForPlayer(question.options, `${optionOrderSeed}:${question.id}`),
+    };
+  }, [optionOrderSeed, question]);
 
   if (!question) {
     return null;
@@ -160,7 +172,7 @@ export default function LiveQuestionCard({
         disabled={disabled}
         hasSubmitted={hasSubmitted}
         onSubmit={onSubmit}
-        question={question}
+        question={displayedQuestion}
         selectedOptionIds={selectedOptionIds}
         selectedText={selectedText}
         selectedValue={selectedValue}

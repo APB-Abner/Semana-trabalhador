@@ -3,6 +3,7 @@ import Badge from '../../../../shared/ui/Badge.jsx';
 import FeedbackNotice from '../../../../shared/ui/FeedbackNotice.jsx';
 import ProgressBar from '../../../../shared/ui/ProgressBar.jsx';
 import ResultPanel from '../../../../shared/ui/ResultPanel.jsx';
+import { shuffleOptionsForPlayer } from '../../../live-quiz/lib/optionShuffle.js';
 import WorkSituationReveal from './WorkSituationReveal.jsx';
 
 function getClockOffset(serverNow) {
@@ -13,6 +14,7 @@ export default function WorkSituationView({
   disabled = false,
   hasSubmitted = false,
   onSubmit,
+  optionOrderSeed = '',
   round,
   selectedOptionIds = [],
   serverNow,
@@ -42,6 +44,10 @@ export default function WorkSituationView({
   const totalMs = useMemo(
     () => (startedAt && closesAt ? Math.max(1, closesAt - startedAt) : 1),
     [closesAt, startedAt],
+  );
+  const displayedOptions = useMemo(
+    () => shuffleOptionsForPlayer(situation?.options ?? [], `${optionOrderSeed}:${round?.id ?? ''}`),
+    [optionOrderSeed, round?.id, situation?.options],
   );
 
   if (!situation) {
@@ -79,7 +85,7 @@ export default function WorkSituationView({
       </p>
 
       <div className="mt-5 space-y-3">
-        {situation.options.map((option, index) => {
+        {displayedOptions.map((option, index) => {
           const selected = selectedOptionId === option.id;
           const revealedOption = reveal?.options.find((candidate) => candidate.optionId === option.id);
           const isBest = reveal?.bestOptionId === option.id;

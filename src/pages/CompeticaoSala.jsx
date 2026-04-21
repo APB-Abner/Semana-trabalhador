@@ -33,6 +33,7 @@ export default function CompeticaoSala() {
     error,
     hasPlayerToken,
     joinRoom,
+    optionOrderSeed,
     state,
     submitAnswer,
     submittedAnswers,
@@ -116,6 +117,7 @@ export default function CompeticaoSala() {
             startedAt={state.startedAt}
             closesAt={state.closesAt}
             serverNow={state.serverNow}
+            optionOrderSeed={optionOrderSeed}
             selectedOptionIds={selectedOptionIds}
             hasSubmitted={hasSubmitted}
             onSubmit={submitAnswer}
@@ -136,6 +138,7 @@ export default function CompeticaoSala() {
             startedAt={state.startedAt}
             closesAt={state.closesAt}
             serverNow={state.serverNow}
+            optionOrderSeed={optionOrderSeed}
             selectedOptionIds={selectedOptionIds}
             selectedText={selectedText}
             selectedValue={selectedValue}
@@ -153,6 +156,7 @@ export default function CompeticaoSala() {
               startedAt={state.startedAt}
               closesAt={state.closesAt}
               serverNow={state.serverNow}
+              optionOrderSeed={optionOrderSeed}
               selectedOptionIds={selectedOptionIds}
               hasSubmitted={hasSubmitted}
               showAnswer
@@ -173,6 +177,7 @@ export default function CompeticaoSala() {
               startedAt={state.startedAt}
               closesAt={state.closesAt}
               serverNow={state.serverNow}
+              optionOrderSeed={optionOrderSeed}
               selectedOptionIds={selectedOptionIds}
               selectedText={selectedText}
               selectedValue={selectedValue}

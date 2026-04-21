@@ -179,6 +179,7 @@ export default function usePlayerRoom(pin?: string) {
     error,
     hasPlayerToken: Boolean(readPlayerToken(pin)),
     joinRoom,
+    optionOrderSeed: readPlayerToken(pin) ?? pin ?? 'player',
     state,
     submitAnswer,
     submittedAnswers,

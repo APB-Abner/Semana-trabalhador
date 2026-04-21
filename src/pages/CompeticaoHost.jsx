@@ -83,7 +83,6 @@ export default function CompeticaoHost() {
       <PageHeader
         eyebrow="Painel do host"
         title={pin ? `Sala ${pin}` : 'Sala ao vivo'}
-        description="Acompanhe a presença, libere rodadas e conduza o placar."
       />
       <HostLobby
         state={state}

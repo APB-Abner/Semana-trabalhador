@@ -171,6 +171,33 @@ describe('roomStore', () => {
     expect(() => store.startGame(room.pin, room.hostToken)).toThrow(RoomStoreError);
   });
 
+  it('keeps multiple choice open for other players after the first answer', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: [liveQuestionsFixture[0]],
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const ana = store.joinPlayer(room.pin, 'Ana');
+    const bia = store.joinPlayer(room.pin, 'Bia');
+
+    const opened = startFirstRound(room);
+    expect(opened.currentQuestion?.type).toBe('multiple_choice');
+
+    currentTime += 500;
+    const afterAna = store.submitAnswer(room.pin, ana.playerToken, 'q1', 'q1-a');
+    expect(afterAna.status).toBe('round_open');
+    expect(afterAna.answeredCount).toBe(1);
+    expect(afterAna.currentQuestion?.id).toBe('q1');
+
+    currentTime += 500;
+    const afterBia = store.submitAnswer(room.pin, bia.playerToken, 'q1', 'q1-b');
+    expect(afterBia.status).toBe('round_revealed');
+    expect(afterBia.answeredCount).toBe(2);
+    expect(afterBia.leaderboard).toHaveLength(2);
+  });
+
   it('starts the match and accepts a single answer per player per round', () => {
     const room = store.createRoom();
     const player = store.joinPlayer(room.pin, 'Ana');

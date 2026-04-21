@@ -196,6 +196,63 @@ describe('socket live quiz flow', () => {
     expect(finished.finalRanking[0].name).toBe('Ana');
   });
 
+  it('keeps a multiple choice round answerable for remaining players after the first submission', async () => {
+    const host = await connectClient();
+    const anaSocket = await connectClient();
+    const biaSocket = await connectClient();
+    const created = await emitAck<RoomCreateAck>(host, 'room:create');
+
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    const ana = await emitAck<RoomJoinAck>(anaSocket, 'room:join', {
+      pin: created.pin,
+      role: 'player',
+      name: 'Ana',
+    });
+    const bia = await emitAck<RoomJoinAck>(biaSocket, 'room:join', {
+      pin: created.pin,
+      role: 'player',
+      name: 'Bia',
+    });
+
+    expect(ana.ok).toBe(true);
+    expect(bia.ok).toBe(true);
+    if (!ana.ok || !bia.ok) return;
+
+    const opened = await startMatchAndOpenFirstRound(host, anaSocket, created.pin, created.hostToken);
+    expect(opened).toBeTruthy();
+    if (!opened) return;
+
+    const roomStillOpenPromise = once<RoomState>(biaSocket, 'room:state');
+    const anaAck = await emitAck<BasicAck>(anaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: ana.playerToken,
+      questionId: opened.currentQuestion?.id,
+      optionId: 'q1-a',
+    });
+    expect(anaAck.ok).toBe(true);
+    if (!anaAck.ok) return;
+    expect(anaAck.state.status).toBe('round_open');
+
+    const roomStillOpen = await roomStillOpenPromise;
+    expect(roomStillOpen.status).toBe('round_open');
+    expect(roomStillOpen.answeredCount).toBe(1);
+
+    const revealedPromise = once<RoomState>(host, 'round:revealed');
+    const biaAck = await emitAck<BasicAck>(biaSocket, 'answer:submit', {
+      pin: created.pin,
+      playerToken: bia.playerToken,
+      questionId: opened.currentQuestion?.id,
+      optionId: 'q1-b',
+    });
+
+    expect(biaAck.ok).toBe(true);
+    const revealed = await revealedPromise;
+    expect(revealed.status).toBe('round_revealed');
+    expect(revealed.answeredCount).toBe(2);
+  });
+
   it('returns an error when a player submits after the round has closed', async () => {
     const host = await connectClient();
     const player = await connectClient();
