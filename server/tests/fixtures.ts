@@ -94,4 +94,17 @@ export const liveQuestionsFixture: LiveQuestion[] = [
     options: [],
     explanation: 'Respostas equivalentes sao agrupadas.',
   },
+  {
+    id: 'q9',
+    type: 'multiple_choice',
+    topic: 'Organizacao',
+    text: 'Qual atitude ajuda a organizar uma entrega com prazo curto?',
+    options: [
+      { id: 'q9-a', text: 'Confirmar prioridade e dividir em passos menores' },
+      { id: 'q9-b', text: 'Comecar pela parte mais facil sem avisar ninguem' },
+      { id: 'q9-c', text: 'Esperar o prazo chegar para pedir detalhes' },
+    ],
+    correctOptionId: 'q9-a',
+    explanation: 'Alinhar prioridade e quebrar a entrega em passos reduz risco e retrabalho.',
+  },
 ];

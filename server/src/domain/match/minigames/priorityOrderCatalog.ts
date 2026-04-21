@@ -1,6 +1,38 @@
 import type { PriorityOrderScenario } from '../../../types/realtime.ts';
+import {
+  normalizeContentKey,
+  type MatchContentMetadata,
+} from '../contentDiversity.ts';
 
-export const priorityOrderCatalog: PriorityOrderScenario[] = [
+export type PriorityOrderCatalogEntry = PriorityOrderScenario & MatchContentMetadata;
+
+const priorityOrderDifficulties: Record<string, MatchContentMetadata['difficulty']> = {
+  'priority-delay-arrival': 'easy',
+  'priority-interview-prep': 'easy',
+  'priority-error-sent': 'medium',
+  'priority-task-conflict': 'medium',
+  'priority-doubt-task': 'easy',
+  'priority-start-shift': 'easy',
+  'priority-feedback-action': 'medium',
+  'priority-customer-complaint': 'medium',
+  'priority-confidential-document': 'hard',
+  'priority-new-tool': 'medium',
+  'priority-team-conflict': 'medium',
+  'priority-first-week': 'easy',
+};
+
+function definePriorityOrderScenario(scenario: PriorityOrderScenario): PriorityOrderCatalogEntry {
+  const contentGroup = normalizeContentKey(scenario.topic);
+
+  return {
+    ...scenario,
+    difficulty: priorityOrderDifficulties[scenario.id] ?? 'medium',
+    contentGroup,
+    sessionTags: [contentGroup, normalizeContentKey(scenario.title)],
+  };
+}
+
+const priorityOrderItems: PriorityOrderScenario[] = [
   {
     id: 'priority-delay-arrival',
     title: 'Chegada atrasada',
@@ -386,6 +418,8 @@ export const priorityOrderCatalog: PriorityOrderScenario[] = [
     ],
   },
 ];
+
+export const priorityOrderCatalog: PriorityOrderCatalogEntry[] = priorityOrderItems.map(definePriorityOrderScenario);
 
 export function getPriorityOrderCatalog() {
   return priorityOrderCatalog;

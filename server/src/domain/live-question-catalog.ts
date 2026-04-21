@@ -7,8 +7,9 @@ import type {
   LiveQuestionTone,
   LiveQuestionType,
 } from '../types/realtime.ts';
+import { normalizeContentKey, type MatchContentMetadata } from './match/contentDiversity.ts';
 
-export type LiveQuestionCatalogEntry = LiveQuestion & {
+export type LiveQuestionCatalogEntry = LiveQuestion & MatchContentMetadata & {
   bucket: LiveQuestionBucket;
   tone: LiveQuestionTone;
   sessionFit: LiveQuestionSessionFit;
@@ -74,9 +75,13 @@ export function defineLiveQuestion(input: CatalogQuestionInput): LiveQuestionCat
   const correctOptionIds = correctOptionTexts?.map((optionText) => (
     findOptionId(input.id, options, optionText)
   ));
+  const contentGroup = question.contentGroup ?? normalizeContentKey(question.topic);
+  const sessionTags = question.sessionTags ?? [contentGroup, question.type];
 
   return {
     ...question,
+    contentGroup,
+    sessionTags,
     options,
     correctOptionId,
     correctOptionIds,

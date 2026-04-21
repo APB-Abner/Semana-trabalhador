@@ -20,6 +20,11 @@ import {
   workSituationDefinition,
 } from './minigames/workSituation.ts';
 import { getWorkSituationCatalog } from './minigames/workSituationCatalog.ts';
+import {
+  orderContentForOpeningVariety,
+  selectDiverseContent,
+  type MatchContentMetadata,
+} from './contentDiversity.ts';
 
 export const MATCH_GAME_COUNT = 3;
 
@@ -101,12 +106,43 @@ function shufflePriorityOrderScenarios(scenarios: PriorityOrderScenario[]) {
   return [...scenarios].sort(() => Math.random() - 0.5);
 }
 
-function selectWorkSituationsForMatch(situations: WorkSituation[]) {
-  return shuffleWorkSituations(situations).slice(0, WORK_SITUATION_ROUNDS_PER_MATCH);
+function isQuickQuizCompetitiveQuestion(question: LiveQuestion) {
+  return question.type === 'multiple_choice'
+    || question.type === 'true_false'
+    || question.type === 'multiple_select';
 }
 
-function selectPriorityOrderScenariosForMatch(scenarios: PriorityOrderScenario[]) {
-  return shufflePriorityOrderScenarios(scenarios).slice(0, PRIORITY_ORDER_ROUNDS_PER_MATCH);
+function selectQuickQuizQuestionsForMatch(questions: LiveQuestion[]) {
+  const competitiveQuestions = questions.filter(isQuickQuizCompetitiveQuestion);
+  const sourceQuestions = competitiveQuestions.length >= QUICK_QUIZ_ROUNDS_PER_MATCH
+    ? competitiveQuestions
+    : questions;
+
+  return orderContentForOpeningVariety(
+    selectDiverseContent({
+      items: sourceQuestions,
+      count: QUICK_QUIZ_ROUNDS_PER_MATCH,
+    }),
+  );
+}
+
+function selectWorkSituationsForMatch(situations: WorkSituation[], usedItems: MatchContentMetadata[]) {
+  return selectDiverseContent({
+    items: shuffleWorkSituations(situations),
+    count: WORK_SITUATION_ROUNDS_PER_MATCH,
+    usedItems,
+  });
+}
+
+function selectPriorityOrderScenariosForMatch(
+  scenarios: PriorityOrderScenario[],
+  usedItems: MatchContentMetadata[],
+) {
+  return selectDiverseContent({
+    items: shufflePriorityOrderScenarios(scenarios),
+    count: PRIORITY_ORDER_ROUNDS_PER_MATCH,
+    usedItems,
+  });
 }
 
 function selectQuickOnlySession(questions: LiveQuestion[]): MatchSessionSelection {
@@ -142,7 +178,8 @@ export function selectMatchSession({
     throw new Error('Nao ha perguntas para montar o match online.');
   }
 
-  const canUseFullMatch = questions.length >= QUICK_QUIZ_ROUNDS_PER_MATCH
+  const quickQuizCandidateCount = questions.filter(isQuickQuizCompetitiveQuestion).length;
+  const canUseFullMatch = quickQuizCandidateCount >= QUICK_QUIZ_ROUNDS_PER_MATCH
     && workSituations.length >= WORK_SITUATION_ROUNDS_PER_MATCH
     && priorityOrderScenarios.length >= PRIORITY_ORDER_ROUNDS_PER_MATCH;
 
@@ -153,9 +190,12 @@ export function selectMatchSession({
   workSituations.forEach(validateWorkSituation);
   priorityOrderScenarios.forEach(validatePriorityOrderScenario);
 
-  const quickQuestions = questions.slice(0, QUICK_QUIZ_ROUNDS_PER_MATCH);
-  const selectedWorkSituations = selectWorkSituationsForMatch(workSituations);
-  const selectedPriorityOrderScenarios = selectPriorityOrderScenariosForMatch(priorityOrderScenarios);
+  const quickQuestions = selectQuickQuizQuestionsForMatch(questions);
+  const selectedWorkSituations = selectWorkSituationsForMatch(workSituations, quickQuestions);
+  const selectedPriorityOrderScenarios = selectPriorityOrderScenariosForMatch(
+    priorityOrderScenarios,
+    [...quickQuestions, ...selectedWorkSituations],
+  );
 
   const quickQuizGame = buildQuickQuizGame({
     id: 'quick_quiz_1',

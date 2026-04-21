@@ -29,6 +29,59 @@ describe('roomStore', () => {
     return opened;
   }
 
+  function getFixtureQuestion(questionId: string) {
+    const question = liveQuestionsFixture.find((candidate) => candidate.id === questionId);
+
+    if (!question) {
+      throw new Error(`Pergunta fixture nao encontrada: ${questionId}`);
+    }
+
+    return question;
+  }
+
+  function getCorrectFixtureAnswer(questionId: string) {
+    const question = getFixtureQuestion(questionId);
+
+    if (question.correctOptionIds) {
+      return { optionIds: question.correctOptionIds };
+    }
+
+    if (question.correctOptionId) {
+      return question.correctOptionId;
+    }
+
+    return question.options[0]?.id ?? '';
+  }
+
+  function getIncorrectFixtureAnswer(questionId: string) {
+    const question = getFixtureQuestion(questionId);
+
+    if (question.correctOptionIds) {
+      return { optionIds: question.correctOptionIds.slice(0, -1) };
+    }
+
+    const incorrectOption = question.options.find((option) => option.id !== question.correctOptionId);
+    return incorrectOption?.id ?? question.options[0]?.id ?? '';
+  }
+
+  function answerQuickRound(
+    room: { pin: string; hostToken: string },
+    state: ReturnType<RoomStore['nextRound']>,
+    ana: { playerToken: string },
+    bia: { playerToken: string },
+  ) {
+    expect(state.currentRound?.gameType).toBe('quick_quiz');
+    if (state.currentRound?.gameType !== 'quick_quiz' || !state.currentRound.question) {
+      throw new Error('Rodada rapida esperada no teste.');
+    }
+
+    const questionId = state.currentRound.question.id;
+    currentTime += 500;
+    store.submitAnswer(room.pin, ana.playerToken, questionId, getCorrectFixtureAnswer(questionId));
+    currentTime += 500;
+    return store.submitAnswer(room.pin, bia.playerToken, questionId, getIncorrectFixtureAnswer(questionId));
+  }
+
   it('creates rooms with unique 6-digit PINs', () => {
     const firstRoom = store.createRoom();
     const secondRoom = store.createRoom();
@@ -50,6 +103,7 @@ describe('roomStore', () => {
       'priority_order',
     ]);
     expect(room.state.selectedGames.map((game) => game.roundCount)).toEqual([4, 3, 3]);
+    expect(room.state.selectedGames.map((game) => game.maxScore)).toEqual([3600, 3600, 3600]);
   });
 
   it('adds a player and rejects invalid joins', () => {
@@ -266,25 +320,13 @@ describe('roomStore', () => {
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
 
-    startFirstRound(room);
-    currentTime += 500;
-    store.submitAnswer(room.pin, ana.playerToken, 'q1', 'q1-a');
-    store.submitAnswer(room.pin, bia.playerToken, 'q1', 'q1-b');
+    let quickRound = startFirstRound(room);
+    answerQuickRound(room, quickRound, ana, bia);
 
-    store.nextRound(room.pin, room.hostToken);
-    currentTime += 500;
-    store.submitAnswer(room.pin, ana.playerToken, 'q2', 'q2-a');
-    store.submitAnswer(room.pin, bia.playerToken, 'q2', 'q2-b');
-
-    store.nextRound(room.pin, room.hostToken);
-    currentTime += 500;
-    store.submitAnswer(room.pin, ana.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b', 'q3-d'] });
-    store.submitAnswer(room.pin, bia.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b'] });
-
-    store.nextRound(room.pin, room.hostToken);
-    currentTime += 500;
-    store.submitAnswer(room.pin, ana.playerToken, 'q4', 'q4-a');
-    store.submitAnswer(room.pin, bia.playerToken, 'q4', 'q4-b');
+    for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {
+      quickRound = store.nextRound(room.pin, room.hostToken);
+      answerQuickRound(room, quickRound, ana, bia);
+    }
 
     expect(store.nextRound(room.pin, room.hostToken).status).toBe('between_games');
     expect(store.nextRound(room.pin, room.hostToken).status).toBe('game_intro');
@@ -325,25 +367,13 @@ describe('roomStore', () => {
     const ana = store.joinPlayer(room.pin, 'Ana');
     const bia = store.joinPlayer(room.pin, 'Bia');
 
-    startFirstRound(room);
-    currentTime += 500;
-    store.submitAnswer(room.pin, ana.playerToken, 'q1', 'q1-a');
-    store.submitAnswer(room.pin, bia.playerToken, 'q1', 'q1-b');
+    let quickRound = startFirstRound(room);
+    answerQuickRound(room, quickRound, ana, bia);
 
-    store.nextRound(room.pin, room.hostToken);
-    currentTime += 500;
-    store.submitAnswer(room.pin, ana.playerToken, 'q2', 'q2-a');
-    store.submitAnswer(room.pin, bia.playerToken, 'q2', 'q2-b');
-
-    store.nextRound(room.pin, room.hostToken);
-    currentTime += 500;
-    store.submitAnswer(room.pin, ana.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b', 'q3-d'] });
-    store.submitAnswer(room.pin, bia.playerToken, 'q3', { optionIds: ['q3-a', 'q3-b'] });
-
-    store.nextRound(room.pin, room.hostToken);
-    currentTime += 500;
-    store.submitAnswer(room.pin, ana.playerToken, 'q4', 'q4-a');
-    store.submitAnswer(room.pin, bia.playerToken, 'q4', 'q4-b');
+    for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {
+      quickRound = store.nextRound(room.pin, room.hostToken);
+      answerQuickRound(room, quickRound, ana, bia);
+    }
 
     expect(store.nextRound(room.pin, room.hostToken).status).toBe('between_games');
     expect(store.nextRound(room.pin, room.hostToken).status).toBe('game_intro');

@@ -14,7 +14,7 @@ export const workSituationDefinition: MiniGameDefinition = {
 };
 
 export const WORK_SITUATION_ROUNDS_PER_MATCH = 3;
-export const WORK_SITUATION_SPEED_BONUS = 300;
+export const WORK_SITUATION_SPEED_BONUS = 200;
 
 export function buildWorkSituationGame({
   id,

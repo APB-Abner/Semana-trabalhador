@@ -1,6 +1,38 @@
 import type { WorkSituation } from '../../../types/realtime.ts';
+import {
+  normalizeContentKey,
+  type MatchContentMetadata,
+} from '../contentDiversity.ts';
 
-export const workSituationCatalog: WorkSituation[] = [
+export type WorkSituationCatalogEntry = WorkSituation & MatchContentMetadata;
+
+const workSituationDifficulties: Record<string, MatchContentMetadata['difficulty']> = {
+  'work-delay-warning': 'easy',
+  'work-task-doubt': 'easy',
+  'work-mistake-found': 'medium',
+  'work-feedback-hard': 'medium',
+  'work-channel-choice': 'easy',
+  'work-priority-conflict': 'medium',
+  'work-team-conflict': 'medium',
+  'work-confidential-info': 'hard',
+  'work-customer-message': 'medium',
+  'work-idle-moment': 'easy',
+  'work-meeting-note': 'easy',
+  'work-learning-gap': 'medium',
+};
+
+function defineWorkSituation(situation: WorkSituation): WorkSituationCatalogEntry {
+  const contentGroup = normalizeContentKey(situation.topic);
+
+  return {
+    ...situation,
+    difficulty: workSituationDifficulties[situation.id] ?? 'medium',
+    contentGroup,
+    sessionTags: [contentGroup, normalizeContentKey(situation.title)],
+  };
+}
+
+const workSituationItems: WorkSituation[] = [
   {
     id: 'work-delay-warning',
     title: 'Atraso no caminho',
@@ -375,7 +407,8 @@ export const workSituationCatalog: WorkSituation[] = [
   },
 ];
 
+export const workSituationCatalog: WorkSituationCatalogEntry[] = workSituationItems.map(defineWorkSituation);
+
 export function getWorkSituationCatalog() {
   return workSituationCatalog;
 }
-

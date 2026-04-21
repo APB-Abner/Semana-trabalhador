@@ -142,14 +142,18 @@ As rodadas competitivas (`multiple_choice`, `true_false`, `multiple_select`) ali
 - `ranking`: contagem Borda simples, média de posição e votos em primeiro lugar por item.
 - `qna`: respostas abertas agrupadas por texto normalizado, preservando uma versão legível para exibição.
 
-A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competição padrão usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotação principal. Cada sala recebe uma rotação base de perguntas para o `quick_quiz`; o match usa 4 rodadas no primeiro bloco, sorteia 3 situações profissionais no bloco central e fecha com 3 rodadas rápidas. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
+A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competição padrão usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotação principal. Cada sala recebe uma rotação base de perguntas para o `quick_quiz`; o match usa 4 rodadas no primeiro bloco, sorteia 3 situações profissionais no bloco central e fecha com 3 rodadas de ordem de prioridade. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
+
+Para o match online, `difficulty`, `contentGroup` e `sessionTags` também são usados como metadados internos de seleção no servidor. Eles ajudam a evitar repetição de tema, grupo de conteúdo e dificuldade, mas não entram no payload público da rodada enquanto a UI não precisar deles.
+
+No `quick_quiz`, cada rodada competitiva vale até `900` pontos: `700` pontos base por acerto e até `200` pontos de bônus por velocidade. O bloco tem 4 rodadas, então o teto do minigame é `3600` pontos. A seleção prioriza perguntas competitivas e tenta evitar, na abertura do match, perguntas adjacentes com o mesmo tema ou a mesma dificuldade quando houver variedade suficiente.
 
 No `work_situation`, cada rodada apresenta uma cena curta de trabalho e 3 ações possíveis. A pontuação usa qualidade da decisão mais velocidade:
 
 - melhor decisão: `1000` pontos base.
 - decisão aceitável: `600` pontos base.
 - decisão de risco: `0` ponto.
-- bônus de velocidade: até `300` pontos para escolhas com pontuação base maior que zero.
+- bônus de velocidade: até `200` pontos para escolhas com pontuação base maior que zero.
 
 O reveal mostra a melhor decisão, explicação, feedback da escolha do jogador e distribuição das respostas por opção para o host acompanhar o comportamento do grupo.
 
@@ -161,6 +165,21 @@ No `priority_order`, cada rodada apresenta um cenário e 3 ou 4 ações embaralh
 - bônus de velocidade: até `200` pontos quando `basePoints > 0`.
 
 O reveal mostra a ordem ideal, a ordem enviada pelo jogador, quantos itens ficaram na posição certa, pontuação base, bônus de velocidade e pontuação final da rodada.
+
+Com esse balanceamento, os três minigames ativos ficam com peso semelhante no match:
+
+- `quick_quiz`: 4 rodadas x 900 = `3600` pontos.
+- `work_situation`: 3 rodadas x 1200 = `3600` pontos.
+- `priority_order`: 3 rodadas x 1200 = `3600` pontos.
+
+A seleção diversa relaxa restrições em camadas quando o catálogo não tem variedade suficiente:
+
+- primeiro evita grupos, temas e tags já usados, evita repetir grupos/temas dentro do bloco e tenta balancear dificuldade.
+- se faltar conteúdo, libera o balanceamento de dificuldade.
+- depois libera sobreposição de tags.
+- depois libera temas já usados anteriormente.
+- depois libera grupos já usados anteriormente.
+- por fim, permite repetição livre de metadados, mantendo apenas IDs únicos.
 
 Limitações desta fase:
 

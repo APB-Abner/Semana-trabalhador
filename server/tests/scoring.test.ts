@@ -17,7 +17,7 @@ describe('calculateLiveScore', () => {
       startedAt: 1_000,
       submittedAt: 1_000,
       limitMs: 20_000,
-    })).toBe(1500);
+    })).toBe(900);
   });
 
   it('keeps a slow correct answer at the base score', () => {

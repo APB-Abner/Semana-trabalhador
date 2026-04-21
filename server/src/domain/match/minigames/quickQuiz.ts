@@ -1,4 +1,5 @@
 import type { BuiltMatchGame, BuildMatchGameOptions, MiniGameDefinition } from './types.ts';
+import { LIVE_SCORE_MAX_POINTS } from '../../scoring.ts';
 
 export const quickQuizDefinition: MiniGameDefinition = {
   type: 'quick_quiz',
@@ -20,8 +21,7 @@ export function buildQuickQuizGame({
     description,
     roundIds: questions.map((question) => question.id),
     roundCount: questions.length,
-    maxScore: questions.length * 1_500,
+    maxScore: questions.length * LIVE_SCORE_MAX_POINTS,
     active: quickQuizDefinition.active,
   };
 }
-

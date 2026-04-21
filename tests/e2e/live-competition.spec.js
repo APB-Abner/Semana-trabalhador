@@ -30,8 +30,23 @@ async function waitForHealth() {
 }
 
 async function answerFirstOption(page) {
-  await page.locator('main button[aria-pressed]').first().click();
-  await expect(page.locator('main').getByText(/Resposta enviada|Resposta correta/).first()).toBeVisible();
+  const confirmButton = page.getByRole('button', { name: 'Confirmar resposta' });
+  const usesExplicitConfirm = await confirmButton.isVisible({ timeout: 500 }).catch(() => false);
+
+  if (usesExplicitConfirm) {
+    const options = page.locator('main button[aria-pressed]');
+    const optionCount = Math.min(await options.count(), 3);
+
+    for (let index = 0; index < optionCount; index += 1) {
+      await options.nth(index).click();
+    }
+
+    await confirmButton.click();
+  } else {
+    await page.locator('main button[aria-pressed]').first().click();
+  }
+
+  await expect(page.locator('main').getByText(/Resposta enviada|Resposta correta|Respostas corretas/).first()).toBeVisible();
 }
 
 async function answerWorkSituationRound(host, ana, bia) {
@@ -86,7 +101,7 @@ test.afterAll(() => {
   }
 });
 
-test('live competition supports competitive and participatory UI flows', async ({ browser }) => {
+test('live competition supports balanced match minigames', async ({ browser }) => {
   const context = await browser.newContext();
   const host = await context.newPage();
   const ana = await context.newPage();
@@ -116,35 +131,12 @@ test('live competition supports competitive and participatory UI flows', async (
   await answerFirstOption(bia);
   await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
 
-  await nextRound(host);
-  await expect(ana.getByRole('button', { name: /Verdadeiro/ })).toBeVisible();
-  await ana.getByRole('button', { name: /Verdadeiro/ }).click();
-  await bia.getByRole('button', { name: /Verdadeiro/ }).click();
-  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
-
-  await nextRound(host);
-  await expect(ana.getByText('Múltipla seleção')).toBeVisible();
-  await ana.locator('main button[aria-pressed]').nth(0).click();
-  await ana.locator('main button[aria-pressed]').nth(1).click();
-  await ana.locator('main button[aria-pressed]').nth(2).click();
-  await ana.getByRole('button', { name: 'Confirmar resposta' }).click();
-
-  await expect(ana.getByText(/Resposta enviada/)).toBeVisible();
-  await expect(ana.getByRole('button', { name: 'Confirmar resposta' })).toBeDisabled();
-  await expect(ana.locator('main button[aria-pressed]').first()).toBeDisabled();
-
-  await bia.locator('main button[aria-pressed]').first().click();
-  await bia.getByRole('button', { name: 'Confirmar resposta' }).click();
-
-  await expect(ana.getByText(/Respostas corretas:/)).toBeVisible();
-  await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
-
-  await nextRound(host);
-  await expect(ana.getByText('Enquete').first()).toBeVisible();
-  await ana.locator('main button[aria-pressed]').first().click();
-  await bia.locator('main button[aria-pressed]').nth(1).click();
-  await expect(host.getByText('Resultado da enquete')).toBeVisible();
-  await expect(ana.getByText(/1 voto/).first()).toBeVisible();
+  for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {
+    await nextRound(host);
+    await answerFirstOption(ana);
+    await answerFirstOption(bia);
+    await expect(host.getByText('Leaderboard da rodada')).toBeVisible();
+  }
 
   await nextRound(host);
   await answerWorkSituationRound(host, ana, bia);

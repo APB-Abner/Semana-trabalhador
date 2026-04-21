@@ -5,6 +5,10 @@ export type ScoreAnswerInput = {
   limitMs: number;
 };
 
+export const LIVE_SCORE_BASE_POINTS = 700;
+export const LIVE_SCORE_SPEED_BONUS = 200;
+export const LIVE_SCORE_MAX_POINTS = LIVE_SCORE_BASE_POINTS + LIVE_SCORE_SPEED_BONUS;
+
 export function calculateLiveScore({
   isCorrect,
   submittedAt,
@@ -17,5 +21,5 @@ export function calculateLiveScore({
 
   const responseMs = Math.max(0, submittedAt - startedAt);
   const speedFactor = Math.max(0, 1 - responseMs / limitMs);
-  return Math.round(700 + speedFactor * 800);
+  return Math.round(LIVE_SCORE_BASE_POINTS + speedFactor * LIVE_SCORE_SPEED_BONUS);
 }

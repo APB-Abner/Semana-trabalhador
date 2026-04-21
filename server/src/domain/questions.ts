@@ -6,6 +6,7 @@ import {
   validateLiveQuestionMetadata,
   type LiveQuestionCatalogEntry,
 } from './live-question-catalog.ts';
+import { normalizeContentKey } from './match/contentDiversity.ts';
 import {
   selectLiveSessionQuestions,
   summarizeLiveQuestions,
@@ -53,6 +54,8 @@ export function adaptQuizQuestion(question: QuizQuestion, questionIndex: number)
     sessionFit: 'competition',
     topic: question.tema,
     difficulty: getAdaptedDifficulty(questionIndex),
+    contentGroup: normalizeContentKey(question.tema),
+    sessionTags: [normalizeContentKey(question.tema), type],
     text: question.pergunta,
     options,
     correctOptionId: correctOption.id,
