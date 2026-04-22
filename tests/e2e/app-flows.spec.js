@@ -133,6 +133,29 @@ test('quiz keyboard navigation wraps options and submits with enter', async ({ p
   await expect(page.getByText(/Resposta correta/)).toBeVisible();
 });
 
+test('game hub opens the new solo games with first-round feedback', async ({ page }) => {
+  await page.goto('/game');
+
+  await page.getByRole('button', { name: /Pode \/ Não Pode/ }).click();
+  await expect(page.getByRole('heading', { name: /Decida rápido/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Começar' }).click();
+  await page.locator('main button[aria-pressed]').first().click();
+  await expect(page.getByText(/Boa decisão|Resposta esperada/)).toBeVisible();
+
+  await page.getByRole('button', { name: /Comunicação Profissional/ }).click();
+  await expect(page.getByRole('heading', { name: /Escolha a resposta/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Começar' }).click();
+  await page.locator('main button[aria-pressed]').first().click();
+  await expect(page.getByText(/Melhor resposta|Melhor opção/)).toBeVisible();
+
+  await page.getByRole('button', { name: /Caça-erros/ }).click();
+  await expect(page.getByRole('heading', { name: /Encontre problemas/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Começar' }).click();
+  await page.locator('main button[aria-pressed]').first().click();
+  await page.getByRole('button', { name: 'Confirmar análise' }).click();
+  await expect(page.getByText('Você marcou corretamente')).toBeVisible();
+});
+
 test('quiz review with errors is shown and persisted after reload', async ({ page }) => {
   await page.addInitScript(() => {
     Math.random = () => 0;
