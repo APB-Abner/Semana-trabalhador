@@ -114,7 +114,7 @@ test('live competition supports balanced match minigames', async ({ browser }) =
   const pin = host.url().split('/').pop();
 
   await display.goto(`/competicao/exibicao/${pin}`);
-  await expect(display.getByText('Entre na sala')).toBeVisible();
+  await expect(display.getByText('Partida prestes a começar')).toBeVisible();
   await expect(display.locator('section').getByText(pin)).toBeVisible();
   await expect(display.getByRole('button', { name: 'Iniciar match' })).toHaveCount(0);
 

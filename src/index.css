@@ -102,6 +102,66 @@ h3 {
 }
 
 @layer utilities {
+  .projector-display {
+    position: relative;
+    background:
+      linear-gradient(135deg, rgba(29, 78, 216, 0.22), transparent 34%),
+      linear-gradient(225deg, rgba(16, 185, 129, 0.14), transparent 36%),
+      #06101f;
+  }
+
+  .projector-display::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 82%);
+    opacity: 0.35;
+  }
+
+  .projector-display::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(2, 6, 23, 0.18), rgba(2, 6, 23, 0.68));
+  }
+
+  .projector-panel {
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(16px);
+  }
+
+  .projector-round-shell > div,
+  .projector-result-shell > div {
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    background: rgba(15, 23, 42, 0.84) !important;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.32);
+  }
+
+  .projector-round-shell h3 {
+    font-size: clamp(2.35rem, 4.4vw, 5rem);
+    line-height: 1.04;
+  }
+
+  .projector-round-shell button,
+  .projector-round-shell [aria-pressed] {
+    font-size: clamp(1rem, 1.3vw, 1.35rem);
+  }
+
+  .projector-round-shell .text-sm,
+  .projector-result-shell .text-sm {
+    font-size: clamp(0.95rem, 1vw, 1.15rem);
+  }
+
+  .projector-result-shell h3 {
+    font-size: clamp(1.45rem, 2vw, 2.2rem);
+  }
+
   @keyframes display-fade-up {
     from {
       opacity: 0;

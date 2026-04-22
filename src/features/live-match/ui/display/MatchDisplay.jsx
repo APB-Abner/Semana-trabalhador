@@ -18,86 +18,162 @@ const statusLabels = {
   finished: 'Pódio final',
 };
 
+const gameLabels = {
+  quick_quiz: 'Quiz Relâmpago',
+  work_situation: 'Situação Profissional',
+  priority_order: 'Ordem de Prioridade',
+};
+
+const toneStyles = {
+  blue: {
+    bar: 'bg-blue-300',
+    border: 'border-blue-300/30',
+    eyebrow: 'text-blue-200',
+    panel: 'border-blue-300/20 bg-blue-500/10',
+    pill: 'border-blue-300/30 bg-blue-500/15 text-blue-100',
+  },
+  amber: {
+    bar: 'bg-amber-300',
+    border: 'border-amber-300/30',
+    eyebrow: 'text-amber-200',
+    panel: 'border-amber-300/20 bg-amber-500/10',
+    pill: 'border-amber-300/30 bg-amber-500/15 text-amber-100',
+  },
+  purple: {
+    bar: 'bg-violet-300',
+    border: 'border-violet-300/30',
+    eyebrow: 'text-violet-200',
+    panel: 'border-violet-300/20 bg-violet-500/10',
+    pill: 'border-violet-300/30 bg-violet-500/15 text-violet-100',
+  },
+  green: {
+    bar: 'bg-emerald-300',
+    border: 'border-emerald-300/30',
+    eyebrow: 'text-emerald-200',
+    panel: 'border-emerald-300/20 bg-emerald-500/10',
+    pill: 'border-emerald-300/30 bg-emerald-500/15 text-emerald-100',
+  },
+};
+
 function connectedCount(players = []) {
   return players.filter((player) => player.connected).length;
+}
+
+function getDisplayTone(state) {
+  if (state.status === 'finished' || state.status === 'round_revealed') {
+    return 'amber';
+  }
+
+  if (state.status === 'between_games') {
+    return 'green';
+  }
+
+  const gameType = state.currentRound?.gameType ?? state.currentGame?.type;
+
+  if (gameType === 'work_situation') {
+    return 'amber';
+  }
+
+  if (gameType === 'priority_order') {
+    return 'purple';
+  }
+
+  return 'blue';
+}
+
+function getToneClasses(state) {
+  return toneStyles[getDisplayTone(state)] ?? toneStyles.blue;
+}
+
+function DisplayStat({ label, value }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/10 px-4 py-2">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-300">{label}</p>
+      <p className="text-lg font-black text-white">{value}</p>
+    </div>
+  );
 }
 
 function DisplayHeader({ state }) {
   const gameStep = state.currentGame
     ? `${Math.max(0, state.currentGameIndex) + 1}/${state.selectedGames.length}`
     : `0/${state.selectedGames.length}`;
+  const tone = getToneClasses(state);
 
   return (
-    <header className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-5 lg:px-10">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-wide text-blue-200">Competição Jovem Trabalhador</p>
-        <h1 className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">
-          {statusLabels[state.status] ?? state.status}
-        </h1>
+    <header className="relative z-10 mx-auto flex w-full max-w-[92rem] flex-wrap items-center justify-between gap-4 px-6 py-5 lg:px-10">
+      <div className="flex flex-wrap items-center gap-4">
+        <span className={`rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.18em] ${tone.pill}`}>
+          Ao vivo
+        </span>
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">Competição Jovem Trabalhador</p>
+          <h1 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
+            {statusLabels[state.status] ?? state.status}
+          </h1>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="rounded-lg border border-white/10 bg-white/10 px-4 py-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-blue-100">PIN</p>
-          <p className="font-display text-3xl font-extrabold tracking-[0.18em] text-white">{state.pin}</p>
-        </div>
-        <div className="rounded-lg border border-white/10 bg-white/10 px-4 py-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-blue-100">Etapa</p>
-          <p className="text-lg font-bold text-white">{gameStep}</p>
-        </div>
-        <div className="rounded-lg border border-white/10 bg-white/10 px-4 py-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-blue-100">Online</p>
-          <p className="text-lg font-bold text-white">{connectedCount(state.players)}</p>
-        </div>
+        <DisplayStat label="PIN" value={state.pin} />
+        <DisplayStat label="Etapa" value={gameStep} />
+        <DisplayStat label="Online" value={connectedCount(state.players)} />
       </div>
     </header>
   );
 }
 
-function DisplayStage({ children, stageKey }) {
+function DisplayStage({ children, stageKey, state, wide = false }) {
+  const tone = getToneClasses(state);
+
   return (
     <section
       key={stageKey}
-      className="mx-auto w-full max-w-6xl px-6 pb-10 pt-4 animate-display-fade-up lg:px-10"
+      className={`projector-stage relative z-10 mx-auto w-full ${wide ? 'max-w-[92rem]' : 'max-w-7xl'} px-6 pb-10 pt-3 animate-display-fade-up lg:px-10`}
     >
+      <div className={`mb-6 h-1.5 w-40 rounded-full ${tone.bar}`} />
       {children}
     </section>
   );
 }
 
 function LobbyDisplay({ state }) {
-  const players = state.players.slice(0, 16);
+  const players = state.players.slice(0, 18);
+  const tone = getToneClasses(state);
 
   return (
-    <DisplayStage stageKey="lobby">
-      <div className="grid min-h-[66svh] gap-8 lg:grid-cols-[1fr_0.75fr] lg:items-center">
+    <DisplayStage stageKey="lobby" state={state} wide>
+      <div className="grid min-h-[68svh] gap-8 lg:grid-cols-[1.05fr_0.75fr] lg:items-center">
         <div>
-          <p className="text-lg font-semibold uppercase tracking-wide text-blue-200">Entre na sala</p>
-          <p className="font-display mt-5 text-8xl font-black tracking-[0.18em] text-white sm:text-9xl">
-            {state.pin}
-          </p>
-          <p className="mt-6 max-w-2xl text-2xl font-semibold leading-snug text-slate-200">
-            Use o PIN no celular ou computador. A partida começa quando o host liberar.
+          <p className={`text-xl font-black uppercase tracking-[0.2em] ${tone.eyebrow}`}>Partida prestes a começar</p>
+          <div className={`projector-panel mt-6 rounded-3xl border p-8 ${tone.border} ${tone.panel}`}>
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-slate-300">PIN da sala</p>
+            <p className="font-display mt-3 text-[6rem] font-black leading-none tracking-[0.16em] text-white sm:text-[8.5rem] lg:text-[10rem]">
+              {state.pin}
+            </p>
+          </div>
+          <p className="mt-7 max-w-3xl text-3xl font-bold leading-tight text-slate-100">
+            Entre com o PIN e prepare-se para 3 desafios rápidos.
           </p>
         </div>
 
-        <ResultPanel className="border-white/10 bg-white/10 dark:border-white/10 dark:bg-white/10">
+        <ResultPanel className="projector-panel border-white/10 bg-white/10 p-6 dark:border-white/10 dark:bg-white/10">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl font-bold text-white">Jogadores no lobby</h2>
+            <h2 className="text-2xl font-black text-white">Jogadores no lobby</h2>
             <Badge tone="blue">{state.players.length}</Badge>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="mt-6 grid grid-cols-2 gap-3">
             {players.length ? players.map((player) => (
               <div
                 key={player.id}
-                className="flex items-center gap-3 rounded-lg border border-white/10 bg-slate-950/60 px-3 py-2"
+                className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-950/65 px-3 py-3"
               >
                 <PigeonAvatar avatar={player.avatar} size="sm" label={`Avatar de ${player.name}`} />
-                <span className="min-w-0 truncate text-sm font-semibold text-white">{player.name}</span>
+                <span className="min-w-0 truncate text-base font-bold text-white">{player.name}</span>
               </div>
             )) : (
-              <p className="col-span-2 rounded-lg border border-dashed border-white/20 px-4 py-8 text-center text-slate-300">
+              <p className="col-span-2 rounded-xl border border-dashed border-white/20 px-4 py-10 text-center text-lg font-semibold text-slate-300">
                 Aguardando participantes.
               </p>
             )}
@@ -110,22 +186,29 @@ function LobbyDisplay({ state }) {
 
 function GameIntroDisplay({ state }) {
   const game = state.currentGame;
+  const tone = getToneClasses(state);
 
   if (!game) {
     return null;
   }
 
   return (
-    <DisplayStage stageKey={`intro-${game.id}`}>
-      <div className="flex min-h-[66svh] items-center">
-        <div className="max-w-4xl">
-          <Badge tone="blue">Jogo {state.currentGameIndex + 1}/{state.selectedGames.length}</Badge>
-          <h2 className="mt-5 text-6xl font-black tracking-tight text-white sm:text-7xl">{game.title}</h2>
-          <p className="mt-6 max-w-3xl text-2xl font-semibold leading-snug text-slate-200">
+    <DisplayStage stageKey={`intro-${game.id}`} state={state}>
+      <div className="flex min-h-[68svh] items-center">
+        <div className="max-w-5xl">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className={`rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.18em] ${tone.pill}`}>
+              Desafio {state.currentGameIndex + 1}
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-slate-200">
+              {game.roundCount} rodadas
+            </span>
+          </div>
+          <h2 className="mt-7 text-7xl font-black leading-none tracking-tight text-white sm:text-8xl">
+            {game.title}
+          </h2>
+          <p className="mt-7 max-w-4xl text-3xl font-bold leading-tight text-slate-200">
             {game.description}
-          </p>
-          <p className="mt-8 text-lg font-semibold text-blue-200">
-            Prepare-se para {game.roundCount} rodadas.
           </p>
         </div>
       </div>
@@ -176,20 +259,50 @@ function RoundContent({ state, showAnswer = false }) {
   );
 }
 
+function RoundMeta({ state, showAnswer }) {
+  const tone = getToneClasses(state);
+  const gameType = state.currentRound?.gameType ?? state.currentGame?.type;
+  const roundLabel = state.currentGame
+    ? `${state.currentGameRoundIndex + 1}/${state.currentGame.roundCount}`
+    : `${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
+
+  return (
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className={`rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.18em] ${tone.pill}`}>
+          {showAnswer ? 'Momento do resultado' : 'Todos respondendo'}
+        </span>
+        <span className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold text-slate-200">
+          {gameLabels[gameType] ?? state.currentGame?.title ?? 'Rodada'}
+        </span>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <DisplayStat label="Rodada" value={roundLabel} />
+        <DisplayStat label="Respostas" value={`${state.answeredCount}/${connectedCount(state.players)}`} />
+      </div>
+    </div>
+  );
+}
+
 function RoundDisplay({ state, showAnswer = false }) {
   const stageKey = `${state.status}-${state.currentRound?.id ?? state.currentQuestionIndex}`;
 
   return (
-    <DisplayStage stageKey={stageKey}>
-      <div className="space-y-6">
-        <RoundContent state={state} showAnswer={showAnswer} />
+    <DisplayStage stageKey={stageKey} state={state} wide>
+      <RoundMeta state={state} showAnswer={showAnswer} />
+      <div className={showAnswer ? 'grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_28rem]' : ''}>
+        <div className="projector-round-shell">
+          <RoundContent state={state} showAnswer={showAnswer} />
+        </div>
 
         {showAnswer && (
-          state.aggregatedResult ? (
-            <ParticipatoryResultView result={state.aggregatedResult} />
-          ) : (
-            <CompetitiveResultView entries={state.leaderboard} title="Placar da rodada" />
-          )
+          <div className="projector-result-shell">
+            {state.aggregatedResult ? (
+              <ParticipatoryResultView result={state.aggregatedResult} />
+            ) : (
+              <CompetitiveResultView entries={state.leaderboard} title="Placar da rodada" />
+            )}
+          </div>
         )}
       </div>
     </DisplayStage>
@@ -199,35 +312,51 @@ function RoundDisplay({ state, showAnswer = false }) {
 function BetweenGamesDisplay({ state }) {
   const nextGame = state.currentGame;
   const topThree = state.leaderboard.slice(0, 3);
+  const completedGames = Math.max(0, state.currentGameIndex);
+  const progress = Math.min(100, Math.round((completedGames / Math.max(1, state.selectedGames.length)) * 100));
+  const tone = getToneClasses(state);
 
   return (
-    <DisplayStage stageKey={`between-${state.currentGameIndex}`}>
-      <div className="grid min-h-[66svh] gap-6 lg:grid-cols-[1fr_0.85fr] lg:items-center">
+    <DisplayStage stageKey={`between-${state.currentGameIndex}`} state={state} wide>
+      <div className="grid min-h-[68svh] gap-8 lg:grid-cols-[1fr_0.85fr] lg:items-center">
         <div>
-          <p className="text-lg font-semibold uppercase tracking-wide text-green-200">Ranking parcial</p>
-          <h2 className="mt-4 text-6xl font-black tracking-tight text-white sm:text-7xl">
+          <p className={`text-xl font-black uppercase tracking-[0.2em] ${tone.eyebrow}`}>Placar parcial</p>
+          <h2 className="mt-5 text-7xl font-black leading-none tracking-tight text-white sm:text-8xl">
             {nextGame ? 'Próxima etapa' : 'Reta final'}
           </h2>
-          <p className="mt-6 max-w-3xl text-2xl font-semibold leading-snug text-slate-200">
+          <p className="mt-6 max-w-4xl text-3xl font-bold leading-tight text-slate-200">
             {nextGame ? nextGame.title : 'O pódio final está quase pronto.'}
           </p>
+          <div className="mt-10 max-w-xl">
+            <div className="mb-3 flex justify-between text-sm font-bold uppercase tracking-wide text-slate-300">
+              <span>Progresso do match</span>
+              <span>{completedGames}/{state.selectedGames.length}</span>
+            </div>
+            <div className="h-3 overflow-hidden rounded-full bg-white/10">
+              <div className={`h-full rounded-full ${tone.bar}`} style={{ width: `${progress}%` }} />
+            </div>
+          </div>
         </div>
 
-        <ResultPanel className="border-white/10 bg-white/10 dark:border-white/10 dark:bg-white/10">
-          <h3 className="text-xl font-bold text-white">Top 3 até agora</h3>
-          <div className="mt-5 space-y-3">
+        <ResultPanel className="projector-panel border-white/10 bg-white/10 p-6 dark:border-white/10 dark:bg-white/10">
+          <h3 className="text-2xl font-black text-white">Top 3 agora</h3>
+          <div className="mt-6 space-y-4">
             {topThree.length ? topThree.map((entry, index) => (
               <div
                 key={entry.playerId}
-                className="grid grid-cols-[2rem_3rem_1fr_auto] items-center gap-3 rounded-lg border border-white/10 bg-slate-950/60 px-4 py-3"
+                className={`grid grid-cols-[2.5rem_4rem_1fr_auto] items-center gap-4 rounded-2xl border px-4 py-4 ${
+                  index === 0
+                    ? 'border-amber-300/50 bg-amber-300/15'
+                    : 'border-white/10 bg-slate-950/65'
+                }`}
               >
-                <span className="text-xl font-black text-blue-200">#{index + 1}</span>
-                <PigeonAvatar avatar={entry.avatar} size="md" label={`Avatar de ${entry.name}`} />
-                <p className="min-w-0 truncate text-lg font-bold text-white">{entry.name}</p>
+                <span className="text-2xl font-black text-blue-100">#{index + 1}</span>
+                <PigeonAvatar avatar={entry.avatar} size="lg" label={`Avatar de ${entry.name}`} />
+                <p className="min-w-0 truncate text-2xl font-black text-white">{entry.name}</p>
                 <Badge tone={index === 0 ? 'amber' : 'green'}>{entry.score}</Badge>
               </div>
             )) : (
-              <p className="rounded-lg border border-dashed border-white/20 px-4 py-8 text-center text-slate-300">
+              <p className="rounded-xl border border-dashed border-white/20 px-4 py-10 text-center text-lg font-semibold text-slate-300">
                 O placar aparece depois da primeira rodada.
               </p>
             )}
@@ -241,10 +370,10 @@ function BetweenGamesDisplay({ state }) {
 export default function MatchDisplay({ state, error }) {
   if (!state) {
     return (
-      <div className="dark flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-blue-200">Exibição</p>
-          <h1 className="mt-3 text-4xl font-black">Conectando à sala</h1>
+      <div className="projector-display dark flex min-h-screen items-center justify-center px-6 text-white">
+        <div className="relative z-10 text-center">
+          <p className="text-sm font-black uppercase tracking-[0.2em] text-blue-200">Exibição</p>
+          <h1 className="mt-3 text-5xl font-black">Conectando à sala</h1>
           {error && <p className="mt-4 text-red-200">{error}</p>}
         </div>
       </div>
@@ -252,11 +381,11 @@ export default function MatchDisplay({ state, error }) {
   }
 
   return (
-    <div className="dark min-h-screen overflow-hidden bg-slate-950 text-white">
+    <div className="projector-display dark min-h-screen overflow-hidden text-white">
       <DisplayHeader state={state} />
 
       {error && (
-        <div className="mx-auto max-w-6xl px-6 lg:px-10">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 lg:px-10">
           <FeedbackNotice tone="danger">{error}</FeedbackNotice>
         </div>
       )}
@@ -267,7 +396,7 @@ export default function MatchDisplay({ state, error }) {
       {state.status === 'round_revealed' && <RoundDisplay state={state} showAnswer />}
       {state.status === 'between_games' && <BetweenGamesDisplay state={state} />}
       {state.status === 'finished' && (
-        <DisplayStage stageKey="finished">
+        <DisplayStage stageKey="finished" state={state} wide>
           <FinalPodium entries={state.finalRanking} variant="display" />
         </DisplayStage>
       )}
