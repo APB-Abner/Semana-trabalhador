@@ -26,6 +26,7 @@ import {
   createPriorityOrderReveal,
   getPublicPriorityOrderScenario,
   normalizePriorityOrderAnswer,
+  PRIORITY_ORDER_ROUND_MS,
 } from './match/minigames/priorityOrder.ts';
 import { getPriorityOrderCatalog } from './match/minigames/priorityOrderCatalog.ts';
 import type {
@@ -205,6 +206,10 @@ export function createRoomStore({
     return room.rounds[room.currentQuestionIndex] ?? null;
   }
 
+  function getRoundDurationMs(matchRound: MatchRoundInternal | null) {
+    return matchRound?.gameType === 'priority_order' ? PRIORITY_ORDER_ROUND_MS : roundMs;
+  }
+
   function toPublicMatchRound(
     matchRound: MatchRoundInternal | null,
     revealAnswer: boolean,
@@ -228,7 +233,7 @@ export function createRoomStore({
         gameType: 'priority_order',
         scenario: getPublicPriorityOrderScenario(matchRound.scenario, matchRound.publicItems),
         ...(revealAnswer
-          ? { reveal: createPriorityOrderReveal(matchRound.scenario, answers, roundMs) }
+          ? { reveal: createPriorityOrderReveal(matchRound.scenario, answers, getRoundDurationMs(matchRound)) }
           : {}),
       };
     }
@@ -435,10 +440,11 @@ export function createRoomStore({
     room.status = 'round_open';
     room.currentQuestionIndex = questionIndex;
     syncMatchProgress(room);
+    const roundDurationMs = getRoundDurationMs(matchRound);
     room.round = {
       questionId: matchRound.id,
       startedAt,
-      closesAt: startedAt + roundMs,
+      closesAt: startedAt + roundDurationMs,
       answers: new Map<string, PlayerAnswer>(),
     };
     room.leaderboard = [];
@@ -688,6 +694,7 @@ export function createRoomStore({
     }
 
     const responseMs = Math.max(0, submittedAt - room.round.startedAt);
+    const roundDurationMs = getRoundDurationMs(currentRound);
     let optionIds: string[];
     let text: string | undefined;
     let normalizedText: string | undefined;
@@ -705,7 +712,7 @@ export function createRoomStore({
           basePoints: normalizedAnswer.option.basePoints,
           submittedAt,
           startedAt: room.round.startedAt,
-          limitMs: roundMs,
+          limitMs: roundDurationMs,
         });
       } else if (currentRound.gameType === 'priority_order') {
         const normalizedAnswer = normalizePriorityOrderAnswer(currentRound.scenario, toAnswerPayload(answer));
@@ -713,7 +720,7 @@ export function createRoomStore({
           optionIds: normalizedAnswer.optionIds,
           scenario: currentRound.scenario,
           responseMs,
-          limitMs: roundMs,
+          limitMs: roundDurationMs,
         });
         optionIds = normalizedAnswer.optionIds;
         isCorrect = score.correctPositionCount === currentRound.scenario.items.length;
@@ -733,7 +740,7 @@ export function createRoomStore({
               isCorrect,
               submittedAt,
               startedAt: room.round.startedAt,
-              limitMs: roundMs,
+              limitMs: roundDurationMs,
             })
           : 0;
       } else {

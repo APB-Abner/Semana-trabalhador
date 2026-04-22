@@ -447,6 +447,7 @@ describe('roomStore', () => {
     const priorityRound = store.nextRound(room.pin, room.hostToken);
     expect(priorityRound.status).toBe('round_open');
     expect(priorityRound.currentRound?.gameType).toBe('priority_order');
+    expect((priorityRound.closesAt ?? 0) - (priorityRound.startedAt ?? 0)).toBe(30_000);
     expect(priorityRound.currentQuestion).toBeNull();
     if (priorityRound.currentRound?.gameType !== 'priority_order') return;
     const priorityCurrentRound = priorityRound.currentRound;

@@ -15,6 +15,7 @@ export const priorityOrderDefinition: MiniGameDefinition = {
 };
 
 export const PRIORITY_ORDER_ROUNDS_PER_MATCH = 3;
+export const PRIORITY_ORDER_ROUND_MS = 30_000;
 export const PRIORITY_ORDER_SPEED_BONUS = 200;
 export const PRIORITY_ORDER_MAX_BASE_POINTS = 1_000;
 
