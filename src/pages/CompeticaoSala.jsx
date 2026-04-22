@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import usePlayerRoom from '../features/live-match/model/usePlayerMatch';
 import BetweenGamesPanel from '../features/live-match/ui/BetweenGamesPanel.jsx';
@@ -25,9 +26,59 @@ const statusLabels = {
   finished: 'Finalizada',
 };
 
+function normalizePendingAnswer(answer) {
+  if (!answer) {
+    return null;
+  }
+
+  if (Array.isArray(answer)) {
+    return { optionIds: answer };
+  }
+
+  if (typeof answer === 'string') {
+    return { optionIds: [answer] };
+  }
+
+  if ('text' in answer) {
+    return { optionIds: [], text: answer.text };
+  }
+
+  if ('value' in answer) {
+    return { optionIds: [], value: answer.value };
+  }
+
+  return null;
+}
+
+function pendingAnswerToInput(answer) {
+  if (!answer) {
+    return null;
+  }
+
+  if (answer.text !== undefined) {
+    return { text: answer.text };
+  }
+
+  if (answer.value !== undefined) {
+    return { value: answer.value };
+  }
+
+  return answer.optionIds;
+}
+
+function hasPendingContent(answer) {
+  return Boolean(
+    answer?.optionIds?.length ||
+    (typeof answer?.text === 'string' && answer.text.trim()) ||
+    answer?.value !== undefined,
+  );
+}
+
 export default function CompeticaoSala() {
   const { pin = '' } = useParams();
   const navigate = useNavigate();
+  const [pendingAnswers, setPendingAnswers] = useState({});
+  const submittingRoundRef = useRef(null);
   const {
     connected,
     error,
@@ -42,9 +93,11 @@ export default function CompeticaoSala() {
   const currentRound = state?.currentRound;
   const currentRoundId = currentRound?.id ?? state?.currentQuestion?.id;
   const submittedAnswer = currentRoundId ? submittedAnswers[currentRoundId] : null;
-  const selectedOptionIds = submittedAnswer?.optionIds ?? [];
-  const selectedText = submittedAnswer?.text ?? '';
-  const selectedValue = submittedAnswer?.value;
+  const pendingAnswer = currentRoundId ? pendingAnswers[currentRoundId] : null;
+  const visibleAnswer = submittedAnswer ?? pendingAnswer;
+  const selectedOptionIds = visibleAnswer?.optionIds ?? [];
+  const selectedText = visibleAnswer?.text ?? '';
+  const selectedValue = visibleAnswer?.value;
   const hasSubmitted = Boolean(submittedAnswer);
 
   const handleJoin = async ({ roomPin, name, avatar }) => {
@@ -55,9 +108,70 @@ export default function CompeticaoSala() {
     }
   };
 
+  const updatePendingAnswer = useCallback((answer) => {
+    if (!currentRoundId || hasSubmitted) {
+      return;
+    }
+
+    setPendingAnswers((answers) => ({
+      ...answers,
+      [currentRoundId]: normalizePendingAnswer(answer),
+    }));
+  }, [currentRoundId, hasSubmitted]);
+
+  const confirmAnswer = useCallback(async (answer) => {
+    if (!currentRoundId || submittingRoundRef.current === currentRoundId) {
+      return null;
+    }
+
+    const normalizedAnswer = normalizePendingAnswer(answer) ?? pendingAnswer;
+
+    if (!hasPendingContent(normalizedAnswer)) {
+      return null;
+    }
+
+    submittingRoundRef.current = currentRoundId;
+
+    try {
+      const response = await submitAnswer(pendingAnswerToInput(normalizedAnswer));
+
+      if (response?.ok) {
+        setPendingAnswers((answers) => {
+          const nextAnswers = { ...answers };
+          delete nextAnswers[currentRoundId];
+          return nextAnswers;
+        });
+      }
+
+      return response;
+    } finally {
+      submittingRoundRef.current = null;
+    }
+  }, [currentRoundId, pendingAnswer, submitAnswer]);
+
+  useEffect(() => {
+    if (
+      state?.status !== 'round_open' ||
+      !state.closesAt ||
+      hasSubmitted ||
+      !hasPendingContent(pendingAnswer)
+    ) {
+      return undefined;
+    }
+
+    const serverOffset = Number.isFinite(state.serverNow) ? state.serverNow - Date.now() : 0;
+    const correctedNow = Date.now() + serverOffset;
+    const delayMs = Math.max(0, state.closesAt - correctedNow - 450);
+    const timer = window.setTimeout(() => {
+      confirmAnswer();
+    }, delayMs);
+
+    return () => window.clearTimeout(timer);
+  }, [confirmAnswer, hasSubmitted, pendingAnswer, state?.closesAt, state?.serverNow, state?.status]);
+
   if (!hasPlayerToken && !state) {
     return (
-      <PageShell size="narrow" className="text-gray-900 dark:text-white">
+      <PageShell size="narrow" className="competition-page flex h-full flex-col justify-center overflow-hidden text-gray-900 dark:text-white">
         <PageHeader
           eyebrow="Sala ao vivo"
           title="Entrar na sala"
@@ -72,85 +186,50 @@ export default function CompeticaoSala() {
 
   if (!connected && !state) {
     return (
-      <PageShell size="narrow">
+      <PageShell size="narrow" className="competition-page flex h-full flex-col justify-center overflow-hidden">
         <WaitingScreen title="Reconectando à sala" />
       </PageShell>
     );
   }
 
   return (
-    <PageShell size="default" className="text-gray-900 dark:text-white">
-      <PageHeader
-        eyebrow="Sala"
-        title={pin}
-        description="Responda quando a rodada abrir. O placar aparece a cada resultado."
-        actions={state && <Badge tone="blue">{statusLabels[state.status] || state.status}</Badge>}
-      />
+    <PageShell size="full" className="competition-page flex h-full flex-col overflow-hidden text-gray-900 dark:text-white">
+      <header className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
+        <div>
+          <Badge tone="blue">Sala</Badge>
+          <h1 className="font-display mt-2 text-2xl font-bold leading-tight text-gray-950 dark:text-white sm:text-3xl">
+            {pin}
+          </h1>
+        </div>
+        {state && <Badge tone="blue">{statusLabels[state.status] || state.status}</Badge>}
+      </header>
 
-      {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
+      {error && <FeedbackNotice tone="danger" className="mb-3 shrink-0">{error}</FeedbackNotice>}
 
       {state && !state.hostConnected && state.status !== 'finished' && (
-        <FeedbackNotice tone="info" className="mb-4">
+        <FeedbackNotice tone="info" className="mb-3 shrink-0">
           Host desconectado. A partida continua quando ele voltar.
         </FeedbackNotice>
       )}
 
-      {!state && <WaitingScreen title="Carregando sala" />}
+      <section className="competition-main min-h-0 flex-1 overflow-hidden">
+        {!state && <WaitingScreen title="Carregando sala" />}
 
-      {state?.status === 'lobby' && (
-        <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-          <WaitingScreen title="Aguardando o host iniciar">
-            Você já está no lobby. A primeira rodada aparece quando a partida começar.
-          </WaitingScreen>
-          <PresenceList players={state.players} />
-        </div>
-      )}
+        {state?.status === 'lobby' && (
+          <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[1fr_20rem]">
+            <WaitingScreen title="Aguardando o host iniciar">
+              Você já está no lobby. A primeira rodada aparece quando a partida começar.
+            </WaitingScreen>
+            <PresenceList players={state.players} />
+          </div>
+        )}
 
-      {state?.status === 'game_intro' && (
-        <MatchGameShell state={state} />
-      )}
+        {state?.status === 'game_intro' && (
+          <MatchGameShell state={state} />
+        )}
 
-      {state?.status === 'round_open' && (
-        state.currentRound?.gameType === 'work_situation' ? (
-          <WorkSituationView
-            round={state.currentRound}
-            startedAt={state.startedAt}
-            closesAt={state.closesAt}
-            serverNow={state.serverNow}
-            optionOrderSeed={optionOrderSeed}
-            selectedOptionIds={selectedOptionIds}
-            hasSubmitted={hasSubmitted}
-            onSubmit={submitAnswer}
-          />
-        ) : state.currentRound?.gameType === 'priority_order' ? (
-          <PriorityOrderView
-            round={state.currentRound}
-            startedAt={state.startedAt}
-            closesAt={state.closesAt}
-            serverNow={state.serverNow}
-            selectedOptionIds={selectedOptionIds}
-            hasSubmitted={hasSubmitted}
-            onSubmit={submitAnswer}
-          />
-        ) : (
-          <LiveQuestionCard
-            question={state.currentQuestion}
-            startedAt={state.startedAt}
-            closesAt={state.closesAt}
-            serverNow={state.serverNow}
-            optionOrderSeed={optionOrderSeed}
-            selectedOptionIds={selectedOptionIds}
-            selectedText={selectedText}
-            selectedValue={selectedValue}
-            hasSubmitted={hasSubmitted}
-            onSubmit={submitAnswer}
-          />
-        )
-      )}
-
-      {state?.status === 'round_revealed' && (
-        <div className="space-y-6">
-          {state.currentRound?.gameType === 'work_situation' ? (
+        {state?.status === 'round_open' && (
+          state.currentRound?.gameType === 'work_situation' ? (
             <WorkSituationView
               round={state.currentRound}
               startedAt={state.startedAt}
@@ -159,7 +238,7 @@ export default function CompeticaoSala() {
               optionOrderSeed={optionOrderSeed}
               selectedOptionIds={selectedOptionIds}
               hasSubmitted={hasSubmitted}
-              showAnswer
+              onSubmit={confirmAnswer}
             />
           ) : state.currentRound?.gameType === 'priority_order' ? (
             <PriorityOrderView
@@ -169,7 +248,8 @@ export default function CompeticaoSala() {
               serverNow={state.serverNow}
               selectedOptionIds={selectedOptionIds}
               hasSubmitted={hasSubmitted}
-              showAnswer
+              onChange={updatePendingAnswer}
+              onSubmit={confirmAnswer}
             />
           ) : (
             <LiveQuestionCard
@@ -182,25 +262,67 @@ export default function CompeticaoSala() {
               selectedText={selectedText}
               selectedValue={selectedValue}
               hasSubmitted={hasSubmitted}
-              showAnswer
+              onChange={updatePendingAnswer}
+              onSubmit={confirmAnswer}
             />
-          )}
-          {state.aggregatedResult ? (
-            <ParticipatoryResultView result={state.aggregatedResult} />
-          ) : (
-            <CompetitiveResultView entries={state.leaderboard} title="Placar da rodada" />
-          )}
-          <WaitingScreen title="Aguardando próxima rodada" />
-        </div>
-      )}
+          )
+        )}
 
-      {state?.status === 'between_games' && (
-        <BetweenGamesPanel state={state} />
-      )}
+        {state?.status === 'round_revealed' && (
+          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+            <div className="min-h-0">
+              {state.currentRound?.gameType === 'work_situation' ? (
+                <WorkSituationView
+                  round={state.currentRound}
+                  startedAt={state.startedAt}
+                  closesAt={state.closesAt}
+                  serverNow={state.serverNow}
+                  optionOrderSeed={optionOrderSeed}
+                  selectedOptionIds={selectedOptionIds}
+                  hasSubmitted={hasSubmitted}
+                  showAnswer
+                />
+              ) : state.currentRound?.gameType === 'priority_order' ? (
+                <PriorityOrderView
+                  round={state.currentRound}
+                  startedAt={state.startedAt}
+                  closesAt={state.closesAt}
+                  serverNow={state.serverNow}
+                  selectedOptionIds={selectedOptionIds}
+                  hasSubmitted={hasSubmitted}
+                  showAnswer
+                />
+              ) : (
+                <LiveQuestionCard
+                  question={state.currentQuestion}
+                  startedAt={state.startedAt}
+                  closesAt={state.closesAt}
+                  serverNow={state.serverNow}
+                  optionOrderSeed={optionOrderSeed}
+                  selectedOptionIds={selectedOptionIds}
+                  selectedText={selectedText}
+                  selectedValue={selectedValue}
+                  hasSubmitted={hasSubmitted}
+                  showAnswer
+                />
+              )}
+            </div>
+            {state.aggregatedResult ? (
+              <ParticipatoryResultView result={state.aggregatedResult} />
+            ) : (
+              <CompetitiveResultView entries={state.leaderboard} title="Placar da rodada" showRoundDetails={false} />
+            )}
+          </div>
+        )}
 
-      {state?.status === 'finished' && (
-        <FinalPodium entries={state.finalRanking} />
-      )}
+        {state?.status === 'between_games' && (
+          <BetweenGamesPanel state={state} />
+        )}
+
+        {state?.status === 'finished' && (
+          <FinalPodium entries={state.finalRanking} compact />
+        )}
+      </section>
     </PageShell>
   );
 }

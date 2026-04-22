@@ -32,7 +32,7 @@ export default function CompeticaoHost() {
 
   if (!pin) {
     return (
-      <PageShell size="narrow" className="text-gray-900 dark:text-white">
+      <PageShell size="narrow" className="competition-page flex h-full flex-col justify-center overflow-hidden text-gray-900 dark:text-white">
         <PageHeader
           eyebrow="Host"
           title="Criar competição ao vivo"
@@ -58,7 +58,7 @@ export default function CompeticaoHost() {
 
   if (!hasHostToken && !state) {
     return (
-      <PageShell size="narrow">
+      <PageShell size="narrow" className="competition-page flex h-full flex-col justify-center overflow-hidden">
         <FeedbackNotice tone="danger">
           Token de host não encontrado nesta aba. Crie uma nova sala para controlar uma partida.
         </FeedbackNotice>
@@ -72,25 +72,33 @@ export default function CompeticaoHost() {
 
   if (!connected && !state) {
     return (
-      <PageShell size="narrow">
+      <PageShell size="narrow" className="competition-page flex h-full flex-col justify-center overflow-hidden">
         <WaitingScreen title="Conectando à sala" />
       </PageShell>
     );
   }
 
   return (
-    <PageShell size="wide" className="text-gray-900 dark:text-white">
-      <PageHeader
-        eyebrow="Host controle"
-        title={pin ? `Sala ${pin}` : 'Sala ao vivo'}
-      />
-      <HostLobby
-        state={state}
-        displayHref={pin ? `/competicao/exibicao/${pin}` : undefined}
-        error={error}
-        onStart={startGame}
-        onNextRound={nextRound}
-      />
+    <PageShell size="full" className="competition-page flex h-full flex-col overflow-hidden text-gray-900 dark:text-white">
+      <header className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
+        <div>
+          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+            Host controle
+          </span>
+          <h1 className="font-display mt-2 text-2xl font-bold leading-tight text-gray-950 dark:text-white sm:text-3xl">
+            {pin ? `Sala ${pin}` : 'Sala ao vivo'}
+          </h1>
+        </div>
+      </header>
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <HostLobby
+          state={state}
+          displayHref={pin ? `/competicao/exibicao/${pin}` : undefined}
+          error={error}
+          onStart={startGame}
+          onNextRound={nextRound}
+        />
+      </div>
     </PageShell>
   );
 }

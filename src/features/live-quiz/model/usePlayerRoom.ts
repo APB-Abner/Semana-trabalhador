@@ -172,6 +172,7 @@ export default function usePlayerRoom(pin?: string) {
       [currentRound.id]: { optionIds, text, value },
     }));
     setState(response.state);
+    return response;
   }, [emitWithAck, pin, state?.currentQuestion, state?.currentRound]);
 
   return {

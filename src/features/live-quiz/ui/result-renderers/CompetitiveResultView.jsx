@@ -1,5 +1,5 @@
 import LeaderboardPanel from '../LeaderboardPanel.jsx';
 
-export default function CompetitiveResultView({ entries = [], title = 'Placar' }) {
-  return <LeaderboardPanel entries={entries} title={title} />;
+export default function CompetitiveResultView({ entries = [], showRoundDetails = true, title = 'Placar' }) {
+  return <LeaderboardPanel entries={entries} showRoundDetails={showRoundDetails} title={title} />;
 }

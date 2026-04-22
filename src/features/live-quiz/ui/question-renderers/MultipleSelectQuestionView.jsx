@@ -23,6 +23,7 @@ export default function MultipleSelectQuestionView({
   correctOptionIds = [],
   disabled = false,
   hasSubmitted = false,
+  onChange,
   onSubmit,
   question,
   selectedOptionIds = [],
@@ -40,11 +41,14 @@ export default function MultipleSelectQuestionView({
   const toggleOption = (optionId) => {
     if (locked) return;
 
-    setSelectedIds((currentIds) => (
-      currentIds.includes(optionId)
+    setSelectedIds((currentIds) => {
+      const nextIds = currentIds.includes(optionId)
         ? currentIds.filter((currentId) => currentId !== optionId)
-        : [...currentIds, optionId]
-    ));
+        : [...currentIds, optionId];
+
+      onChange?.(nextIds);
+      return nextIds;
+    });
   };
 
   return (
@@ -88,7 +92,7 @@ export default function MultipleSelectQuestionView({
           onClick={() => onSubmit?.(selectedIds)}
           className="mt-4 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 dark:focus:ring-offset-zinc-900"
         >
-          Confirmar resposta
+          {hasSubmitted ? 'Resposta travada' : 'Confirmar resposta'}
         </button>
       )}
     </div>

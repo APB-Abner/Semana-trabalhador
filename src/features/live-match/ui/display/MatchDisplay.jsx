@@ -340,19 +340,22 @@ function BetweenGamesDisplay({ state }) {
 
         <ResultPanel className="projector-panel border-white/10 bg-white/10 p-6 dark:border-white/10 dark:bg-white/10">
           <h3 className="text-2xl font-black text-white">Top 3 agora</h3>
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 space-y-3">
             {topThree.length ? topThree.map((entry, index) => (
               <div
                 key={entry.playerId}
-                className={`grid grid-cols-[2.5rem_4rem_1fr_auto] items-center gap-4 rounded-2xl border px-4 py-4 ${
+                className={`grid grid-cols-[2.75rem_3.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border px-4 py-3 ${
                   index === 0
                     ? 'border-amber-300/50 bg-amber-300/15'
                     : 'border-white/10 bg-slate-950/65'
                 }`}
               >
                 <span className="text-2xl font-black text-blue-100">#{index + 1}</span>
-                <PigeonAvatar avatar={entry.avatar} size="lg" label={`Avatar de ${entry.name}`} />
-                <p className="min-w-0 truncate text-2xl font-black text-white">{entry.name}</p>
+                <PigeonAvatar avatar={entry.avatar} size={58} label={`Avatar de ${entry.name}`} />
+                <div className="min-w-0">
+                  <p className="truncate text-2xl font-black leading-tight text-white">{entry.name}</p>
+                  <p className="text-sm font-bold uppercase tracking-wide text-slate-300">Top {index + 1}</p>
+                </div>
                 <Badge tone={index === 0 ? 'amber' : 'green'}>{entry.score}</Badge>
               </div>
             )) : (

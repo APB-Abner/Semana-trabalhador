@@ -87,6 +87,7 @@ export default function LiveQuestionCard({
   closesAt,
   disabled = false,
   hasSubmitted = false,
+  onChange,
   onSubmit,
   optionOrderSeed = '',
   selectedOptionIds = [],
@@ -171,6 +172,7 @@ export default function LiveQuestionCard({
         correctOptionIds={correctOptionIds}
         disabled={disabled}
         hasSubmitted={hasSubmitted}
+        onChange={onChange}
         onSubmit={onSubmit}
         question={displayedQuestion}
         selectedOptionIds={selectedOptionIds}

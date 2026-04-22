@@ -10,6 +10,7 @@ function moveItem(items, fromIndex, toIndex) {
 export default function RankingQuestionView({
   disabled = false,
   hasSubmitted = false,
+  onChange,
   onSubmit,
   question,
   selectedOptionIds = [],
@@ -29,6 +30,12 @@ export default function RankingQuestionView({
     setOrderedIds(selectedKey ? selectedKey.split('|') : defaultOrder);
   }, [defaultOrder, question.id, selectedKey]);
 
+  useEffect(() => {
+    if (!locked && orderedIds.length) {
+      onChange?.(orderedIds);
+    }
+  }, [locked, onChange, orderedIds]);
+
   const move = (index, direction) => {
     const nextIndex = index + direction;
 
@@ -36,7 +43,11 @@ export default function RankingQuestionView({
       return;
     }
 
-    setOrderedIds((currentIds) => moveItem(currentIds, index, nextIndex));
+    setOrderedIds((currentIds) => {
+      const nextIds = moveItem(currentIds, index, nextIndex);
+      onChange?.(nextIds);
+      return nextIds;
+    });
   };
 
   return (
@@ -90,7 +101,7 @@ export default function RankingQuestionView({
           onClick={() => onSubmit?.(orderedIds)}
           className="mt-4 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-300 dark:focus:ring-offset-zinc-900"
         >
-          Confirmar ranking
+          {hasSubmitted ? 'Ranking travado' : 'Confirmar ranking'}
         </button>
       )}
     </div>

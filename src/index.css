@@ -102,6 +102,57 @@ h3 {
 }
 
 @layer utilities {
+  .competition-page {
+    padding-block: 0.75rem;
+  }
+
+  .competition-page > header {
+    margin-bottom: 0.75rem;
+  }
+
+  .competition-main > div,
+  .competition-main > section {
+    min-height: 0;
+  }
+
+  .competition-main [class*="space-y-"] {
+    min-height: 0;
+  }
+
+  .competition-main [class*="rounded-lg"][class*="border"] {
+    min-height: 0;
+  }
+
+  .competition-main h3 {
+    margin-top: 0.75rem;
+  }
+
+  .competition-main textarea {
+    min-height: 5rem;
+  }
+
+  .competition-main .mt-5 {
+    margin-top: 0.75rem;
+  }
+
+  .competition-main .mt-6 {
+    margin-top: 1rem;
+  }
+
+  .competition-main .p-5 {
+    padding: 1rem;
+  }
+
+  .competition-main .py-3 {
+    padding-block: 0.65rem;
+  }
+
+  .competition-main .space-y-4 > :not([hidden]) ~ :not([hidden]),
+  .competition-main .space-y-5 > :not([hidden]) ~ :not([hidden]),
+  .competition-main .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.75rem;
+  }
+
   .projector-display {
     position: relative;
     background:

@@ -36,7 +36,7 @@ function HostControlPanel({
   return (
     <ResultPanel
       tone="info"
-      className="lg:sticky lg:top-24 lg:z-20"
+      className="shrink-0"
     >
       <div className="grid gap-4 xl:grid-cols-[auto_1fr_auto] xl:items-center">
         <div>
@@ -117,8 +117,8 @@ export default function HostLobby({ state, displayHref, error, onStart, onNextRo
       : null;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_21rem]">
-      <section className="space-y-4">
+    <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_21rem]">
+      <section className="flex min-h-0 flex-col gap-3 overflow-hidden">
         <HostControlPanel
           answeredCount={state.answeredCount}
           connectedCount={connectedPlayers}
@@ -166,7 +166,7 @@ export default function HostLobby({ state, displayHref, error, onStart, onNextRo
                 disabled
               />
             )}
-            <ResultPanel>
+            <ResultPanel className="shrink-0">
               <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                 Respostas recebidas: {state.answeredCount} de {state.players.filter((player) => player.connected).length}
               </p>
@@ -221,7 +221,7 @@ export default function HostLobby({ state, displayHref, error, onStart, onNextRo
         )}
       </section>
 
-      <aside className="xl:sticky xl:top-24 xl:self-start">
+      <aside className="min-h-0 overflow-hidden">
         <PresenceList players={state.players} />
       </aside>
     </div>

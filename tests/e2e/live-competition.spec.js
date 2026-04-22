@@ -49,6 +49,11 @@ async function answerFirstOption(page) {
   await expect(page.locator('main').getByText(/Resposta enviada|Resposta correta|Respostas corretas/).first()).toBeVisible();
 }
 
+async function selectFirstOptionWithoutConfirm(page) {
+  await page.locator('main button[aria-pressed]').first().click();
+  await expect(page.getByRole('button', { name: 'Confirmar resposta' })).toBeEnabled();
+}
+
 async function answerWorkSituationRound(host, ana, bia) {
   await expect(ana.getByText('Situação Profissional').first()).toBeVisible();
   await ana.locator('main button[aria-pressed]').first().click();
@@ -87,7 +92,7 @@ test.beforeAll(async () => {
       ...process.env,
       PORT: '4177',
       CLIENT_ORIGIN: 'http://127.0.0.1:5173',
-      LIVE_QUIZ_ROUND_MS: '10000',
+      LIVE_QUIZ_ROUND_MS: '4500',
     },
     stdio: 'ignore',
   });
@@ -134,9 +139,10 @@ test('live competition supports balanced match minigames', async ({ browser }) =
   await expect(display.getByText('Quiz Relâmpago').first()).toBeVisible();
   await host.getByRole('button', { name: /Iniciar Quiz Relâmpago/ }).click();
   await expect(ana.getByRole('heading', { level: 3 })).toBeVisible();
-  await answerFirstOption(ana);
+  await selectFirstOptionWithoutConfirm(ana);
   await answerFirstOption(bia);
-  await expect(host.getByText('Placar da rodada')).toBeVisible();
+  await expect(host.getByText('Placar da rodada')).toBeVisible({ timeout: 8000 });
+  await expect(ana.locator('main').getByText(/Resposta correta|Respostas corretas/).first()).toBeVisible();
 
   for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {
     await nextRound(host);

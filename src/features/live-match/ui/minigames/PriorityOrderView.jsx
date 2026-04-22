@@ -111,6 +111,7 @@ function SortablePriorityItem({
 export default function PriorityOrderView({
   disabled = false,
   hasSubmitted = false,
+  onChange,
   onSubmit,
   presentationMode = false,
   round,
@@ -153,6 +154,12 @@ export default function PriorityOrderView({
     setOrderedIds(selectedOptionIds.length > 0 ? selectedOptionIds : initialIds);
   }, [initialIds, selectedOptionIds]);
 
+  useEffect(() => {
+    if (!disabled && !hasSubmitted && !showAnswer && orderedIds.length) {
+      onChange?.(orderedIds);
+    }
+  }, [disabled, hasSubmitted, onChange, orderedIds, showAnswer]);
+
   if (!scenario) {
     return null;
   }
@@ -176,7 +183,9 @@ export default function PriorityOrderView({
         return ids;
       }
 
-      return arrayMove(ids, oldIndex, newIndex);
+      const nextIds = arrayMove(ids, oldIndex, newIndex);
+      onChange?.(nextIds);
+      return nextIds;
     });
   };
 
@@ -224,8 +233,16 @@ export default function PriorityOrderView({
                 locked={locked}
                 presentationMode={presentationMode}
                 total={orderedIds.length}
-                onMoveUp={() => setOrderedIds((ids) => moveItem(ids, index, -1))}
-                onMoveDown={() => setOrderedIds((ids) => moveItem(ids, index, 1))}
+                onMoveUp={() => setOrderedIds((ids) => {
+                  const nextIds = moveItem(ids, index, -1);
+                  onChange?.(nextIds);
+                  return nextIds;
+                })}
+                onMoveDown={() => setOrderedIds((ids) => {
+                  const nextIds = moveItem(ids, index, 1);
+                  onChange?.(nextIds);
+                  return nextIds;
+                })}
               />
             ))}
           </div>
