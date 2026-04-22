@@ -6,7 +6,10 @@ import { trackRouteVisit } from '../../features/analytics/lib/analytics.js';
 
 export default function MainLayout() {
   const location = useLocation();
-  const isCompetitionSurface = location.pathname.startsWith('/competicao');
+  const competitionFullscreenPaths = ['/competicao/host', '/competicao/entrar', '/competicao/sala'];
+  const isCompetitionSurface = competitionFullscreenPaths.some((path) => (
+    location.pathname === path || location.pathname.startsWith(`${path}/`)
+  ));
 
   useEffect(() => {
     trackRouteVisit(location.pathname);

@@ -72,6 +72,8 @@ test('direct URLs and reload keep route rendering', async ({ page }) => {
 test('competition route renders without requiring the live backend', async ({ page }) => {
   await page.goto('/competicao');
 
+  await expect(page.locator('[data-app-nav]')).toBeVisible();
+  await expect(page.getByRole('contentinfo')).toBeVisible();
   await expect(page.getByRole('heading', { name: /Competicao Jovem Trabalhador|Competi/ })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Criar sala como host' })).toHaveAttribute('href', '/competicao/host');
   await expect(page.getByRole('link', { name: 'Entrar com PIN' })).toHaveAttribute('href', '/competicao/entrar');
