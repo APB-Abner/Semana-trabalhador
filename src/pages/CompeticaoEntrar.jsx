@@ -20,12 +20,13 @@ export default function CompeticaoEntrar() {
   };
 
   return (
-    <PageShell size="narrow" className="text-gray-900 dark:text-white">
+    <PageShell size="narrow" className="competition-page h-full overflow-y-auto text-gray-900 dark:text-white">
       <PageHeader
         eyebrow="Jogador"
         title="Entrar na competição"
         description="Digite seu nome e o PIN informado pelo host para entrar no lobby."
         align="center"
+        className="mb-5 sm:mb-8"
       />
       {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
       <PlayerJoinForm initialPin={initialPin} onJoin={handleJoin} />

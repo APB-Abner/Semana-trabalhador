@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { PigeonAvatarEditor, useStoredPigeonAvatar } from '../../pigeon-avatar';
+import { PigeonAvatar, PigeonAvatarEditor, useStoredPigeonAvatar } from '../../pigeon-avatar';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 
 export default function PlayerJoinForm({ initialPin = '', onJoin }) {
   const [name, setName] = useState('');
   const [pin, setPin] = useState(initialPin);
   const [loading, setLoading] = useState(false);
+  const [customizerOpen, setCustomizerOpen] = useState(false);
   const {
     avatar,
     resetAvatar,
@@ -63,17 +64,6 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
           />
         </div>
 
-        <div className="border-t border-gray-200 pt-4 dark:border-zinc-800">
-          <PigeonAvatarEditor
-            value={avatar}
-            onChange={setAvatar}
-            onPresetSelect={selectPreset}
-            onSave={saveAvatar}
-            onReset={resetAvatar}
-            compact
-          />
-        </div>
-
         <button
           type="submit"
           disabled={loading}
@@ -81,6 +71,41 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
         >
           {loading ? 'Entrando...' : 'Entrar na sala'}
         </button>
+
+        <div className="border-t border-gray-200 pt-4 dark:border-zinc-800">
+          <button
+            type="button"
+            onClick={() => setCustomizerOpen((open) => !open)}
+            aria-expanded={customizerOpen}
+            className="flex w-full items-center justify-between gap-3 rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 text-left transition hover:border-blue-300 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-blue-700 dark:hover:bg-blue-950"
+          >
+            <span>
+              <span className="block text-sm font-semibold text-gray-900 dark:text-white">Avatar do jogador</span>
+              <span className="block text-xs text-gray-500 dark:text-gray-400">
+                Opcional, pode entrar com o padrão.
+              </span>
+            </span>
+            <span className="flex shrink-0 items-center gap-2">
+              <PigeonAvatar avatar={avatar} size="sm" label="Preview do avatar" />
+              <span className="text-xs font-bold uppercase text-blue-700 dark:text-blue-200">
+                {customizerOpen ? 'Fechar' : 'Editar'}
+              </span>
+            </span>
+          </button>
+
+          {customizerOpen && (
+            <div className="mt-4">
+              <PigeonAvatarEditor
+                value={avatar}
+                onChange={setAvatar}
+                onPresetSelect={selectPreset}
+                onSave={saveAvatar}
+                onReset={resetAvatar}
+                compact
+              />
+            </div>
+          )}
+        </div>
       </form>
     </ResultPanel>
   );

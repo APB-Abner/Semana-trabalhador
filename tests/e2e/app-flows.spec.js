@@ -80,6 +80,9 @@ test('competition route renders without requiring the live backend', async ({ pa
 
   await page.goto('/competicao/entrar?pin=123456');
   await expect(page.getByLabel('PIN da sala')).toHaveValue('123456');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: 'Entrar na sala' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Avatar do jogador/ })).toBeVisible();
 });
 
 test('theme preference persists after reload', async ({ page }) => {
