@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import usePlayerRoom from '../features/live-quiz/model/usePlayerRoom';
 import PlayerJoinForm from '../features/live-quiz/ui/PlayerJoinForm.jsx';
 import FeedbackNotice from '../shared/ui/FeedbackNotice.jsx';
@@ -7,7 +7,9 @@ import PageShell from '../shared/ui/PageShell.jsx';
 
 export default function CompeticaoEntrar() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { error, joinRoom } = usePlayerRoom();
+  const initialPin = (searchParams.get('pin') ?? '').replace(/\D/g, '').slice(0, 6);
 
   const handleJoin = async ({ roomPin, name, avatar }) => {
     const response = await joinRoom({ roomPin, name, avatar });
@@ -26,7 +28,7 @@ export default function CompeticaoEntrar() {
         align="center"
       />
       {error && <FeedbackNotice tone="danger" className="mb-4">{error}</FeedbackNotice>}
-      <PlayerJoinForm onJoin={handleJoin} />
+      <PlayerJoinForm initialPin={initialPin} onJoin={handleJoin} />
     </PageShell>
   );
 }

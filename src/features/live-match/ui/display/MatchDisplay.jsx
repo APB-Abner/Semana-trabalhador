@@ -1,6 +1,7 @@
 import Badge from '../../../../shared/ui/Badge.jsx';
 import FeedbackNotice from '../../../../shared/ui/FeedbackNotice.jsx';
 import ResultPanel from '../../../../shared/ui/ResultPanel.jsx';
+import QRCode from 'react-qr-code';
 import PigeonAvatar from '../../../pigeon-avatar/ui/PigeonAvatar';
 import LiveQuestionCard from '../../../live-quiz/ui/LiveQuestionCard.jsx';
 import CompetitiveResultView from '../../../live-quiz/ui/result-renderers/CompetitiveResultView.jsx';
@@ -57,6 +58,16 @@ const toneStyles = {
 
 function connectedCount(players = []) {
   return players.filter((player) => player.connected).length;
+}
+
+function buildJoinUrl(pin) {
+  const path = `/competicao/entrar?pin=${encodeURIComponent(pin)}`;
+
+  if (typeof window === 'undefined') {
+    return path;
+  }
+
+  return `${window.location.origin}${path}`;
 }
 
 function getDisplayTone(state) {
@@ -146,14 +157,28 @@ function LobbyDisplay({ state }) {
       <div className="grid min-h-[68svh] gap-8 lg:grid-cols-[1.05fr_0.75fr] lg:items-center">
         <div>
           <p className={`text-xl font-black uppercase tracking-[0.2em] ${tone.eyebrow}`}>Partida prestes a começar</p>
-          <div className={`projector-panel mt-6 rounded-3xl border p-8 ${tone.border} ${tone.panel}`}>
-            <p className="text-sm font-black uppercase tracking-[0.22em] text-slate-300">PIN da sala</p>
-            <p className="font-display mt-3 text-[6rem] font-black leading-none tracking-[0.16em] text-white sm:text-[8.5rem] lg:text-[10rem]">
-              {state.pin}
-            </p>
+          <div className={`projector-panel mt-6 grid gap-8 overflow-hidden rounded-3xl border p-8 lg:grid-cols-[minmax(0,1fr)_15.5rem] lg:items-center ${tone.border} ${tone.panel}`}>
+            <div className="min-w-0">
+              <p className="text-sm font-black uppercase tracking-[0.22em] text-slate-300">PIN da sala</p>
+              <p className="font-display mt-3 whitespace-nowrap text-[5rem] font-black leading-none tracking-[0.1em] text-white sm:text-[6.75rem] lg:text-[7.25rem]">
+                {state.pin}
+              </p>
+            </div>
+            <div
+              aria-label="QR Code de entrada"
+              className="justify-self-start rounded-2xl border border-white/20 bg-white p-3.5 shadow-2xl lg:justify-self-end"
+            >
+              <QRCode
+                value={buildJoinUrl(state.pin)}
+                size={210}
+                className="h-[210px] w-[210px]"
+                bgColor="#ffffff"
+                fgColor="#0f172a"
+              />
+            </div>
           </div>
           <p className="mt-7 max-w-3xl text-3xl font-bold leading-tight text-slate-100">
-            Entre com o PIN e prepare-se para 3 desafios rápidos.
+            Entre com o PIN ou escaneie o QR Code.
           </p>
         </div>
 

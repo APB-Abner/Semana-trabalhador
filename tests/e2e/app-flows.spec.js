@@ -77,6 +77,9 @@ test('competition route renders without requiring the live backend', async ({ pa
   await expect(page.getByRole('heading', { name: /Competicao Jovem Trabalhador|Competi/ })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Criar sala como host' })).toHaveAttribute('href', '/competicao/host');
   await expect(page.getByRole('link', { name: 'Entrar com PIN' })).toHaveAttribute('href', '/competicao/entrar');
+
+  await page.goto('/competicao/entrar?pin=123456');
+  await expect(page.getByLabel('PIN da sala')).toHaveValue('123456');
 });
 
 test('theme preference persists after reload', async ({ page }) => {

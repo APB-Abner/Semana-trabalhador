@@ -117,10 +117,12 @@ test('live competition supports balanced match minigames', async ({ browser }) =
   await host.getByRole('button', { name: 'Criar sala' }).click();
   await expect(host).toHaveURL(/\/competicao\/host\/\d{6}$/);
   const pin = host.url().split('/').pop();
+  await expect(host.getByLabel('QR Code de entrada')).toHaveCount(0);
 
   await display.goto(`/competicao/exibicao/${pin}`);
   await expect(display.getByText('Partida prestes a começar')).toBeVisible();
   await expect(display.locator('section').getByText(pin)).toBeVisible();
+  await expect(display.getByLabel('QR Code de entrada').locator('svg')).toBeVisible();
   await expect(display.getByRole('button', { name: 'Iniciar match' })).toHaveCount(0);
 
   for (const [page, name] of [[ana, 'Ana'], [bia, 'Bia']]) {

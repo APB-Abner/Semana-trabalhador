@@ -33,6 +33,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0-rc.2",
+    "react-qr-code": "^2.0.18",
     "react-router-dom": "^7.14.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",

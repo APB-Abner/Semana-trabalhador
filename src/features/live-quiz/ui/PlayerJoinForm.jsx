@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PigeonAvatarEditor, useStoredPigeonAvatar } from '../../pigeon-avatar';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 
@@ -13,6 +13,14 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
     selectPreset,
     setAvatar,
   } = useStoredPigeonAvatar();
+
+  useEffect(() => {
+    const normalizedPin = initialPin.replace(/\D/g, '').slice(0, 6);
+
+    if (normalizedPin) {
+      setPin(normalizedPin);
+    }
+  }, [initialPin]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
