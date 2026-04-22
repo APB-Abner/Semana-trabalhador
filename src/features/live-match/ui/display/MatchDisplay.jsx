@@ -112,7 +112,7 @@ function DisplayHeader({ state }) {
   const tone = getToneClasses(state);
 
   return (
-    <header className="relative z-10 mx-auto flex w-full max-w-[92rem] flex-wrap items-center justify-between gap-4 px-6 py-5 lg:px-10">
+    <header className="relative z-10 mx-auto flex w-full max-w-[92rem] shrink-0 flex-wrap items-center justify-between gap-4 px-6 py-4 lg:px-10">
       <div className="flex flex-wrap items-center gap-4">
         <span className={`rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.18em] ${tone.pill}`}>
           Ao vivo
@@ -140,9 +140,9 @@ function DisplayStage({ children, stageKey, state, wide = false }) {
   return (
     <section
       key={stageKey}
-      className={`projector-stage relative z-10 mx-auto w-full ${wide ? 'max-w-[92rem]' : 'max-w-7xl'} px-6 pb-10 pt-3 animate-display-fade-up lg:px-10`}
+      className={`projector-stage relative z-10 mx-auto flex w-full min-h-0 flex-1 flex-col overflow-hidden ${wide ? 'max-w-[92rem]' : 'max-w-7xl'} px-6 pb-5 pt-2 animate-display-fade-up lg:px-10`}
     >
-      <div className={`mb-6 h-1.5 w-40 rounded-full ${tone.bar}`} />
+      <div className={`mb-4 h-1.5 w-40 shrink-0 rounded-full ${tone.bar}`} />
       {children}
     </section>
   );
@@ -292,7 +292,7 @@ function RoundMeta({ state, showAnswer }) {
     : `${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
 
   return (
-    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <span className={`rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.18em] ${tone.pill}`}>
           {showAnswer ? 'Momento do resultado' : 'Todos respondendo'}
@@ -315,13 +315,13 @@ function RoundDisplay({ state, showAnswer = false }) {
   return (
     <DisplayStage stageKey={stageKey} state={state} wide>
       <RoundMeta state={state} showAnswer={showAnswer} />
-      <div className={showAnswer ? 'grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_28rem]' : ''}>
-        <div className="projector-round-shell">
+      <div className={showAnswer ? 'grid min-h-0 flex-1 gap-5 overflow-hidden xl:grid-cols-[minmax(0,1fr)_27rem]' : 'min-h-0 flex-1 overflow-hidden'}>
+        <div className="projector-round-shell min-h-0 overflow-hidden">
           <RoundContent state={state} showAnswer={showAnswer} />
         </div>
 
         {showAnswer && (
-          <div className="projector-result-shell">
+          <div className="projector-result-shell min-h-0 overflow-hidden">
             {state.aggregatedResult ? (
               <ParticipatoryResultView result={state.aggregatedResult} />
             ) : (
@@ -398,7 +398,7 @@ function BetweenGamesDisplay({ state }) {
 export default function MatchDisplay({ state, error }) {
   if (!state) {
     return (
-      <div className="projector-display dark flex min-h-screen items-center justify-center px-6 text-white">
+      <div className="projector-display dark flex h-screen items-center justify-center overflow-hidden px-6 text-white">
         <div className="relative z-10 text-center">
           <p className="text-sm font-black uppercase tracking-[0.2em] text-blue-200">Exibição</p>
           <h1 className="mt-3 text-5xl font-black">Conectando à sala</h1>
@@ -409,7 +409,7 @@ export default function MatchDisplay({ state, error }) {
   }
 
   return (
-    <div className="projector-display dark min-h-screen overflow-hidden text-white">
+    <div className="projector-display dark flex h-screen max-h-screen flex-col overflow-hidden text-white">
       <DisplayHeader state={state} />
 
       {error && (

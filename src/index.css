@@ -192,25 +192,50 @@ h3 {
     border-color: rgba(255, 255, 255, 0.16) !important;
     background: rgba(15, 23, 42, 0.84) !important;
     box-shadow: 0 28px 80px rgba(0, 0, 0, 0.32);
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .projector-round-shell h3 {
-    font-size: clamp(2.35rem, 4.4vw, 5rem);
-    line-height: 1.04;
+    font-size: clamp(2rem, 3.15vw, 3.75rem);
+    line-height: 1.06;
   }
 
   .projector-round-shell button,
   .projector-round-shell [aria-pressed] {
-    font-size: clamp(1rem, 1.3vw, 1.35rem);
+    font-size: clamp(0.95rem, 1.05vw, 1.15rem);
+  }
+
+  .projector-round-shell button[aria-pressed] {
+    padding-block: 0.7rem;
+  }
+
+  .projector-round-shell .mt-5,
+  .projector-result-shell .mt-5,
+  .projector-round-shell .mt-6,
+  .projector-result-shell .mt-6 {
+    margin-top: 0.9rem;
+  }
+
+  .projector-round-shell .gap-3 {
+    gap: 0.65rem;
   }
 
   .projector-round-shell .text-sm,
   .projector-result-shell .text-sm {
-    font-size: clamp(0.95rem, 1vw, 1.15rem);
+    font-size: clamp(0.9rem, 0.92vw, 1.05rem);
   }
 
   .projector-result-shell h3 {
-    font-size: clamp(1.45rem, 2vw, 2.2rem);
+    font-size: clamp(1.35rem, 1.75vw, 2rem);
+  }
+
+  .projector-result-shell > div {
+    padding: 1.5rem !important;
+  }
+
+  .projector-result-shell .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.55rem;
   }
 
   @keyframes display-fade-up {

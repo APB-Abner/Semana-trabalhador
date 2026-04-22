@@ -54,6 +54,12 @@ async function selectFirstOptionWithoutConfirm(page) {
   await expect(page.getByRole('button', { name: 'Confirmar resposta' })).toBeEnabled();
 }
 
+async function expectNoViewportScroll(page) {
+  await expect.poll(async () => page.evaluate(() => (
+    document.documentElement.scrollHeight <= window.innerHeight + 2
+  ))).toBe(true);
+}
+
 async function answerWorkSituationRound(host, ana, bia) {
   await expect(ana.getByText('Situação Profissional').first()).toBeVisible();
   await ana.locator('main button[aria-pressed]').first().click();
@@ -145,6 +151,7 @@ test('live competition supports balanced match minigames', async ({ browser }) =
   await answerFirstOption(bia);
   await expect(host.getByText('Placar da rodada')).toBeVisible({ timeout: 8000 });
   await expect(ana.locator('main').getByText(/Resposta correta|Respostas corretas/).first()).toBeVisible();
+  await expectNoViewportScroll(display);
 
   for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {
     await nextRound(host);
