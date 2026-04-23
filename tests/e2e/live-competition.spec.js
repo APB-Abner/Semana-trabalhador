@@ -46,7 +46,7 @@ async function answerFirstOption(page) {
     await page.locator('main button[aria-pressed]').first().click();
   }
 
-  await expect(page.locator('main').getByText(/Resposta enviada|Resposta correta|Respostas corretas/).first()).toBeVisible();
+  await expect(page.locator('main').getByText(/Resposta enviada|Explicação|Melhor decisão|Melhor resposta/).first()).toBeVisible();
 }
 
 async function selectFirstOptionWithoutConfirm(page) {
@@ -67,7 +67,7 @@ async function answerWorkSituationRound(host, ana, bia) {
   await bia.locator('main button[aria-pressed]').nth(1).click();
   await expect(ana.getByText(/Melhor decisão:/)).toBeVisible();
   await expect(host.getByText(/Melhor decisão:/)).toBeVisible();
-  await expect(host.getByText('Distribuição das escolhas')).toBeVisible();
+  await expect(host.getByText(/voto\(s\)/).first()).toBeVisible();
   await expect(host.getByText('Placar da rodada')).toBeVisible();
 }
 
@@ -151,7 +151,7 @@ test('live competition supports balanced match minigames', async ({ browser }) =
   await selectFirstOptionWithoutConfirm(ana);
   await answerFirstOption(bia);
   await expect(host.getByText('Placar da rodada')).toBeVisible({ timeout: 8000 });
-  await expect(ana.locator('main').getByText(/Resposta correta|Respostas corretas/).first()).toBeVisible();
+  await expect(ana.locator('main').getByText('Explicação').first()).toBeVisible();
   await expectNoViewportScroll(display);
 
   for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {

@@ -4,6 +4,8 @@ import CtaButtonRow from '../../../../shared/ui/CtaButtonRow.jsx';
 import FeedbackNotice from '../../../../shared/ui/FeedbackNotice.jsx';
 import ProgressBar from '../../../../shared/ui/ProgressBar.jsx';
 import ResultPanel from '../../../../shared/ui/ResultPanel.jsx';
+import RevealOptionMeter from '../../../live-quiz/ui/RevealOptionMeter.jsx';
+import { getRevealOptionCardClass } from '../../../live-quiz/ui/revealOptionStyles.js';
 
 function getClockOffset(serverNow) {
   return Number.isFinite(serverNow) ? serverNow - Date.now() : 0;
@@ -102,6 +104,13 @@ export default function FindTheMistakeView({
           const isCorrectMarked = showAnswer && selected && revealedOption?.isMistake;
           const isMissed = showAnswer && !selected && revealedOption?.isMistake;
           const isFalsePositive = showAnswer && selected && !revealedOption?.isMistake;
+          const revealTone = isCorrectMarked
+            ? 'green'
+            : isMissed
+              ? 'amber'
+              : isFalsePositive
+                ? 'red'
+                : 'gray';
 
           return (
             <button
@@ -111,15 +120,11 @@ export default function FindTheMistakeView({
               disabled={locked}
               onClick={() => updateSelectedIds(toggleId(selectedIds, option.id))}
               className={`flex w-full items-start gap-3 rounded-lg border px-4 py-3 text-left text-sm font-semibold transition ${
-                isCorrectMarked
-                  ? 'border-green-500 bg-green-50 text-green-950 dark:bg-green-950/50 dark:text-green-100'
-                  : isMissed
-                    ? 'border-amber-500 bg-amber-50 text-amber-950 dark:bg-amber-950/50 dark:text-amber-100'
-                    : isFalsePositive
-                      ? 'border-red-400 bg-red-50 text-red-950 dark:bg-red-950/50 dark:text-red-100'
-                      : selected
-                        ? 'border-blue-500 bg-blue-50 text-blue-950 dark:bg-blue-950/50 dark:text-blue-100'
-                        : 'border-gray-200 bg-white text-gray-800 hover:border-amber-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-gray-100'
+                showAnswer && revealedOption
+                  ? getRevealOptionCardClass(revealTone, selected)
+                  : selected
+                    ? 'border-blue-500 bg-blue-50 text-blue-950 dark:bg-blue-950/50 dark:text-blue-100'
+                    : 'border-gray-200 bg-white text-gray-800 hover:border-amber-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-gray-100'
               } disabled:cursor-not-allowed disabled:opacity-85`}
             >
               <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs ${selected ? 'border-current bg-current text-white dark:text-zinc-950' : 'border-gray-300 dark:border-zinc-600'}`}>
@@ -131,6 +136,13 @@ export default function FindTheMistakeView({
                   <span className="mt-1 block text-xs font-normal opacity-85">
                     {revealedOption.isMistake ? 'Era erro.' : 'Não era erro.'} {revealedOption.explanation}
                   </span>
+                )}
+                {showAnswer && revealedOption && (
+                  <RevealOptionMeter
+                    count={revealedOption.count}
+                    percentage={revealedOption.percentage}
+                    tone={revealTone}
+                  />
                 )}
               </span>
             </button>

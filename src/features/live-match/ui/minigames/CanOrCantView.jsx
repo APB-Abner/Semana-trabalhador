@@ -3,6 +3,8 @@ import Badge from '../../../../shared/ui/Badge.jsx';
 import FeedbackNotice from '../../../../shared/ui/FeedbackNotice.jsx';
 import ProgressBar from '../../../../shared/ui/ProgressBar.jsx';
 import ResultPanel from '../../../../shared/ui/ResultPanel.jsx';
+import RevealOptionMeter from '../../../live-quiz/ui/RevealOptionMeter.jsx';
+import { getRevealOptionCardClass } from '../../../live-quiz/ui/revealOptionStyles.js';
 
 function getClockOffset(serverNow) {
   return Number.isFinite(serverNow) ? serverNow - Date.now() : 0;
@@ -82,6 +84,14 @@ export default function CanOrCantView({
           const selected = selectedOptionId === option.id;
           const isCorrect = showAnswer && reveal?.correctAnswer === option.id;
           const isWrongSelected = showAnswer && selected && reveal?.correctAnswer !== option.id;
+          const revealOption = reveal?.options.find((candidate) => candidate.optionId === option.id);
+          const revealTone = isCorrect && selected
+            ? 'green'
+            : isCorrect
+              ? 'amber'
+              : isWrongSelected
+                ? 'red'
+                : 'gray';
 
           return (
             <button
@@ -90,17 +100,30 @@ export default function CanOrCantView({
               aria-pressed={selected}
               disabled={locked}
               onClick={() => onSubmit?.(option.id)}
-              className={`rounded-lg border px-5 py-4 text-left text-base font-bold transition ${
-                isCorrect
-                  ? 'border-green-500 bg-green-50 text-green-950 dark:bg-green-950/50 dark:text-green-100'
-                  : isWrongSelected
-                    ? 'border-red-400 bg-red-50 text-red-950 dark:bg-red-950/50 dark:text-red-100'
-                    : selected
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-950 dark:bg-emerald-950/50 dark:text-emerald-100'
-                      : 'border-gray-200 bg-white text-gray-800 hover:border-emerald-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-gray-100'
+              className={`rounded-lg border px-5 py-3 text-left text-base font-bold transition ${
+                showAnswer
+                  ? getRevealOptionCardClass(revealTone, selected)
+                  : selected
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-950 dark:bg-emerald-950/50 dark:text-emerald-100'
+                    : 'border-gray-200 bg-white text-gray-800 hover:border-emerald-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-gray-100'
               } disabled:cursor-not-allowed disabled:opacity-85`}
             >
-              {option.text}
+              <span className="flex flex-wrap items-center gap-2">
+                <span>{option.text}</span>
+                {showAnswer && selected && (
+                  <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-white">
+                    Sua escolha
+                  </span>
+                )}
+                {showAnswer && isCorrect && !selected && (
+                  <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-amber-950">
+                    Correta
+                  </span>
+                )}
+              </span>
+              {showAnswer && revealOption && (
+                <RevealOptionMeter count={revealOption.count} percentage={revealOption.percentage} tone={revealTone} />
+              )}
             </button>
           );
         })}
@@ -115,20 +138,10 @@ export default function CanOrCantView({
       {showAnswer && reveal && (
         <FeedbackNotice
           tone={selectedOptionId ? (selectedOptionId === reveal.correctAnswer ? 'success' : 'danger') : 'info'}
-          className="mt-4 text-sm"
+          className="mt-3 text-sm"
         >
-          <p className="font-semibold">
-            Resposta correta: {item.options.find((option) => option.id === reveal.correctAnswer)?.text}.
-          </p>
+          <p className="font-semibold">Por quê?</p>
           <p className="mt-1">{reveal.explanation}</p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {reveal.options.map((option) => (
-              <div key={option.optionId} className="rounded-md border border-current/20 px-3 py-2">
-                <span className="font-semibold">{option.text}</span>
-                <span className="ml-2 text-xs">{option.count} voto(s) · {option.percentage}%</span>
-              </div>
-            ))}
-          </div>
         </FeedbackNotice>
       )}
     </ResultPanel>

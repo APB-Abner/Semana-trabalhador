@@ -4,11 +4,24 @@ import FeedbackNotice from '../../../../shared/ui/FeedbackNotice.jsx';
 import ProgressBar from '../../../../shared/ui/ProgressBar.jsx';
 import ResultPanel from '../../../../shared/ui/ResultPanel.jsx';
 import { shuffleOptionsForPlayer } from '../../../live-quiz/lib/optionShuffle.js';
-import WorkSituationReveal from './WorkSituationReveal.jsx';
+import RevealOptionMeter from '../../../live-quiz/ui/RevealOptionMeter.jsx';
+import { getRevealOptionCardClass } from '../../../live-quiz/ui/revealOptionStyles.js';
 
 function getClockOffset(serverNow) {
   return Number.isFinite(serverNow) ? serverNow - Date.now() : 0;
 }
+
+const qualityLabels = {
+  best: 'Melhor',
+  ok: 'Aceitável',
+  poor: 'Ruim',
+};
+
+const qualityTones = {
+  best: 'green',
+  ok: 'amber',
+  poor: 'red',
+};
 
 export default function WorkSituationView({
   disabled = false,
@@ -49,6 +62,7 @@ export default function WorkSituationView({
     () => shuffleOptionsForPlayer(situation?.options ?? [], `${optionOrderSeed}:${round?.id ?? ''}`),
     [optionOrderSeed, round?.id, situation?.options],
   );
+  const selectedRevealOption = reveal?.options.find((option) => option.optionId === selectedOptionId);
 
   if (!situation) {
     return null;
@@ -88,8 +102,7 @@ export default function WorkSituationView({
         {displayedOptions.map((option, index) => {
           const selected = selectedOptionId === option.id;
           const revealedOption = reveal?.options.find((candidate) => candidate.optionId === option.id);
-          const isBest = reveal?.bestOptionId === option.id;
-          const isPoorSelected = showAnswer && selected && revealedOption?.quality === 'poor';
+          const revealTone = qualityTones[revealedOption?.quality] ?? 'gray';
 
           return (
             <button
@@ -99,19 +112,34 @@ export default function WorkSituationView({
               disabled={locked}
               onClick={() => onSubmit?.(option.id)}
               className={`w-full rounded-lg border px-4 py-3 text-left transition ${
-                isBest && showAnswer
-                  ? 'border-green-500 bg-green-50 text-green-950 dark:bg-green-950/50 dark:text-green-100'
-                  : isPoorSelected
-                    ? 'border-red-400 bg-red-50 text-red-950 dark:bg-red-950/50 dark:text-red-100'
-                    : selected
-                      ? 'border-amber-500 bg-amber-50 text-amber-950 dark:bg-amber-950/50 dark:text-amber-100'
-                      : 'border-gray-200 bg-white text-gray-800 hover:border-amber-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-gray-100'
+                showAnswer && revealedOption
+                  ? getRevealOptionCardClass(revealTone, selected)
+                  : selected
+                    ? 'border-amber-500 bg-amber-50 text-amber-950 dark:bg-amber-950/50 dark:text-amber-100'
+                    : 'border-gray-200 bg-white text-gray-800 hover:border-amber-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-gray-100'
               } disabled:cursor-not-allowed disabled:opacity-85`}
             >
-              <span className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                Ação {index + 1}
+              <span className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide opacity-75">
+                <span>Ação {index + 1}</span>
+                {showAnswer && revealedOption && (
+                  <span className="rounded-full bg-black/10 px-2 py-0.5 dark:bg-white/15">
+                    {qualityLabels[revealedOption.quality] ?? revealedOption.quality}
+                  </span>
+                )}
+                {showAnswer && selected && (
+                  <span className="rounded-full bg-blue-600 px-2 py-0.5 text-white">
+                    Sua escolha
+                  </span>
+                )}
               </span>
               <span className="mt-1 block font-semibold">{option.text}</span>
+              {showAnswer && revealedOption && (
+                <RevealOptionMeter
+                  count={revealedOption.count}
+                  percentage={revealedOption.percentage}
+                  tone={revealTone}
+                />
+              )}
             </button>
           );
         })}
@@ -123,8 +151,19 @@ export default function WorkSituationView({
         </FeedbackNotice>
       )}
 
-      {showAnswer && (
-        <WorkSituationReveal reveal={reveal} selectedOptionId={selectedOptionId} />
+      {showAnswer && reveal && (
+        <FeedbackNotice
+          tone={selectedRevealOption?.quality === 'best' ? 'success' : selectedRevealOption?.quality === 'poor' ? 'danger' : 'info'}
+          className="mt-3 text-sm"
+        >
+          <p className="font-semibold">Melhor decisão: {reveal.options.find((option) => option.optionId === reveal.bestOptionId)?.text}</p>
+          <p className="mt-1">{reveal.explanation}</p>
+          {selectedRevealOption && (
+            <p className="mt-2">
+              Sua escolha: {selectedRevealOption.feedback}
+            </p>
+          )}
+        </FeedbackNotice>
       )}
     </ResultPanel>
   );

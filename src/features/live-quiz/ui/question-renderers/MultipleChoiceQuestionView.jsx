@@ -1,12 +1,19 @@
+import RevealOptionMeter from '../RevealOptionMeter.jsx';
+import { getRevealOptionCardClass } from '../revealOptionStyles.js';
+
 const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 function getOptionClass({ correct, selected, wrongSelection }) {
+  if (correct && selected) {
+    return getRevealOptionCardClass('green', true);
+  }
+
   if (correct) {
-    return 'border-green-400 bg-green-50 text-green-900 dark:border-green-600 dark:bg-green-950 dark:text-green-100';
+    return getRevealOptionCardClass('amber');
   }
 
   if (wrongSelection) {
-    return 'border-red-400 bg-red-50 text-red-900 dark:border-red-600 dark:bg-red-950 dark:text-red-100';
+    return getRevealOptionCardClass('red', true);
   }
 
   if (selected) {
@@ -28,6 +35,7 @@ export default function MultipleChoiceQuestionView({
 }) {
   const locked = disabled || hasSubmitted || showAnswer;
   const selectedOptionId = selectedOptionIds[0];
+  const statsByOptionId = new Map((question.optionStats ?? []).map((stat) => [stat.optionId, stat]));
 
   const selectOption = (optionId) => {
     if (locked) {
@@ -49,6 +57,14 @@ export default function MultipleChoiceQuestionView({
           const selected = selectedOptionId === option.id;
           const correct = showAnswer && correctOptionIds.includes(option.id);
           const wrongSelection = showAnswer && selected && !correct;
+          const stat = statsByOptionId.get(option.id);
+          const revealTone = correct && selected
+            ? 'green'
+            : correct
+              ? 'amber'
+              : wrongSelection
+                ? 'red'
+                : 'gray';
 
           return (
             <button
@@ -57,12 +73,29 @@ export default function MultipleChoiceQuestionView({
               disabled={locked}
               onClick={() => selectOption(option.id)}
               aria-pressed={selected}
-              className={`grid grid-cols-[2rem_1fr] items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default dark:focus:ring-offset-zinc-900 ${getOptionClass({ correct, selected, wrongSelection })}`}
+              className={`grid grid-cols-[2rem_minmax(0,1fr)] items-start gap-3 rounded-lg border px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:cursor-default dark:focus:ring-offset-zinc-900 ${getOptionClass({ correct, selected, wrongSelection })}`}
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-100 text-xs font-bold text-gray-600 dark:bg-zinc-800 dark:text-gray-300">
                 {optionLetters[index] ?? index + 1}
               </span>
-              <span>{option.text}</span>
+              <span className="min-w-0">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span>{option.text}</span>
+                  {showAnswer && selected && (
+                    <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-white">
+                      Sua escolha
+                    </span>
+                  )}
+                  {showAnswer && correct && !selected && (
+                    <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-amber-950">
+                      Correta
+                    </span>
+                  )}
+                </span>
+                {showAnswer && stat && (
+                  <RevealOptionMeter count={stat.count} percentage={stat.percentage} tone={revealTone} />
+                )}
+              </span>
             </button>
           );
         })}

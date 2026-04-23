@@ -135,10 +135,6 @@ export default function LiveQuestionCard({
   const hasCorrectAnswer = correctOptionIds.length > 0;
   const selectedIsCorrect = showAnswer && sameOptionSet(selectedOptionIds, correctOptionIds);
   const QuestionRenderer = getQuestionRenderer(question.type);
-  const correctOptionTexts = question.options
-    .filter((option) => correctOptionIds.includes(option.id))
-    .map((option) => option.text)
-    .join(', ');
   const submittedMessage = submittedMessages[question.type] ?? 'Resposta enviada. Aguarde o resultado da rodada.';
 
   return (
@@ -188,16 +184,14 @@ export default function LiveQuestionCard({
       )}
 
       {showAnswer && hasCorrectAnswer && (
-        <FeedbackNotice tone={selectedIsCorrect ? 'success' : 'info'} className="mt-4 text-sm">
-          <p className="font-semibold">
-            {question.type === 'multiple_select' ? 'Respostas corretas' : 'Resposta correta'}: {correctOptionTexts}
-          </p>
+        <FeedbackNotice tone={selectedIsCorrect ? 'success' : 'info'} className="mt-3 text-sm">
+          <p className="font-semibold">Explicação</p>
           {question.explanation && <p className="mt-1">{question.explanation}</p>}
         </FeedbackNotice>
       )}
 
       {showAnswer && !hasCorrectAnswer && question.explanation && (
-        <FeedbackNotice tone="info" className="mt-4 text-sm">
+        <FeedbackNotice tone="info" className="mt-3 text-sm">
           {question.explanation}
         </FeedbackNotice>
       )}

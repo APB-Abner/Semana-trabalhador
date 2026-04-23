@@ -59,6 +59,13 @@ export type LiveQuestionOption = {
   text: string;
 };
 
+export type LiveQuestionOptionStat = {
+  optionId: string;
+  text: string;
+  count: number;
+  percentage: number;
+};
+
 export type LiveScaleConfig = {
   min: number;
   max: number;
@@ -88,6 +95,7 @@ export type PublicLiveQuestion = Omit<LiveQuestion, 'correctOptionId' | 'correct
   correctOptionId?: string;
   correctOptionIds?: string[];
   explanation?: string;
+  optionStats?: LiveQuestionOptionStat[];
 };
 
 export type WorkSituationOptionQuality = 'best' | 'ok' | 'poor';

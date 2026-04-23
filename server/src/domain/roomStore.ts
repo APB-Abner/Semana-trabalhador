@@ -118,7 +118,22 @@ function assertQuestions(questions: LiveQuestion[]) {
   questions.forEach(validateLiveQuestion);
 }
 
-function toPublicQuestion(question: LiveQuestion | null, revealAnswer: boolean) {
+function createLiveQuestionOptionStats(question: LiveQuestion, answers: PlayerAnswer[]) {
+  const totalResponses = answers.length;
+
+  return question.options.map((option) => {
+    const count = answers.filter((answer) => answer.optionIds.includes(option.id)).length;
+
+    return {
+      optionId: option.id,
+      text: option.text,
+      count,
+      percentage: totalResponses > 0 ? Math.round((count / totalResponses) * 100) : 0,
+    };
+  });
+}
+
+function toPublicQuestion(question: LiveQuestion | null, revealAnswer: boolean, answers: PlayerAnswer[] = []) {
   if (!question) {
     return null;
   }
@@ -141,6 +156,7 @@ function toPublicQuestion(question: LiveQuestion | null, revealAnswer: boolean) 
     correctOptionId: question.correctOptionId,
     correctOptionIds: question.correctOptionIds,
     explanation: question.explanation,
+    optionStats: createLiveQuestionOptionStats(question, answers),
   };
 }
 
@@ -251,7 +267,7 @@ export function createRoomStore({
       return {
         id: matchRound.id,
         gameType: 'quick_quiz',
-        question: toPublicQuestion(matchRound.question, revealAnswer),
+        question: toPublicQuestion(matchRound.question, revealAnswer, answers),
       };
     }
 
@@ -335,7 +351,7 @@ export function createRoomStore({
       players: [...room.players.values()].map(({ token: _token, ...player }) => player),
       currentQuestionIndex: room.currentQuestionIndex,
       totalQuestions: room.rounds.length,
-      currentQuestion: toPublicQuestion(currentQuestion, revealAnswer),
+      currentQuestion: toPublicQuestion(currentQuestion, revealAnswer, answers),
       startedAt: room.round?.startedAt ?? null,
       closesAt: room.round?.closesAt ?? null,
       answeredCount: room.round?.answers.size ?? 0,
