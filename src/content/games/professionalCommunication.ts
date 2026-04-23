@@ -10,6 +10,9 @@ export type CommunicationOption = {
 export type ProfessionalCommunicationScenario = {
   id: string;
   topic: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  contentGroup?: string;
+  sessionTags?: string[];
   title: string;
   scenario: string;
   bestOptionId: string;
@@ -172,6 +175,110 @@ export const professionalCommunicationScenarios: ProfessionalCommunicationScenar
       { id: 'status-objective', quality: 'best', text: '“Concluí 70%. Falta validar os dados de duas linhas e devo enviar até 15h30.”', feedback: 'É objetivo e permite acompanhamento real.' },
       { id: 'status-vague', quality: 'ok', text: '“Está indo.”', feedback: 'Responde, mas não informa avanço nem previsão.' },
       { id: 'status-defensive', quality: 'poor', text: '“Calma, eu já disse que estou fazendo.”', feedback: 'O tom defensivo prejudica a relação e não dá visibilidade.' },
+    ],
+  },
+  {
+    id: 'comm-document-missing',
+    topic: 'Documentos',
+    title: 'Documento pendente',
+    scenario: 'O RH pediu um documento que você ainda não encontrou.',
+    bestOptionId: 'doc-clear-deadline',
+    learningPoint: 'A melhor resposta informa status real e combina prazo de envio.',
+    options: [
+      { id: 'doc-clear-deadline', quality: 'best', text: '“Ainda estou localizando o documento. Consigo enviar até amanhã às 10h. Esse prazo atende?”', feedback: 'Dá contexto, previsão e abre espaço para ajuste.' },
+      { id: 'doc-later', quality: 'ok', text: '“Depois eu mando.”', feedback: 'Avisa que não será agora, mas falta prazo claro.' },
+      { id: 'doc-ignore', quality: 'poor', text: 'Não responder até encontrar.', feedback: 'Sem resposta, o processo pode ficar travado sem previsão.' },
+    ],
+  },
+  {
+    id: 'comm-correction-sent',
+    topic: 'Erro',
+    title: 'Mensagem enviada com erro',
+    scenario: 'Você percebeu que enviou uma informação errada no grupo da equipe.',
+    bestOptionId: 'correction-direct',
+    learningPoint: 'Correção boa é rápida, objetiva e deixa a informação certa visível.',
+    options: [
+      { id: 'correction-direct', quality: 'best', text: '“Corrigindo a informação anterior: o prazo correto é quinta-feira às 15h. Desculpem a confusão.”', feedback: 'Corrige sem enrolar e reduz ruído.' },
+      { id: 'correction-delete', quality: 'ok', text: 'Apagar a mensagem e mandar outra sem explicar.', feedback: 'Corrige parcialmente, mas pode deixar dúvidas em quem já leu.' },
+      { id: 'correction-hide', quality: 'poor', text: 'Deixar como está para ninguém perceber.', feedback: 'Erro não corrigido pode impactar a rotina da equipe.' },
+    ],
+  },
+  {
+    id: 'comm-ask-shift-change',
+    topic: 'Rotina',
+    title: 'Troca de horário',
+    scenario: 'Você precisa pedir uma troca pontual de horário por causa de uma prova.',
+    bestOptionId: 'shift-formal',
+    learningPoint: 'Pedido profissional explica motivo, data e proposta de compensação quando necessário.',
+    options: [
+      { id: 'shift-formal', quality: 'best', text: '“Tenho prova na terça às 14h. Posso ajustar meu horário nesse dia ou há outra orientação?”', feedback: 'É claro, respeitoso e pede validação.' },
+      { id: 'shift-short', quality: 'ok', text: '“Não vou poder ir no horário de terça.”', feedback: 'Comunica o problema, mas não traz contexto nem alternativa.' },
+      { id: 'shift-demand', quality: 'poor', text: '“Vou trocar meu horário terça, beleza?”', feedback: 'Decide sozinho algo que precisa de autorização.' },
+    ],
+  },
+  {
+    id: 'comm-learn-process',
+    topic: 'Aprendizado',
+    title: 'Aprender processo',
+    scenario: 'Uma pessoa da equipe explicou um processo rápido, mas você não conseguiu acompanhar tudo.',
+    bestOptionId: 'process-checklist',
+    learningPoint: 'Pedir um resumo ou checklist evita repetir dúvida e melhora autonomia.',
+    options: [
+      { id: 'process-checklist', quality: 'best', text: '“Pode me confirmar os passos principais? Vou anotar para não precisar perguntar de novo.”', feedback: 'Mostra compromisso com aprendizado e organização.' },
+      { id: 'process-repeat', quality: 'ok', text: '“Pode repetir tudo?”', feedback: 'Ajuda, mas poderia direcionar melhor a dúvida.' },
+      { id: 'process-pretend', quality: 'poor', text: 'Fingir que entendeu para não parecer perdido.', feedback: 'Isso aumenta chance de erro depois.' },
+    ],
+  },
+  {
+    id: 'comm-client-wait',
+    topic: 'Atendimento',
+    title: 'Cliente aguardando',
+    scenario: 'Você precisa deixar uma pessoa aguardando enquanto confirma uma informação.',
+    bestOptionId: 'wait-time',
+    learningPoint: 'Boa comunicação de espera informa o que será feito e quanto tempo pode levar.',
+    options: [
+      { id: 'wait-time', quality: 'best', text: '“Vou confirmar essa informação com o setor responsável. Pode aguardar cerca de 5 minutos?”', feedback: 'Explica a ação e dá expectativa de tempo.' },
+      { id: 'wait-generic', quality: 'ok', text: '“Só um minuto.”', feedback: 'É educado, mas pode virar frustração se demorar mais.' },
+      { id: 'wait-silent', quality: 'poor', text: 'Sair para perguntar sem avisar nada.', feedback: 'A pessoa fica sem saber se foi atendida ou esquecida.' },
+    ],
+  },
+  {
+    id: 'comm-boundary',
+    topic: 'Limites',
+    title: 'Tarefa fora de orientação',
+    scenario: 'Pedem que você faça algo que parece fora da orientação recebida.',
+    bestOptionId: 'boundary-validate',
+    learningPoint: 'Validar limite antes de agir protege você e a empresa.',
+    options: [
+      { id: 'boundary-validate', quality: 'best', text: '“Antes de fazer, posso confirmar se essa atividade está dentro da minha orientação?”', feedback: 'Questiona com respeito e segurança.' },
+      { id: 'boundary-do', quality: 'poor', text: 'Fazer sem perguntar para mostrar disposição.', feedback: 'Disposição sem validação pode gerar risco.' },
+      { id: 'boundary-refuse', quality: 'ok', text: '“Não vou fazer isso.”', feedback: 'Pode ser necessário, mas falta pedir orientação e explicar o motivo.' },
+    ],
+  },
+  {
+    id: 'comm-absence',
+    topic: 'Ausência',
+    title: 'Falta inesperada',
+    scenario: 'Você teve um imprevisto familiar e não conseguirá comparecer.',
+    bestOptionId: 'absence-early',
+    learningPoint: 'Aviso de ausência precisa ser cedo, direto e pelo canal combinado.',
+    options: [
+      { id: 'absence-early', quality: 'best', text: '“Tive um imprevisto familiar e não conseguirei comparecer hoje. Vou encaminhar a justificativa pelo canal combinado.”', feedback: 'Informa o essencial e sinaliza documentação.' },
+      { id: 'absence-friend', quality: 'ok', text: 'Pedir para um colega avisar por você.', feedback: 'Pode ajudar em emergência, mas o ideal é comunicação direta quando possível.' },
+      { id: 'absence-late', quality: 'poor', text: 'Avisar apenas no dia seguinte.', feedback: 'Tarde demais para a equipe se organizar.' },
+    ],
+  },
+  {
+    id: 'comm-priority-ask',
+    topic: 'Prioridade',
+    title: 'Duas demandas ao mesmo tempo',
+    scenario: 'Duas pessoas pediram tarefas para o mesmo horário e você não conseguirá fazer as duas.',
+    bestOptionId: 'priority-align',
+    learningPoint: 'Alinhar prioridade evita escolher no improviso e atrasar a demanda errada.',
+    options: [
+      { id: 'priority-align', quality: 'best', text: '“Recebi as demandas A e B para o mesmo horário. Qual devo priorizar primeiro?”', feedback: 'Traz o conflito com clareza e pede decisão.' },
+      { id: 'priority-guess', quality: 'ok', text: 'Escolher a que parece mais fácil.', feedback: 'Pode resolver uma parte, mas não garante prioridade correta.' },
+      { id: 'priority-panic', quality: 'poor', text: 'Tentar fazer tudo ao mesmo tempo sem avisar ninguém.', feedback: 'Aumenta chance de atraso e erro.' },
     ],
   },
 ];

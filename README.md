@@ -106,13 +106,14 @@ server/
 
 O modo ao vivo usa `Node + Express + Socket.IO` com estado em memória. Reiniciar o backend apaga as salas abertas.
 
-A competição online agora roda como um `OnlineMatch`: o servidor monta uma sequência autoritativa de 3 jogos e mantém o placar acumulado da sala. Nesta fase, o template publicado é `quick_quiz` -> `work_situation` -> `priority_order`. O `quick_quiz` reaproveita os tipos e renderizadores do live quiz atual; o `work_situation` adiciona decisões rápidas em situações profissionais; o `priority_order` desafia jogadores a ordenar ações da mais prioritária para a menos prioritária.
+A competição online roda como um `OnlineMatch`: o servidor escolhe um template autoritativo de 3 jogos e mantém o placar acumulado da sala. A rotação pode combinar `quick_quiz`, `work_situation`, `priority_order`, `can_or_cant`, `professional_communication` e `find_the_mistake`, sempre com leaderboard parcial e pódio final.
 
 Rotas principais:
 
 - `/competicao`: entrada do modo ao vivo.
 - `/competicao/host`: cria uma sala e gera PIN.
 - `/competicao/host/:pin`: painel do host.
+- `/competicao/exibicao/:pin`: tela limpa para projetor.
 - `/competicao/entrar`: formulário de jogador.
 - `/competicao/sala/:pin`: sala do jogador.
 
@@ -142,7 +143,7 @@ As rodadas competitivas (`multiple_choice`, `true_false`, `multiple_select`) ali
 - `ranking`: contagem Borda simples, média de posição e votos em primeiro lugar por item.
 - `qna`: respostas abertas agrupadas por texto normalizado, preservando uma versão legível para exibição.
 
-A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competição padrão usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotação principal. Cada sala recebe uma rotação base de perguntas para o `quick_quiz`; o match usa 4 rodadas no primeiro bloco, sorteia 3 situações profissionais no bloco central e fecha com 3 rodadas de ordem de prioridade. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
+A base de perguntas live fica separada entre catálogo competitivo e participativo, com metadados de `bucket`, `tone`, `topic`, `difficulty`, `sessionFit` e `enabled`. A competição padrão usa apenas perguntas com `sessionFit: competition` ou `sessionFit: both`, mantendo `qna`, `word_cloud` e perguntas de oficina fora da rotação principal. Cada sala recebe um dos templates válidos de 3 jogos, por exemplo `quick_quiz -> work_situation -> priority_order`, `quick_quiz -> can_or_cant -> professional_communication`, `quick_quiz -> work_situation -> find_the_mistake` ou `can_or_cant -> professional_communication -> priority_order`. Perguntas competitivas aceitam apenas `tone: objective`; itens com tom de entrevista ficam restritos ao bucket participativo.
 
 Para o match online, `difficulty`, `contentGroup` e `sessionTags` também são usados como metadados internos de seleção no servidor. Eles ajudam a evitar repetição de tema, grupo de conteúdo e dificuldade, mas não entram no payload público da rodada enquanto a UI não precisar deles.
 
@@ -166,11 +167,20 @@ No `priority_order`, cada rodada apresenta um cenário e 3 ou 4 ações embaralh
 
 O reveal mostra a ordem ideal, a ordem enviada pelo jogador, quantos itens ficaram na posição certa, pontuação base, bônus de velocidade e pontuação final da rodada.
 
-Com esse balanceamento, os três minigames ativos ficam com peso semelhante no match:
+No `can_or_cant`, cada rodada mostra uma atitude e o jogador classifica como `Pode` ou `Não pode`. O jogo usa 4 rodadas, cada uma valendo `800` pontos base por acerto e até `100` pontos de velocidade, totalizando `3600` pontos.
+
+No `professional_communication`, cada rodada apresenta um contexto de comunicação e opções de mensagem. A melhor opção vale `1000` pontos base, a aceitável vale `600`, a ruim vale `0`, com até `200` pontos de velocidade.
+
+No `find_the_mistake`, cada rodada mostra um caso com possíveis erros. O jogador marca uma ou mais opções, e o score considera erros reais encontrados menos marcações indevidas. A base vai até `1000` pontos, com até `200` pontos de velocidade quando a resposta gera pontuação.
+
+Com esse balanceamento, os minigames ativos ficam com peso semelhante no match:
 
 - `quick_quiz`: 4 rodadas x 900 = `3600` pontos.
 - `work_situation`: 3 rodadas x 1200 = `3600` pontos.
 - `priority_order`: 3 rodadas x 1200 = `3600` pontos.
+- `can_or_cant`: 4 rodadas x 900 = `3600` pontos.
+- `professional_communication`: 3 rodadas x 1200 = `3600` pontos.
+- `find_the_mistake`: 3 rodadas x 1200 = `3600` pontos.
 
 A seleção diversa relaxa restrições em camadas quando o catálogo não tem variedade suficiente:
 
@@ -186,7 +196,7 @@ Limitações desta fase:
 - As salas continuam em memória; reiniciar o backend apaga partidas abertas.
 - `multiple_select` existe apenas no modo ao vivo e não altera o quiz normal em `/game`.
 - `poll`, `word_cloud`, `scale`, `ranking` e `qna` existem apenas no modo ao vivo e não alteram os fluxos normais do site.
-- `work_situation` e `priority_order` estão ativos no match online com catálogos iniciais em memória; ainda não existe modo solo específico para treinar esses minigames.
+- O match online usa catálogos em memória e sorteio autoritativo no servidor; ainda não há persistência de histórico de templates ou conteúdo por sala.
 - O backend segue pensado para uma instância única enquanto não houver Redis, banco ou coordenação entre processos.
 
 ## Deploy Produção

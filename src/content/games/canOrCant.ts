@@ -3,6 +3,9 @@ export type CanOrCantAnswer = 'can' | 'cant';
 export type CanOrCantItem = {
   id: string;
   topic: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  contentGroup?: string;
+  sessionTags?: string[];
   title: string;
   situation: string;
   answer: CanOrCantAnswer;
@@ -137,5 +140,69 @@ export const canOrCantItems: CanOrCantItem[] = [
     situation: 'Enviar e-mail para liderança com gírias, abreviações e sem assunto claro.',
     answer: 'cant',
     explanation: 'E-mail profissional precisa ser claro, respeitoso e fácil de entender.',
+  },
+  {
+    id: 'can-confirm-instruction',
+    topic: 'Rotina',
+    title: 'Confirmar instrução',
+    situation: 'Repetir com suas palavras o que entendeu de uma tarefa importante.',
+    answer: 'can',
+    explanation: 'Confirmar entendimento reduz erro e mostra atenção ao combinado.',
+  },
+  {
+    id: 'cant-record-colleague',
+    topic: 'Privacidade',
+    title: 'Gravar colega',
+    situation: 'Gravar um colega trabalhando e postar sem pedir autorização.',
+    answer: 'cant',
+    explanation: 'Imagem e ambiente de trabalho exigem consentimento e respeito às regras da empresa.',
+  },
+  {
+    id: 'can-arrive-early-training',
+    topic: 'Pontualidade',
+    title: 'Chegar antes do treinamento',
+    situation: 'Chegar alguns minutos antes de um treinamento obrigatório para se organizar.',
+    answer: 'can',
+    explanation: 'Antecipar a chegada evita correria e ajuda a começar com foco.',
+  },
+  {
+    id: 'cant-fake-sick',
+    topic: 'Responsabilidade',
+    title: 'Justificativa falsa',
+    situation: 'Inventar uma doença para faltar a uma atividade que não queria fazer.',
+    answer: 'cant',
+    explanation: 'Justificativa falsa quebra confiança e pode gerar consequência disciplinar.',
+  },
+  {
+    id: 'can-ask-feedback',
+    topic: 'Desenvolvimento',
+    title: 'Pedir retorno',
+    situation: 'Depois de uma entrega, perguntar o que pode melhorar na próxima.',
+    answer: 'can',
+    explanation: 'Buscar retorno ajuda a evoluir e demonstra interesse em aprender.',
+  },
+  {
+    id: 'cant-use-company-data',
+    topic: 'Dados',
+    title: 'Dados fora do trabalho',
+    situation: 'Levar uma lista de contatos da empresa para usar em projeto pessoal.',
+    answer: 'cant',
+    explanation: 'Dados internos não devem ser usados fora da finalidade autorizada.',
+  },
+  {
+    id: 'can-tell-priority-conflict',
+    topic: 'Prioridade',
+    title: 'Conflito de tarefas',
+    situation: 'Avisar que recebeu duas demandas urgentes e pedir orientação de prioridade.',
+    answer: 'can',
+    explanation: 'Quando tudo parece urgente, alinhar prioridade evita escolha errada e atraso.',
+  },
+  {
+    id: 'cant-change-process-alone',
+    topic: 'Processo',
+    title: 'Mudar processo sozinho',
+    situation: 'Alterar um processo combinado sem avisar porque achou seu jeito mais rápido.',
+    answer: 'cant',
+    explanation: 'Melhorias são bem-vindas, mas precisam ser alinhadas para não gerar risco ou retrabalho.',
   },
 ];

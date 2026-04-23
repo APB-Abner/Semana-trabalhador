@@ -4,7 +4,10 @@ import usePlayerRoom from '../features/live-match/model/usePlayerMatch';
 import BetweenGamesPanel from '../features/live-match/ui/BetweenGamesPanel.jsx';
 import FinalPodium from '../features/live-match/ui/FinalPodium.jsx';
 import MatchGameShell from '../features/live-match/ui/MatchGameShell.jsx';
+import CanOrCantView from '../features/live-match/ui/minigames/CanOrCantView.jsx';
+import FindTheMistakeView from '../features/live-match/ui/minigames/FindTheMistakeView.jsx';
 import PriorityOrderView from '../features/live-match/ui/minigames/PriorityOrderView.jsx';
+import ProfessionalCommunicationView from '../features/live-match/ui/minigames/ProfessionalCommunicationView.jsx';
 import WorkSituationView from '../features/live-match/ui/minigames/WorkSituationView.jsx';
 import LiveQuestionCard from '../features/live-quiz/ui/LiveQuestionCard.jsx';
 import PlayerJoinForm from '../features/live-quiz/ui/PlayerJoinForm.jsx';
@@ -229,7 +232,39 @@ export default function CompeticaoSala() {
         )}
 
         {state?.status === 'round_open' && (
-          state.currentRound?.gameType === 'work_situation' ? (
+          state.currentRound?.gameType === 'can_or_cant' ? (
+            <CanOrCantView
+              round={state.currentRound}
+              startedAt={state.startedAt}
+              closesAt={state.closesAt}
+              serverNow={state.serverNow}
+              selectedOptionIds={selectedOptionIds}
+              hasSubmitted={hasSubmitted}
+              onSubmit={confirmAnswer}
+            />
+          ) : state.currentRound?.gameType === 'professional_communication' ? (
+            <ProfessionalCommunicationView
+              round={state.currentRound}
+              startedAt={state.startedAt}
+              closesAt={state.closesAt}
+              serverNow={state.serverNow}
+              optionOrderSeed={optionOrderSeed}
+              selectedOptionIds={selectedOptionIds}
+              hasSubmitted={hasSubmitted}
+              onSubmit={confirmAnswer}
+            />
+          ) : state.currentRound?.gameType === 'find_the_mistake' ? (
+            <FindTheMistakeView
+              round={state.currentRound}
+              startedAt={state.startedAt}
+              closesAt={state.closesAt}
+              serverNow={state.serverNow}
+              selectedOptionIds={selectedOptionIds}
+              hasSubmitted={hasSubmitted}
+              onChange={updatePendingAnswer}
+              onSubmit={confirmAnswer}
+            />
+          ) : state.currentRound?.gameType === 'work_situation' ? (
             <WorkSituationView
               round={state.currentRound}
               startedAt={state.startedAt}
@@ -271,7 +306,38 @@ export default function CompeticaoSala() {
         {state?.status === 'round_revealed' && (
           <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
             <div className="min-h-0">
-              {state.currentRound?.gameType === 'work_situation' ? (
+              {state.currentRound?.gameType === 'can_or_cant' ? (
+                <CanOrCantView
+                  round={state.currentRound}
+                  startedAt={state.startedAt}
+                  closesAt={state.closesAt}
+                  serverNow={state.serverNow}
+                  selectedOptionIds={selectedOptionIds}
+                  hasSubmitted={hasSubmitted}
+                  showAnswer
+                />
+              ) : state.currentRound?.gameType === 'professional_communication' ? (
+                <ProfessionalCommunicationView
+                  round={state.currentRound}
+                  startedAt={state.startedAt}
+                  closesAt={state.closesAt}
+                  serverNow={state.serverNow}
+                  optionOrderSeed={optionOrderSeed}
+                  selectedOptionIds={selectedOptionIds}
+                  hasSubmitted={hasSubmitted}
+                  showAnswer
+                />
+              ) : state.currentRound?.gameType === 'find_the_mistake' ? (
+                <FindTheMistakeView
+                  round={state.currentRound}
+                  startedAt={state.startedAt}
+                  closesAt={state.closesAt}
+                  serverNow={state.serverNow}
+                  selectedOptionIds={selectedOptionIds}
+                  hasSubmitted={hasSubmitted}
+                  showAnswer
+                />
+              ) : state.currentRound?.gameType === 'work_situation' ? (
                 <WorkSituationView
                   round={state.currentRound}
                   startedAt={state.startedAt}

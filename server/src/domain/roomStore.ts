@@ -9,11 +9,29 @@ import {
   validateLiveQuestion,
 } from './question-handlers/index.ts';
 import {
+  calculateCanOrCantScore,
+  createCanOrCantReveal,
+  getPublicCanOrCantItem,
+  normalizeCanOrCantAnswer,
+} from './match/minigames/canOrCant.ts';
+import {
+  calculateFindTheMistakeScore,
+  createFindTheMistakeReveal,
+  getPublicFindTheMistakeCase,
+  normalizeFindTheMistakeAnswer,
+} from './match/minigames/findTheMistake.ts';
+import {
   getCurrentGameForRoundIndex,
   isFirstRoundOfGame,
   selectMatchSession,
 } from './match/matchSelector.ts';
 import { sortMatchRanking } from './match/scoring.ts';
+import {
+  calculateProfessionalCommunicationScore,
+  createProfessionalCommunicationReveal,
+  getPublicProfessionalCommunicationScenario,
+  normalizeProfessionalCommunicationAnswer,
+} from './match/minigames/professionalCommunication.ts';
 import {
   calculateWorkSituationScore,
   createWorkSituationReveal,
@@ -50,6 +68,8 @@ type RoomStoreOptions = {
   workSituations?: WorkSituation[];
   priorityOrderScenarios?: PriorityOrderScenario[];
   selectQuestions?: (context: { recentQuestionIds: string[] }) => LiveQuestion[];
+  matchTemplateId?: string;
+  randomizeTemplate?: boolean;
   recentQuestionHistorySize?: number;
   maxActiveRooms?: number;
   maxPlayersPerRoom?: number;
@@ -131,6 +151,8 @@ export function createRoomStore({
   workSituations = getWorkSituationCatalog(),
   priorityOrderScenarios = getPriorityOrderCatalog(),
   selectQuestions,
+  matchTemplateId,
+  randomizeTemplate,
   recentQuestionHistorySize = 30,
   maxActiveRooms = DEFAULT_MAX_ACTIVE_ROOMS,
   maxPlayersPerRoom = DEFAULT_MAX_PLAYERS_PER_ROOM,
@@ -234,6 +256,39 @@ export function createRoomStore({
         scenario: getPublicPriorityOrderScenario(matchRound.scenario, matchRound.publicItems),
         ...(revealAnswer
           ? { reveal: createPriorityOrderReveal(matchRound.scenario, answers, getRoundDurationMs(matchRound)) }
+          : {}),
+      };
+    }
+
+    if (matchRound.gameType === 'can_or_cant') {
+      return {
+        id: matchRound.id,
+        gameType: 'can_or_cant',
+        item: getPublicCanOrCantItem(matchRound.item),
+        ...(revealAnswer
+          ? { reveal: createCanOrCantReveal(matchRound.item, answers) }
+          : {}),
+      };
+    }
+
+    if (matchRound.gameType === 'professional_communication') {
+      return {
+        id: matchRound.id,
+        gameType: 'professional_communication',
+        scenario: getPublicProfessionalCommunicationScenario(matchRound.scenario),
+        ...(revealAnswer
+          ? { reveal: createProfessionalCommunicationReveal(matchRound.scenario, answers) }
+          : {}),
+      };
+    }
+
+    if (matchRound.gameType === 'find_the_mistake') {
+      return {
+        id: matchRound.id,
+        gameType: 'find_the_mistake',
+        case: getPublicFindTheMistakeCase(matchRound.caseItem),
+        ...(revealAnswer
+          ? { reveal: createFindTheMistakeReveal(matchRound.caseItem, answers) }
           : {}),
       };
     }
@@ -400,7 +455,13 @@ export function createRoomStore({
     const currentQuestion = getQuickQuestion(currentRound);
     const answers = [...room.round!.answers.values()];
 
-    if (currentRound?.gameType === 'work_situation' || currentRound?.gameType === 'priority_order') {
+    if (
+      currentRound?.gameType === 'work_situation'
+      || currentRound?.gameType === 'priority_order'
+      || currentRound?.gameType === 'can_or_cant'
+      || currentRound?.gameType === 'professional_communication'
+      || currentRound?.gameType === 'find_the_mistake'
+    ) {
       room.aggregatedResult = null;
       room.leaderboard = createRoundLeaderboard(room);
       emit(room, 'round:revealed');
@@ -490,6 +551,8 @@ export function createRoomStore({
       questions: sessionQuestions,
       workSituations,
       priorityOrderScenarios,
+      matchTemplateId,
+      randomizeTemplate,
     });
     const room: LiveRoomInternal = {
       pin,
@@ -724,6 +787,40 @@ export function createRoomStore({
         });
         optionIds = normalizedAnswer.optionIds;
         isCorrect = score.correctPositionCount === currentRound.scenario.items.length;
+        points = score.points;
+      } else if (currentRound.gameType === 'can_or_cant') {
+        const normalizedAnswer = normalizeCanOrCantAnswer(currentRound.item, toAnswerPayload(answer));
+        optionIds = normalizedAnswer.optionIds;
+        isCorrect = normalizedAnswer.isCorrect;
+        points = calculateCanOrCantScore({
+          isCorrect,
+          submittedAt,
+          startedAt: room.round.startedAt,
+          limitMs: roundDurationMs,
+        });
+      } else if (currentRound.gameType === 'professional_communication') {
+        const normalizedAnswer = normalizeProfessionalCommunicationAnswer(
+          currentRound.scenario,
+          toAnswerPayload(answer),
+        );
+        optionIds = normalizedAnswer.optionIds;
+        isCorrect = normalizedAnswer.option.id === currentRound.scenario.bestOptionId;
+        points = calculateProfessionalCommunicationScore({
+          quality: normalizedAnswer.option.quality,
+          submittedAt,
+          startedAt: room.round.startedAt,
+          limitMs: roundDurationMs,
+        });
+      } else if (currentRound.gameType === 'find_the_mistake') {
+        const normalizedAnswer = normalizeFindTheMistakeAnswer(currentRound.caseItem, toAnswerPayload(answer));
+        const score = calculateFindTheMistakeScore({
+          optionIds: normalizedAnswer.optionIds,
+          caseItem: currentRound.caseItem,
+          responseMs,
+          limitMs: roundDurationMs,
+        });
+        optionIds = normalizedAnswer.optionIds;
+        isCorrect = score.isPerfect;
         points = score.points;
       } else if (question) {
         const normalizedAnswer = normalizeLiveAnswer(question, toAnswerPayload(answer));

@@ -99,6 +99,7 @@ test.beforeAll(async () => {
       PORT: '4177',
       CLIENT_ORIGIN: 'http://127.0.0.1:5173',
       LIVE_QUIZ_ROUND_MS: '4500',
+      LIVE_MATCH_TEMPLATE_ID: 'classic_decision_order',
     },
     stdio: 'ignore',
   });

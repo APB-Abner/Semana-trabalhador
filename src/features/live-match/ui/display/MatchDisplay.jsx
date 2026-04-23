@@ -7,7 +7,10 @@ import LiveQuestionCard from '../../../live-quiz/ui/LiveQuestionCard.jsx';
 import CompetitiveResultView from '../../../live-quiz/ui/result-renderers/CompetitiveResultView.jsx';
 import ParticipatoryResultView from '../../../live-quiz/ui/result-renderers/ParticipatoryResultView.jsx';
 import FinalPodium from '../FinalPodium.jsx';
+import CanOrCantView from '../minigames/CanOrCantView.jsx';
+import FindTheMistakeView from '../minigames/FindTheMistakeView.jsx';
 import PriorityOrderView from '../minigames/PriorityOrderView.jsx';
+import ProfessionalCommunicationView from '../minigames/ProfessionalCommunicationView.jsx';
 import WorkSituationView from '../minigames/WorkSituationView.jsx';
 
 const statusLabels = {
@@ -23,6 +26,9 @@ const gameLabels = {
   quick_quiz: 'Quiz Relâmpago',
   work_situation: 'Situação Profissional',
   priority_order: 'Ordem de Prioridade',
+  can_or_cant: 'Pode / Não Pode',
+  professional_communication: 'Comunicação Profissional',
+  find_the_mistake: 'Caça-erros',
 };
 
 const toneStyles = {
@@ -87,6 +93,18 @@ function getDisplayTone(state) {
 
   if (gameType === 'priority_order') {
     return 'purple';
+  }
+
+  if (gameType === 'can_or_cant') {
+    return 'green';
+  }
+
+  if (gameType === 'professional_communication') {
+    return 'purple';
+  }
+
+  if (gameType === 'find_the_mistake') {
+    return 'amber';
   }
 
   return 'blue';
@@ -244,6 +262,48 @@ function GameIntroDisplay({ state }) {
 function RoundContent({ state, showAnswer = false }) {
   const isWorkSituationRound = state.currentRound?.gameType === 'work_situation';
   const isPriorityOrderRound = state.currentRound?.gameType === 'priority_order';
+  const isCanOrCantRound = state.currentRound?.gameType === 'can_or_cant';
+  const isProfessionalCommunicationRound = state.currentRound?.gameType === 'professional_communication';
+  const isFindTheMistakeRound = state.currentRound?.gameType === 'find_the_mistake';
+
+  if (isCanOrCantRound) {
+    return (
+      <CanOrCantView
+        round={state.currentRound}
+        startedAt={state.startedAt}
+        closesAt={state.closesAt}
+        serverNow={state.serverNow}
+        disabled
+        showAnswer={showAnswer}
+      />
+    );
+  }
+
+  if (isProfessionalCommunicationRound) {
+    return (
+      <ProfessionalCommunicationView
+        round={state.currentRound}
+        startedAt={state.startedAt}
+        closesAt={state.closesAt}
+        serverNow={state.serverNow}
+        disabled
+        showAnswer={showAnswer}
+      />
+    );
+  }
+
+  if (isFindTheMistakeRound) {
+    return (
+      <FindTheMistakeView
+        round={state.currentRound}
+        startedAt={state.startedAt}
+        closesAt={state.closesAt}
+        serverNow={state.serverNow}
+        disabled
+        showAnswer={showAnswer}
+      />
+    );
+  }
 
   if (isWorkSituationRound) {
     return (

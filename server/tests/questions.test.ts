@@ -109,7 +109,7 @@ describe('live quiz question adapter and session selector', () => {
     expect(byType.scale).toBeGreaterThanOrEqual(8);
     expect(byType.ranking).toBeGreaterThanOrEqual(8);
     expect(byType.qna).toBeGreaterThanOrEqual(8);
-    expect(bySessionFit.competition).toBe(33);
+    expect(bySessionFit.competition).toBe(41);
     expect(bySessionFit.workshop).toBe(21);
     expect(bySessionFit.both).toBe(16);
     expect(getLiveOnlyQuestions().length).toBeGreaterThan(40);

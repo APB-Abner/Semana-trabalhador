@@ -8,6 +8,9 @@ export type MistakeOption = {
 export type FindTheMistakeCase = {
   id: string;
   topic: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  contentGroup?: string;
+  sessionTags?: string[];
   title: string;
   prompt: string;
   sample: string;
@@ -143,6 +146,84 @@ export const findTheMistakeCases: FindTheMistakeCase[] = [
       { id: 'no-specific-problem', label: 'Não especifica o erro', isMistake: true, explanation: 'Sem apontar o problema concreto, ninguém sabe o que corrigir.' },
       { id: 'no-solution', label: 'Não propõe próximo passo', isMistake: true, explanation: 'Comunicação profissional orienta solução.' },
       { id: 'mentions-problem', label: 'Avisar que existe um erro', isMistake: false, explanation: 'Avisar é necessário; o cuidado está na forma.' },
+    ],
+  },
+  {
+    id: 'mistake-cover-letter',
+    topic: 'Candidatura',
+    title: 'Mensagem de candidatura',
+    prompt: 'A mensagem será enviada junto com um currículo.',
+    sample: '“Oi, vi a vaga aí. Preciso trabalhar logo. Se quiser chama.”',
+    options: [
+      { id: 'no-vacancy-reference', label: 'Não identifica a vaga', isMistake: true, explanation: 'A pessoa precisa saber para qual oportunidade você está se candidatando.' },
+      { id: 'weak-professional-tone', label: 'Tom pouco profissional', isMistake: true, explanation: 'A mensagem deve demonstrar interesse sem parecer descuidada.' },
+      { id: 'no-skill-connection', label: 'Não conecta habilidades à vaga', isMistake: true, explanation: 'Uma frase curta sobre curso, interesse ou disponibilidade fortalece a candidatura.' },
+      { id: 'short-application', label: 'Ser uma mensagem curta', isMistake: false, explanation: 'Mensagem curta pode funcionar quando traz as informações certas.' },
+    ],
+  },
+  {
+    id: 'mistake-document-request',
+    topic: 'Documentos',
+    title: 'Pedido de documento',
+    prompt: 'Observe a solicitação enviada ao setor responsável.',
+    sample: '“Preciso daquele papel urgente. Me manda hoje.”',
+    options: [
+      { id: 'which-document', label: 'Não diz qual documento', isMistake: true, explanation: 'O pedido precisa nomear o documento com clareza.' },
+      { id: 'deadline-pressure', label: 'Pressiona sem contexto', isMistake: true, explanation: 'Se é urgente, explique o motivo e pergunte a possibilidade.' },
+      { id: 'missing-identification-doc', label: 'Faltam dados de identificação', isMistake: true, explanation: 'Nome, turma ou matrícula ajudam a localizar o pedido.' },
+      { id: 'has-deadline', label: 'Informar prazo desejado', isMistake: false, explanation: 'Pedir prazo pode ser válido; o problema é a forma vaga e impositiva.' },
+    ],
+  },
+  {
+    id: 'mistake-late-warning',
+    topic: 'Pontualidade',
+    title: 'Aviso de atraso',
+    prompt: 'Analise a mensagem enviada ao líder.',
+    sample: '“Acho que vou chegar uma hora aí, trânsito tá osso kkk.”',
+    options: [
+      { id: 'imprecise-time', label: 'Previsão imprecisa', isMistake: true, explanation: 'O aviso precisa ter estimativa realista de chegada.' },
+      { id: 'bad-tone-delay', label: 'Tom informal para situação séria', isMistake: true, explanation: 'Atraso deve ser comunicado com objetividade e responsabilidade.' },
+      { id: 'no-apology', label: 'Não assume impacto', isMistake: true, explanation: 'Uma mensagem melhor reconhece o atraso e seu efeito na rotina.' },
+      { id: 'warn-delay', label: 'Avisar antes de chegar', isMistake: false, explanation: 'Avisar antes é correto; a mensagem precisa melhorar.' },
+    ],
+  },
+  {
+    id: 'mistake-learning-note',
+    topic: 'Aprendizado',
+    title: 'Anotação de processo',
+    prompt: 'A pessoa anotou os passos de um processo novo.',
+    sample: '“1. abrir sistema\n2. fazer negócio\n3. conferir lá\n4. mandar pra pessoa”',
+    options: [
+      { id: 'vague-steps', label: 'Passos vagos', isMistake: true, explanation: 'A anotação deve permitir repetir o processo depois.' },
+      { id: 'missing-system-area', label: 'Não indica tela ou área do sistema', isMistake: true, explanation: 'Detalhes mínimos evitam nova dúvida.' },
+      { id: 'missing-recipient', label: 'Não identifica destinatário', isMistake: true, explanation: '“Pessoa” não ajuda a saber quem deve receber.' },
+      { id: 'numbered-list', label: 'Usar lista numerada', isMistake: false, explanation: 'Lista numerada é boa; o problema é falta de precisão.' },
+    ],
+  },
+  {
+    id: 'mistake-feedback-chat',
+    topic: 'Feedback',
+    title: 'Pedido de feedback',
+    prompt: 'A pessoa quer saber como melhorar uma entrega.',
+    sample: '“E aí, ficou ruim mesmo ou é implicância?”',
+    options: [
+      { id: 'accusatory-tone', label: 'Tom acusatório', isMistake: true, explanation: 'A pergunta já começa criando defensiva.' },
+      { id: 'no-specific-question', label: 'Não pede ponto específico', isMistake: true, explanation: 'Pedir exemplo ou prioridade de melhoria gera resposta mais útil.' },
+      { id: 'informal-feedback', label: 'Informalidade excessiva', isMistake: true, explanation: 'O contexto pede tom mais profissional.' },
+      { id: 'asks-feedback', label: 'Buscar retorno sobre a entrega', isMistake: false, explanation: 'Pedir feedback é positivo quando feito de forma construtiva.' },
+    ],
+  },
+  {
+    id: 'mistake-priority-message',
+    topic: 'Prioridade',
+    title: 'Conflito de prioridades',
+    prompt: 'A pessoa recebeu duas tarefas urgentes.',
+    sample: '“Vou fazer uma qualquer primeiro e depois vejo a outra.”',
+    options: [
+      { id: 'random-priority', label: 'Escolha sem critério', isMistake: true, explanation: 'Prioridade deve considerar prazo, impacto e orientação.' },
+      { id: 'no-alignment', label: 'Não pede alinhamento', isMistake: true, explanation: 'Quando há conflito, alinhar com responsável evita decisão errada.' },
+      { id: 'vague-next-step', label: 'Próximo passo vago', isMistake: true, explanation: '“Depois vejo” não dá previsibilidade.' },
+      { id: 'sequence-work', label: 'Resolver uma tarefa por vez', isMistake: false, explanation: 'Fazer em sequência pode ser bom quando a ordem foi bem definida.' },
     ],
   },
 ];

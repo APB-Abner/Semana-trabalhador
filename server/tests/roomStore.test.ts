@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoomStore, RoomStoreError, type RoomStore } from '../src/domain/roomStore.ts';
+import { getCanOrCantCatalog } from '../src/domain/match/minigames/canOrCant.ts';
+import { getFindTheMistakeCatalog } from '../src/domain/match/minigames/findTheMistake.ts';
 import { getPriorityOrderCatalog } from '../src/domain/match/minigames/priorityOrderCatalog.ts';
+import { getProfessionalCommunicationCatalog } from '../src/domain/match/minigames/professionalCommunication.ts';
 import { liveQuestionsFixture } from './fixtures.ts';
 
 describe('roomStore', () => {
@@ -495,6 +498,119 @@ describe('roomStore', () => {
       basePoints: 1000,
     });
     expect(perfectSummary?.points).toBe((perfectSummary?.basePoints ?? 0) + (perfectSummary?.speedBonus ?? 0));
+  });
+
+  it('plays can_or_cant as a competitive match minigame', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: liveQuestionsFixture,
+      matchTemplateId: 'posture_communication_order',
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    const opened = startFirstRound(room);
+
+    expect(opened.currentRound?.gameType).toBe('can_or_cant');
+    if (opened.currentRound?.gameType !== 'can_or_cant') return;
+    const item = getCanOrCantCatalog().find((candidate) => candidate.id === opened.currentRound?.id);
+    expect(item).toBeTruthy();
+
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, player.playerToken, opened.currentRound.id, item?.answer ?? 'can');
+
+    expect(revealed.status).toBe('round_revealed');
+    expect(revealed.aggregatedResult).toBeNull();
+    expect(revealed.leaderboard[0].roundPoints).toBeGreaterThan(0);
+    expect(revealed.currentRound?.gameType).toBe('can_or_cant');
+    if (revealed.currentRound?.gameType !== 'can_or_cant') return;
+    expect(revealed.currentRound.reveal?.correctAnswer).toBe(item?.answer);
+    expect(revealed.currentRound.reveal?.totalResponses).toBe(1);
+  });
+
+  it('plays professional_communication with quality score and reveal feedback', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: liveQuestionsFixture,
+      matchTemplateId: 'communication_mistakes_quiz',
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    const opened = startFirstRound(room);
+
+    expect(opened.currentRound?.gameType).toBe('professional_communication');
+    if (opened.currentRound?.gameType !== 'professional_communication') return;
+    const scenario = getProfessionalCommunicationCatalog().find((candidate) => candidate.id === opened.currentRound?.id);
+    expect(scenario).toBeTruthy();
+
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, player.playerToken, opened.currentRound.id, scenario?.bestOptionId ?? '');
+
+    expect(revealed.status).toBe('round_revealed');
+    expect(revealed.aggregatedResult).toBeNull();
+    expect(revealed.leaderboard[0].roundPoints).toBeGreaterThan(1000);
+    expect(revealed.currentRound?.gameType).toBe('professional_communication');
+    if (revealed.currentRound?.gameType !== 'professional_communication') return;
+    expect(revealed.currentRound.reveal?.bestOptionId).toBe(scenario?.bestOptionId);
+    expect(revealed.currentRound.reveal?.options.find((option) => option.optionId === scenario?.bestOptionId)).toMatchObject({
+      quality: 'best',
+      count: 1,
+    });
+  });
+
+  it('plays find_the_mistake with multi-select competitive scoring', () => {
+    store.clearAllRooms();
+    store = createRoomStore({
+      questions: liveQuestionsFixture,
+      matchTemplateId: 'communication_mistakes_quiz',
+      roundMs: 20_000,
+      now: () => currentTime,
+    });
+    const room = store.createRoom();
+    const player = store.joinPlayer(room.pin, 'Ana');
+
+    let state = startFirstRound(room);
+
+    for (let roundIndex = 0; roundIndex < 3; roundIndex += 1) {
+      expect(state.currentRound?.gameType).toBe('professional_communication');
+      if (state.currentRound?.gameType !== 'professional_communication') return;
+      const scenario = getProfessionalCommunicationCatalog().find((candidate) => candidate.id === state.currentRound?.id);
+      currentTime += 500;
+      store.submitAnswer(room.pin, player.playerToken, state.currentRound.id, scenario?.bestOptionId ?? '');
+      const nextState = store.nextRound(room.pin, room.hostToken);
+      if (roundIndex < 2) {
+        state = nextState;
+      } else {
+        expect(nextState.status).toBe('between_games');
+      }
+    }
+
+    expect(store.nextRound(room.pin, room.hostToken).status).toBe('game_intro');
+    const mistakeRound = store.nextRound(room.pin, room.hostToken);
+
+    expect(mistakeRound.currentRound?.gameType).toBe('find_the_mistake');
+    if (mistakeRound.currentRound?.gameType !== 'find_the_mistake') return;
+    const caseItem = getFindTheMistakeCatalog().find((candidate) => candidate.id === mistakeRound.currentRound?.id);
+    const correctOptionIds = caseItem?.options.filter((option) => option.isMistake).map((option) => option.id) ?? [];
+    expect(correctOptionIds.length).toBeGreaterThan(0);
+
+    currentTime += 500;
+    const revealed = store.submitAnswer(room.pin, player.playerToken, mistakeRound.currentRound.id, {
+      optionIds: correctOptionIds,
+    });
+
+    expect(revealed.status).toBe('round_revealed');
+    expect(revealed.aggregatedResult).toBeNull();
+    expect(revealed.leaderboard[0].roundPoints).toBeGreaterThan(1000);
+    expect(revealed.currentRound?.gameType).toBe('find_the_mistake');
+    if (revealed.currentRound?.gameType !== 'find_the_mistake') return;
+    expect(revealed.currentRound.reveal?.mistakeCount).toBe(correctOptionIds.length);
+    expect(revealed.currentRound.reveal?.options.filter((option) => option.isMistake)).toHaveLength(correctOptionIds.length);
   });
 
   it('scores true_false questions through the question handler', () => {

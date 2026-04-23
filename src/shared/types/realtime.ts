@@ -18,7 +18,13 @@ export type LiveQuestionDifficulty = 'easy' | 'medium' | 'hard';
 
 export type LiveQuestionSessionFit = 'competition' | 'workshop' | 'both';
 
-export type MiniGameType = 'quick_quiz' | 'work_situation' | 'priority_order';
+export type MiniGameType =
+  | 'quick_quiz'
+  | 'work_situation'
+  | 'priority_order'
+  | 'can_or_cant'
+  | 'professional_communication'
+  | 'find_the_mistake';
 
 export type MatchStatus =
   | 'lobby'
@@ -39,7 +45,7 @@ export type MatchGame = {
   active: boolean;
 };
 
-export type MatchRoundGameType = 'quick_quiz' | 'work_situation' | 'priority_order';
+export type MatchRoundGameType = MiniGameType;
 
 export type OnlineMatch = {
   selectedGames: MatchGame[];
@@ -171,6 +177,94 @@ export type PriorityOrderReveal = {
   answerSummaries: PriorityOrderAnswerSummary[];
 };
 
+export type CanOrCantAnswer = 'can' | 'cant';
+
+export type PublicCanOrCantItem = {
+  id: string;
+  topic: string;
+  title: string;
+  situation: string;
+  options: Array<{
+    id: CanOrCantAnswer;
+    text: string;
+  }>;
+};
+
+export type CanOrCantRevealOption = {
+  optionId: CanOrCantAnswer;
+  text: string;
+  count: number;
+  percentage: number;
+};
+
+export type CanOrCantReveal = {
+  correctAnswer: CanOrCantAnswer;
+  explanation: string;
+  totalResponses: number;
+  options: CanOrCantRevealOption[];
+};
+
+export type ProfessionalCommunicationOptionQuality = 'best' | 'ok' | 'poor';
+
+export type PublicProfessionalCommunicationOption = {
+  id: string;
+  text: string;
+};
+
+export type PublicProfessionalCommunicationScenario = {
+  id: string;
+  topic: string;
+  title: string;
+  scenario: string;
+  options: PublicProfessionalCommunicationOption[];
+};
+
+export type ProfessionalCommunicationRevealOption = {
+  optionId: string;
+  text: string;
+  quality: ProfessionalCommunicationOptionQuality;
+  basePoints: number;
+  feedback: string;
+  count: number;
+  percentage: number;
+};
+
+export type ProfessionalCommunicationReveal = {
+  bestOptionId: string;
+  learningPoint: string;
+  totalResponses: number;
+  options: ProfessionalCommunicationRevealOption[];
+};
+
+export type PublicFindTheMistakeOption = {
+  id: string;
+  label: string;
+};
+
+export type PublicFindTheMistakeCase = {
+  id: string;
+  topic: string;
+  title: string;
+  prompt: string;
+  sample: string;
+  options: PublicFindTheMistakeOption[];
+};
+
+export type FindTheMistakeRevealOption = {
+  optionId: string;
+  label: string;
+  isMistake: boolean;
+  explanation: string;
+  count: number;
+  percentage: number;
+};
+
+export type FindTheMistakeReveal = {
+  totalResponses: number;
+  mistakeCount: number;
+  options: FindTheMistakeRevealOption[];
+};
+
 export type PublicMatchRound =
   | {
       id: string;
@@ -188,6 +282,24 @@ export type PublicMatchRound =
       gameType: 'priority_order';
       scenario: PublicPriorityOrderScenario;
       reveal?: PriorityOrderReveal;
+    }
+  | {
+      id: string;
+      gameType: 'can_or_cant';
+      item: PublicCanOrCantItem;
+      reveal?: CanOrCantReveal;
+    }
+  | {
+      id: string;
+      gameType: 'professional_communication';
+      scenario: PublicProfessionalCommunicationScenario;
+      reveal?: ProfessionalCommunicationReveal;
+    }
+  | {
+      id: string;
+      gameType: 'find_the_mistake';
+      case: PublicFindTheMistakeCase;
+      reveal?: FindTheMistakeReveal;
     };
 
 export type LivePlayer = {

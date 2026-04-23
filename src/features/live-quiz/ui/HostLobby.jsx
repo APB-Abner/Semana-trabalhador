@@ -5,7 +5,10 @@ import BetweenGamesPanel from '../../live-match/ui/BetweenGamesPanel.jsx';
 import FinalPodium from '../../live-match/ui/FinalPodium.jsx';
 import MatchGameShell from '../../live-match/ui/MatchGameShell.jsx';
 import MatchLobby from '../../live-match/ui/MatchLobby.jsx';
+import CanOrCantView from '../../live-match/ui/minigames/CanOrCantView.jsx';
+import FindTheMistakeView from '../../live-match/ui/minigames/FindTheMistakeView.jsx';
 import PriorityOrderView from '../../live-match/ui/minigames/PriorityOrderView.jsx';
+import ProfessionalCommunicationView from '../../live-match/ui/minigames/ProfessionalCommunicationView.jsx';
 import WorkSituationView from '../../live-match/ui/minigames/WorkSituationView.jsx';
 import LiveQuestionCard from './LiveQuestionCard.jsx';
 import PresenceList from './PresenceList.jsx';
@@ -109,6 +112,9 @@ export default function HostLobby({ state, displayHref, error, onStart, onNextRo
       : `${statusLabels[state.status] || state.status} ${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
   const isWorkSituationRound = state.currentRound?.gameType === 'work_situation';
   const isPriorityOrderRound = state.currentRound?.gameType === 'priority_order';
+  const isCanOrCantRound = state.currentRound?.gameType === 'can_or_cant';
+  const isProfessionalCommunicationRound = state.currentRound?.gameType === 'professional_communication';
+  const isFindTheMistakeRound = state.currentRound?.gameType === 'find_the_mistake';
   const connectedPlayers = state.players.filter((player) => player.connected).length;
   const primaryAction = state.status === 'lobby'
     ? { label: 'Iniciar match', onClick: onStart, tone: 'green' }
@@ -141,7 +147,31 @@ export default function HostLobby({ state, displayHref, error, onStart, onNextRo
 
         {state.status === 'round_open' && (
           <>
-            {isWorkSituationRound ? (
+            {isCanOrCantRound ? (
+              <CanOrCantView
+                round={state.currentRound}
+                startedAt={state.startedAt}
+                closesAt={state.closesAt}
+                serverNow={state.serverNow}
+                disabled
+              />
+            ) : isProfessionalCommunicationRound ? (
+              <ProfessionalCommunicationView
+                round={state.currentRound}
+                startedAt={state.startedAt}
+                closesAt={state.closesAt}
+                serverNow={state.serverNow}
+                disabled
+              />
+            ) : isFindTheMistakeRound ? (
+              <FindTheMistakeView
+                round={state.currentRound}
+                startedAt={state.startedAt}
+                closesAt={state.closesAt}
+                serverNow={state.serverNow}
+                disabled
+              />
+            ) : isWorkSituationRound ? (
               <WorkSituationView
                 round={state.currentRound}
                 startedAt={state.startedAt}
@@ -176,7 +206,34 @@ export default function HostLobby({ state, displayHref, error, onStart, onNextRo
 
         {state.status === 'round_revealed' && (
           <>
-            {isWorkSituationRound ? (
+            {isCanOrCantRound ? (
+              <CanOrCantView
+                round={state.currentRound}
+                startedAt={state.startedAt}
+                closesAt={state.closesAt}
+                serverNow={state.serverNow}
+                disabled
+                showAnswer
+              />
+            ) : isProfessionalCommunicationRound ? (
+              <ProfessionalCommunicationView
+                round={state.currentRound}
+                startedAt={state.startedAt}
+                closesAt={state.closesAt}
+                serverNow={state.serverNow}
+                disabled
+                showAnswer
+              />
+            ) : isFindTheMistakeRound ? (
+              <FindTheMistakeView
+                round={state.currentRound}
+                startedAt={state.startedAt}
+                closesAt={state.closesAt}
+                serverNow={state.serverNow}
+                disabled
+                showAnswer
+              />
+            ) : isWorkSituationRound ? (
               <WorkSituationView
                 round={state.currentRound}
                 startedAt={state.startedAt}

@@ -13,6 +13,7 @@ export type CreateRealtimeAppOptions = {
   questions?: LiveQuestion[];
   workSituations?: WorkSituation[];
   priorityOrderScenarios?: PriorityOrderScenario[];
+  matchTemplateId?: string;
   roundMs?: number;
   maxActiveRooms?: number;
   maxPlayersPerRoom?: number;
@@ -30,6 +31,7 @@ export function createRealtimeApp(options: CreateRealtimeAppOptions = {}) {
     questions,
     workSituations,
     priorityOrderScenarios,
+    matchTemplateId = process.env.LIVE_MATCH_TEMPLATE_ID,
     roundMs = readPositiveIntegerEnv('LIVE_QUIZ_ROUND_MS', 20_000),
     maxActiveRooms = readPositiveIntegerEnv('LIVE_QUIZ_MAX_ACTIVE_ROOMS', 200),
     maxPlayersPerRoom = readPositiveIntegerEnv('LIVE_QUIZ_MAX_PLAYERS_PER_ROOM', 80),
@@ -48,6 +50,8 @@ export function createRealtimeApp(options: CreateRealtimeAppOptions = {}) {
     selectQuestions: questions
       ? undefined
       : ({ recentQuestionIds }) => selectLiveQuestionsForSession({ questions: questionBank, recentQuestionIds }),
+    matchTemplateId,
+    randomizeTemplate: !matchTemplateId && !questions,
     roundMs,
     onRoomEvent: (event: RoomEvent) => {
       io.to(event.pin).emit(event.event, event.state);

@@ -15,7 +15,12 @@ export type {
   AnswerSubmitPayload,
   AggregatedResult,
   BasicAck,
+  CanOrCantAnswer,
+  CanOrCantReveal,
+  CanOrCantRevealOption,
   ClientRole,
+  FindTheMistakeReveal,
+  FindTheMistakeRevealOption,
   HostActionPayload,
   LeaderboardEntry,
   LiveAnswerPayload,
@@ -39,10 +44,18 @@ export type {
   PriorityOrderReveal,
   PriorityOrderRevealItem,
   PriorityOrderScenario,
+  ProfessionalCommunicationOptionQuality,
+  ProfessionalCommunicationReveal,
+  ProfessionalCommunicationRevealOption,
+  PublicCanOrCantItem,
+  PublicFindTheMistakeCase,
+  PublicFindTheMistakeOption,
   PublicPriorityOrderItem,
   PublicPriorityOrderScenario,
   PublicLiveQuestion,
   PublicMatchRound,
+  PublicProfessionalCommunicationOption,
+  PublicProfessionalCommunicationScenario,
   PublicWorkSituation,
   RoomCreateAck,
   RoomJoinAck,
@@ -100,7 +113,31 @@ export type PriorityOrderMatchRound = {
   publicItems: Array<Pick<PriorityOrderScenario['items'][number], 'id' | 'text'>>;
 };
 
-export type MatchRoundInternal = QuickQuizMatchRound | WorkSituationMatchRound | PriorityOrderMatchRound;
+export type CanOrCantMatchRound = {
+  id: string;
+  gameType: 'can_or_cant';
+  item: import('../../../src/content/games/canOrCant.ts').CanOrCantItem;
+};
+
+export type ProfessionalCommunicationMatchRound = {
+  id: string;
+  gameType: 'professional_communication';
+  scenario: import('../../../src/content/games/professionalCommunication.ts').ProfessionalCommunicationScenario;
+};
+
+export type FindTheMistakeMatchRound = {
+  id: string;
+  gameType: 'find_the_mistake';
+  caseItem: import('../../../src/content/games/findTheMistake.ts').FindTheMistakeCase;
+};
+
+export type MatchRoundInternal =
+  | QuickQuizMatchRound
+  | WorkSituationMatchRound
+  | PriorityOrderMatchRound
+  | CanOrCantMatchRound
+  | ProfessionalCommunicationMatchRound
+  | FindTheMistakeMatchRound;
 
 export type LiveRoomInternal = {
   pin: string;
