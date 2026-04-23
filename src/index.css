@@ -104,6 +104,7 @@ h3 {
 @layer utilities {
   .competition-page {
     padding-block: 0.75rem;
+    max-height: 100dvh;
   }
 
   .competition-page > header {
@@ -131,6 +132,10 @@ h3 {
     min-height: 5rem;
   }
 
+  .competition-main > div {
+    max-height: 100%;
+  }
+
   .competition-main .mt-5 {
     margin-top: 0.75rem;
   }
@@ -155,6 +160,9 @@ h3 {
 
   .projector-display {
     position: relative;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
     background:
       linear-gradient(135deg, rgba(29, 78, 216, 0.22), transparent 34%),
       linear-gradient(225deg, rgba(16, 185, 129, 0.14), transparent 36%),
@@ -196,9 +204,13 @@ h3 {
     overflow: hidden;
   }
 
+  .projector-round-shell > div {
+    padding: 1.35rem !important;
+  }
+
   .projector-round-shell h3 {
-    font-size: clamp(2rem, 3.15vw, 3.75rem);
-    line-height: 1.06;
+    font-size: clamp(1.7rem, 2.45vw, 3.05rem);
+    line-height: 1.08;
   }
 
   .projector-round-shell button,
@@ -207,7 +219,7 @@ h3 {
   }
 
   .projector-round-shell button[aria-pressed] {
-    padding-block: 0.7rem;
+    padding-block: 0.62rem;
   }
 
   .projector-round-shell .mt-5,
@@ -231,11 +243,43 @@ h3 {
   }
 
   .projector-result-shell > div {
-    padding: 1.5rem !important;
+    padding: 1.25rem !important;
   }
 
   .projector-result-shell .space-y-2 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 0.55rem;
+  }
+
+  .projector-round-shell pre {
+    max-height: 8.5rem;
+  }
+
+  @media (max-width: 767px) {
+    .competition-page {
+      padding-block: 0.5rem;
+    }
+
+    .competition-page > header {
+      margin-bottom: 0.5rem;
+    }
+
+    .competition-main .p-5 {
+      padding: 0.85rem;
+    }
+
+    .competition-main h3 {
+      font-size: 1.05rem;
+      line-height: 1.25;
+    }
+
+    .competition-main button[aria-pressed] {
+      padding-block: 0.55rem;
+    }
+
+    .competition-main .mt-5,
+    .competition-main .mt-4 {
+      margin-top: 0.65rem;
+    }
   }
 
   @keyframes display-fade-up {

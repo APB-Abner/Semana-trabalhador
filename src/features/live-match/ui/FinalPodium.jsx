@@ -3,7 +3,7 @@ import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
 import PigeonAvatar from '../../pigeon-avatar/ui/PigeonAvatar';
 import CompetitiveResultView from '../../live-quiz/ui/result-renderers/CompetitiveResultView.jsx';
 
-export default function FinalPodium({ compact = false, entries = [], variant = 'default' }) {
+export default function FinalPodium({ compact = false, currentPlayerId, entries = [], variant = 'default' }) {
   const topThree = entries.slice(0, 3);
   const displayMode = variant === 'display';
   const orderedTopThree = displayMode && topThree.length >= 3
@@ -19,18 +19,19 @@ export default function FinalPodium({ compact = false, entries = [], variant = '
         <h2 className={displayMode ? 'mt-3 text-5xl font-black text-gray-950 dark:text-white sm:text-6xl' : compact ? 'mt-2 text-2xl font-extrabold text-gray-950 dark:text-white' : 'mt-2 text-3xl font-extrabold text-gray-950 dark:text-white'}>
           Fim de partida
         </h2>
-        <div className={displayMode ? 'mt-12 grid gap-5 md:grid-cols-3 md:items-end' : compact ? 'mt-4 grid gap-3 md:grid-cols-3' : 'mt-6 grid gap-3 md:grid-cols-3'}>
+        <div className={displayMode ? 'mt-8 grid gap-4 md:grid-cols-3 md:items-end' : compact ? 'mt-4 grid gap-3 md:grid-cols-3' : 'mt-6 grid gap-3 md:grid-cols-3'}>
           {orderedTopThree.map((entry) => {
             const index = entries.findIndex((candidate) => candidate.playerId === entry.playerId);
             const isWinner = index === 0;
+            const isCurrentPlayer = currentPlayerId === entry.playerId;
 
             return (
             <div
               key={entry.playerId}
               className={`relative overflow-hidden rounded-lg border text-center dark:bg-zinc-950/70 ${
                 isWinner
-                  ? `border-amber-300 bg-amber-50 dark:border-amber-700 ${displayMode ? 'p-9 md:-mt-14 md:pb-12' : compact ? 'p-4 md:-mt-2 md:pb-5' : 'p-5 md:-mt-4 md:pb-7'}`
-                  : `border-green-200 bg-white/80 dark:border-green-800 ${displayMode ? 'p-7 opacity-95' : compact ? 'p-4' : 'p-5'}`
+                  ? `border-amber-300 bg-amber-50 dark:border-amber-700 ${displayMode ? 'p-6 md:-mt-8 md:pb-8' : compact ? 'p-4 md:-mt-2 md:pb-5' : 'p-5 md:-mt-4 md:pb-7'}`
+                  : `border-green-200 bg-white/80 dark:border-green-800 ${displayMode ? 'p-5 opacity-95' : compact ? 'p-4' : 'p-5'}`
               }`}
             >
               <Badge tone={isWinner ? 'amber' : 'green'}>{index + 1}º lugar</Badge>
@@ -40,10 +41,15 @@ export default function FinalPodium({ compact = false, entries = [], variant = '
                 </p>
               )}
               <div className={displayMode ? 'mt-6 flex justify-center' : 'mt-4 flex justify-center'}>
-                <PigeonAvatar avatar={entry.avatar} size={displayMode ? (isWinner ? 168 : 126) : compact ? 'lg' : isWinner ? 'xl' : 'lg'} label={`Avatar de ${entry.name}`} />
+                <PigeonAvatar avatar={entry.avatar} size={displayMode ? (isWinner ? 132 : 104) : compact ? 'lg' : isWinner ? 'xl' : 'lg'} label={`Avatar de ${entry.name}`} />
               </div>
               <p className={displayMode ? `${isWinner ? 'text-4xl' : 'text-3xl'} mt-3 font-black leading-tight text-gray-950 dark:text-white` : 'mt-4 text-lg font-bold text-gray-950 dark:text-white'}>
                 {entry.name}
+                {isCurrentPlayer && (
+                  <span className="ml-2 rounded-full bg-blue-600 px-2 py-0.5 text-[0.7rem] font-bold uppercase text-white">
+                    Você
+                  </span>
+                )}
               </p>
               <p className={displayMode ? 'mt-2 text-2xl font-black text-green-700 dark:text-green-200' : 'text-sm font-semibold text-green-700 dark:text-green-200'}>
                 {entry.score} pontos
@@ -53,7 +59,7 @@ export default function FinalPodium({ compact = false, entries = [], variant = '
           })}
         </div>
       </ResultPanel>
-      <CompetitiveResultView entries={entries} title="Ranking final" />
+      {!displayMode && <CompetitiveResultView currentPlayerId={currentPlayerId} entries={entries} title="Ranking final" />}
     </div>
   );
 }

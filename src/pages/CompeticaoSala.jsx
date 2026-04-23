@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import usePlayerRoom from '../features/live-match/model/usePlayerMatch';
+import { getRoundProgressLabel } from '../features/live-match/lib/matchProgress.js';
 import BetweenGamesPanel from '../features/live-match/ui/BetweenGamesPanel.jsx';
 import FinalPodium from '../features/live-match/ui/FinalPodium.jsx';
 import MatchGameShell from '../features/live-match/ui/MatchGameShell.jsx';
@@ -84,6 +85,7 @@ export default function CompeticaoSala() {
   const submittingRoundRef = useRef(null);
   const {
     connected,
+    currentPlayerId,
     error,
     hasPlayerToken,
     joinRoom,
@@ -197,14 +199,18 @@ export default function CompeticaoSala() {
 
   return (
     <PageShell size="full" className="competition-page flex h-full flex-col overflow-hidden text-gray-900 dark:text-white">
-      <header className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
+      <header className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
         <div>
           <Badge tone="blue">Sala</Badge>
-          <h1 className="font-display mt-2 text-2xl font-bold leading-tight text-gray-950 dark:text-white sm:text-3xl">
+          <h1 className="font-display mt-1 text-xl font-bold leading-tight text-gray-950 dark:text-white sm:text-2xl">
             {pin}
           </h1>
         </div>
-        {state && <Badge tone="blue">{statusLabels[state.status] || state.status}</Badge>}
+        <div className="flex flex-wrap justify-end gap-2">
+          {state?.currentGame && <Badge tone="green">{getRoundProgressLabel(state)}</Badge>}
+          {state?.currentGame && <Badge tone="purple">{state.currentGame.title}</Badge>}
+          {state && <Badge tone="blue">{statusLabels[state.status] || state.status}</Badge>}
+        </div>
       </header>
 
       {error && <FeedbackNotice tone="danger" className="mb-3 shrink-0">{error}</FeedbackNotice>}
@@ -219,7 +225,7 @@ export default function CompeticaoSala() {
         {!state && <WaitingScreen title="Carregando sala" />}
 
         {state?.status === 'lobby' && (
-          <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[1fr_20rem]">
+          <div className="grid h-full min-h-0 gap-3 lg:grid-cols-[1fr_20rem]">
             <WaitingScreen title="Aguardando o host iniciar">
               Você já está no lobby. A primeira rodada aparece quando a partida começar.
             </WaitingScreen>
@@ -304,8 +310,8 @@ export default function CompeticaoSala() {
         )}
 
         {state?.status === 'round_revealed' && (
-          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-            <div className="min-h-0">
+          <div className="grid h-full min-h-0 gap-3 overflow-y-auto pr-1 xl:grid-cols-[minmax(0,1fr)_23rem] xl:overflow-hidden xl:pr-0">
+            <div className="min-h-0 xl:overflow-y-auto xl:pr-1">
               {state.currentRound?.gameType === 'can_or_cant' ? (
                 <CanOrCantView
                   round={state.currentRound}
@@ -373,20 +379,31 @@ export default function CompeticaoSala() {
                 />
               )}
             </div>
-            {state.aggregatedResult ? (
-              <ParticipatoryResultView result={state.aggregatedResult} />
-            ) : (
-              <CompetitiveResultView entries={state.leaderboard} title="Placar da rodada" showRoundDetails={false} />
-            )}
+            <div className="min-h-0 xl:overflow-y-auto xl:pr-1">
+              {state.aggregatedResult ? (
+                <ParticipatoryResultView result={state.aggregatedResult} />
+              ) : (
+              <CompetitiveResultView
+                currentPlayerId={currentPlayerId}
+                entries={state.leaderboard}
+                title="Placar da rodada"
+                showRoundDetails={false}
+              />
+              )}
+            </div>
           </div>
         )}
 
         {state?.status === 'between_games' && (
-          <BetweenGamesPanel state={state} />
+          <div className="h-full min-h-0 overflow-y-auto pr-1 lg:overflow-hidden lg:pr-0">
+            <BetweenGamesPanel currentPlayerId={currentPlayerId} state={state} />
+          </div>
         )}
 
         {state?.status === 'finished' && (
-          <FinalPodium entries={state.finalRanking} compact />
+          <div className="h-full min-h-0 overflow-y-auto pr-1">
+            <FinalPodium currentPlayerId={currentPlayerId} entries={state.finalRanking} compact />
+          </div>
         )}
       </section>
     </PageShell>

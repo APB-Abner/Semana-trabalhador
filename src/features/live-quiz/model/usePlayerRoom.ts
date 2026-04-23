@@ -29,6 +29,10 @@ function playerTokenKey(pin: string) {
   return `stw.live.player.${pin}`;
 }
 
+function playerIdKey(pin: string) {
+  return `stw.live.playerId.${pin}`;
+}
+
 function readPlayerToken(pin?: string) {
   if (!pin || typeof window === 'undefined') {
     return null;
@@ -43,10 +47,25 @@ function storePlayerToken(pin: string, token: string) {
   }
 }
 
+function readPlayerId(pin?: string) {
+  if (!pin || typeof window === 'undefined') {
+    return null;
+  }
+
+  return window.sessionStorage.getItem(playerIdKey(pin));
+}
+
+function storePlayerId(pin: string, playerId: string) {
+  if (typeof window !== 'undefined') {
+    window.sessionStorage.setItem(playerIdKey(pin), playerId);
+  }
+}
+
 export default function usePlayerRoom(pin?: string) {
   const { connected, emitWithAck, socket } = useRoomSocket();
   const [state, setState] = useState<RoomState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [currentPlayerId, setCurrentPlayerId] = useState<string | null>(() => readPlayerId(pin));
   const [submittedAnswers, setSubmittedAnswers] = useState<Record<string, SubmittedLiveAnswer>>({});
 
   useEffect(() => {
@@ -86,6 +105,11 @@ export default function usePlayerRoom(pin?: string) {
         return;
       }
 
+      if (response.playerId) {
+        storePlayerId(pin, response.playerId);
+        setCurrentPlayerId(response.playerId);
+      }
+
       setState(response.state);
     });
   }, [connected, emitWithAck, pin]);
@@ -115,6 +139,11 @@ export default function usePlayerRoom(pin?: string) {
 
     if (response.playerToken) {
       storePlayerToken(normalizedPin, response.playerToken);
+    }
+
+    if (response.playerId) {
+      storePlayerId(normalizedPin, response.playerId);
+      setCurrentPlayerId(response.playerId);
     }
 
     setState(response.state);
@@ -177,6 +206,7 @@ export default function usePlayerRoom(pin?: string) {
 
   return {
     connected,
+    currentPlayerId,
     error,
     hasPlayerToken: Boolean(readPlayerToken(pin)),
     joinRoom,

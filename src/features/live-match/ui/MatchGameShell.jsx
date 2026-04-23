@@ -2,8 +2,9 @@ import Badge from '../../../shared/ui/Badge.jsx';
 import CtaButtonRow from '../../../shared/ui/CtaButtonRow.jsx';
 import ProgressBar from '../../../shared/ui/ProgressBar.jsx';
 import ResultPanel from '../../../shared/ui/ResultPanel.jsx';
+import { getRoundProgressLabel } from '../lib/matchProgress.js';
 
-export default function MatchGameShell({ state, onStart, host = false }) {
+export default function MatchGameShell({ state, onStart, host = false, showAction = true }) {
   const game = state?.currentGame;
   const gameIndex = state?.currentGameIndex ?? -1;
   const totalGames = state?.selectedGames?.length ?? 0;
@@ -16,6 +17,7 @@ export default function MatchGameShell({ state, onStart, host = false }) {
     <ResultPanel tone="info">
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone="blue">Jogo {gameIndex + 1}/{totalGames}</Badge>
+        <Badge tone="green">{getRoundProgressLabel(state)}</Badge>
         <Badge tone="purple">{game.title}</Badge>
       </div>
       <h2 className="mt-4 text-2xl font-extrabold text-gray-950 dark:text-white">{game.title}</h2>
@@ -28,7 +30,7 @@ export default function MatchGameShell({ state, onStart, host = false }) {
         <ProgressBar value={gameIndex + 1} max={Math.max(1, totalGames)} barClassName="bg-blue-500" />
       </div>
 
-      {host ? (
+      {host && showAction ? (
         <CtaButtonRow
           className="mt-6 justify-start"
           actions={[{ label: `Iniciar ${game.title}`, onClick: onStart, tone: 'green' }]}

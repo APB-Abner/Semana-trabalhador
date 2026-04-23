@@ -3,6 +3,7 @@ import FeedbackNotice from '../../../../shared/ui/FeedbackNotice.jsx';
 import ResultPanel from '../../../../shared/ui/ResultPanel.jsx';
 import QRCode from 'react-qr-code';
 import PigeonAvatar from '../../../pigeon-avatar/ui/PigeonAvatar';
+import { getRoundProgressLabel } from '../../lib/matchProgress.js';
 import LiveQuestionCard from '../../../live-quiz/ui/LiveQuestionCard.jsx';
 import CompetitiveResultView from '../../../live-quiz/ui/result-renderers/CompetitiveResultView.jsx';
 import ParticipatoryResultView from '../../../live-quiz/ui/result-renderers/ParticipatoryResultView.jsx';
@@ -130,14 +131,14 @@ function DisplayHeader({ state }) {
   const tone = getToneClasses(state);
 
   return (
-    <header className="relative z-10 mx-auto flex w-full max-w-[92rem] shrink-0 flex-wrap items-center justify-between gap-4 px-6 py-4 lg:px-10">
+    <header className="relative z-10 mx-auto flex w-full max-w-[92rem] shrink-0 flex-wrap items-center justify-between gap-3 px-5 py-3 lg:px-8">
       <div className="flex flex-wrap items-center gap-4">
         <span className={`rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.18em] ${tone.pill}`}>
           Ao vivo
         </span>
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-300">Competição Jovem Trabalhador</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-white sm:text-4xl">
+          <h1 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
             {statusLabels[state.status] ?? state.status}
           </h1>
         </div>
@@ -158,7 +159,7 @@ function DisplayStage({ children, stageKey, state, wide = false }) {
   return (
     <section
       key={stageKey}
-      className={`projector-stage relative z-10 mx-auto flex w-full min-h-0 flex-1 flex-col overflow-hidden ${wide ? 'max-w-[92rem]' : 'max-w-7xl'} px-6 pb-5 pt-2 animate-display-fade-up lg:px-10`}
+      className={`projector-stage relative z-10 mx-auto flex w-full min-h-0 flex-1 flex-col overflow-hidden ${wide ? 'max-w-[92rem]' : 'max-w-7xl'} px-5 pb-4 pt-1 animate-display-fade-up lg:px-8`}
     >
       <div className={`mb-4 h-1.5 w-40 shrink-0 rounded-full ${tone.bar}`} />
       {children}
@@ -172,13 +173,13 @@ function LobbyDisplay({ state }) {
 
   return (
     <DisplayStage stageKey="lobby" state={state} wide>
-      <div className="grid min-h-[68svh] gap-8 lg:grid-cols-[1.05fr_0.75fr] lg:items-center">
+      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[1.05fr_0.75fr] lg:items-center">
         <div>
           <p className={`text-xl font-black uppercase tracking-[0.2em] ${tone.eyebrow}`}>Partida prestes a começar</p>
           <div className={`projector-panel mt-6 grid gap-8 overflow-hidden rounded-3xl border p-8 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-center ${tone.border} ${tone.panel}`}>
             <div className="min-w-0">
               <p className="text-sm font-black uppercase tracking-[0.22em] text-slate-300">PIN da sala</p>
-              <p className="font-display mt-3 max-w-full whitespace-nowrap text-[4.5rem] font-black leading-none tracking-[0.06em] text-white sm:text-[5.25rem] lg:text-[5.75rem] xl:text-[6rem]">
+              <p className="font-display mt-3 max-w-full whitespace-nowrap text-[3.5rem] font-black leading-none tracking-[0.05em] text-white sm:text-[4.25rem] lg:text-[4.75rem] xl:text-[5.25rem]">
                 {state.pin}
               </p>
             </div>
@@ -237,7 +238,7 @@ function GameIntroDisplay({ state }) {
 
   return (
     <DisplayStage stageKey={`intro-${game.id}`} state={state}>
-      <div className="flex min-h-[68svh] items-center">
+      <div className="flex min-h-0 flex-1 items-center">
         <div className="max-w-5xl">
           <div className="flex flex-wrap items-center gap-3">
             <span className={`rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.18em] ${tone.pill}`}>
@@ -247,10 +248,10 @@ function GameIntroDisplay({ state }) {
               {game.roundCount} rodadas
             </span>
           </div>
-          <h2 className="mt-7 text-7xl font-black leading-none tracking-tight text-white sm:text-8xl">
+          <h2 className="mt-6 text-6xl font-black leading-none tracking-tight text-white sm:text-7xl">
             {game.title}
           </h2>
-          <p className="mt-7 max-w-4xl text-3xl font-bold leading-tight text-slate-200">
+          <p className="mt-6 max-w-4xl text-2xl font-bold leading-tight text-slate-200 sm:text-3xl">
             {game.description}
           </p>
         </div>
@@ -348,11 +349,11 @@ function RoundMeta({ state, showAnswer }) {
   const tone = getToneClasses(state);
   const gameType = state.currentRound?.gameType ?? state.currentGame?.type;
   const roundLabel = state.currentGame
-    ? `${state.currentGameRoundIndex + 1}/${state.currentGame.roundCount}`
-    : `${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
+    ? getRoundProgressLabel(state)
+    : `Rodada ${state.currentQuestionIndex + 1}/${state.totalQuestions}`;
 
   return (
-    <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-3">
+    <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-3">
         <span className={`rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.18em] ${tone.pill}`}>
           {showAnswer ? 'Momento do resultado' : 'Todos respondendo'}
@@ -362,7 +363,7 @@ function RoundMeta({ state, showAnswer }) {
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <DisplayStat label="Rodada" value={roundLabel} />
+        <DisplayStat label="Progresso" value={roundLabel.replace('Rodada ', '')} />
         <DisplayStat label="Respostas" value={`${state.answeredCount}/${connectedCount(state.players)}`} />
       </div>
     </div>
@@ -375,7 +376,7 @@ function RoundDisplay({ state, showAnswer = false }) {
   return (
     <DisplayStage stageKey={stageKey} state={state} wide>
       <RoundMeta state={state} showAnswer={showAnswer} />
-      <div className={showAnswer ? 'grid min-h-0 flex-1 gap-5 overflow-hidden xl:grid-cols-[minmax(0,1fr)_27rem]' : 'min-h-0 flex-1 overflow-hidden'}>
+      <div className={showAnswer ? 'grid min-h-0 flex-1 gap-4 overflow-hidden xl:grid-cols-[minmax(0,1fr)_24rem]' : 'min-h-0 flex-1 overflow-hidden'}>
         <div className="projector-round-shell min-h-0 overflow-hidden">
           <RoundContent state={state} showAnswer={showAnswer} />
         </div>
@@ -403,13 +404,13 @@ function BetweenGamesDisplay({ state }) {
 
   return (
     <DisplayStage stageKey={`between-${state.currentGameIndex}`} state={state} wide>
-      <div className="grid min-h-[68svh] gap-8 lg:grid-cols-[1fr_0.85fr] lg:items-center">
+      <div className="grid min-h-0 flex-1 gap-6 lg:grid-cols-[1fr_0.85fr] lg:items-center">
         <div>
           <p className={`text-xl font-black uppercase tracking-[0.2em] ${tone.eyebrow}`}>Placar parcial</p>
-          <h2 className="mt-5 text-7xl font-black leading-none tracking-tight text-white sm:text-8xl">
+          <h2 className="mt-5 text-6xl font-black leading-none tracking-tight text-white sm:text-7xl">
             {nextGame ? 'Próxima etapa' : 'Reta final'}
           </h2>
-          <p className="mt-6 max-w-4xl text-3xl font-bold leading-tight text-slate-200">
+          <p className="mt-5 max-w-4xl text-2xl font-bold leading-tight text-slate-200 sm:text-3xl">
             {nextGame ? nextGame.title : 'O pódio final está quase pronto.'}
           </p>
           <div className="mt-10 max-w-xl">

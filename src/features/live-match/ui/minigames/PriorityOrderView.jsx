@@ -66,7 +66,7 @@ function SortablePriorityItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`grid touch-none ${presentationMode ? 'grid-cols-[2.5rem_3rem_1fr]' : 'grid-cols-[2.5rem_3rem_1fr_auto]'} items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 transition focus:outline-none focus:ring-2 focus:ring-purple-400 dark:border-zinc-700 dark:bg-zinc-950 ${
+      className={`grid touch-none grid-cols-[2.25rem_auto_minmax(0,1fr)] items-center gap-x-2 gap-y-2 rounded-lg border border-gray-200 bg-white px-3 py-3 transition focus:outline-none focus:ring-2 focus:ring-purple-400 dark:border-zinc-700 dark:bg-zinc-950 sm:gap-x-3 sm:px-4 ${
         isDragging ? 'z-10 scale-[1.01] shadow-lg ring-2 ring-purple-300 dark:ring-purple-700' : ''
       } ${locked ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
       aria-label={`Arrastar ${item?.text ?? itemId}`}
@@ -74,20 +74,20 @@ function SortablePriorityItem({
       {...listeners}
     >
       <span
-        className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 text-lg font-bold text-gray-500 dark:border-zinc-700 dark:text-gray-300"
+        className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 text-base font-bold text-gray-500 dark:border-zinc-700 dark:text-gray-300 sm:h-9 sm:w-9"
       >
         <span aria-hidden="true">⠿</span>
       </span>
       <Badge tone="purple">#{index + 1}</Badge>
-      <p className="text-sm font-semibold text-gray-900 dark:text-white">{item?.text ?? itemId}</p>
+      <p className="min-w-0 text-sm font-semibold leading-snug text-gray-900 dark:text-white">{item?.text ?? itemId}</p>
       {!presentationMode && (
-        <div className="flex gap-2">
+        <div className="col-span-3 flex justify-end gap-2">
           <button
             type="button"
             disabled={locked || index === 0}
             onClick={onMoveUp}
             onPointerDown={(event) => event.stopPropagation()}
-            className="rounded-md border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-purple-400 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-gray-200"
+            className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-700 transition hover:border-purple-400 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-gray-200"
             aria-label={`Mover ${item?.text ?? itemId} para cima`}
           >
             Subir
@@ -97,7 +97,7 @@ function SortablePriorityItem({
             disabled={locked || index === total - 1}
             onClick={onMoveDown}
             onPointerDown={(event) => event.stopPropagation()}
-            className="rounded-md border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-purple-400 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-gray-200"
+            className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-700 transition hover:border-purple-400 hover:text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:cursor-not-allowed disabled:opacity-45 dark:border-zinc-700 dark:text-gray-200"
             aria-label={`Mover ${item?.text ?? itemId} para baixo`}
           >
             Descer

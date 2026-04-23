@@ -18,7 +18,12 @@ function getRoundDetail(entry, showRoundDetails) {
   return null;
 }
 
-export default function LeaderboardPanel({ entries = [], showRoundDetails = true, title = 'Placar' }) {
+export default function LeaderboardPanel({
+  currentPlayerId,
+  entries = [],
+  showRoundDetails = true,
+  title = 'Placar',
+}) {
   return (
     <ResultPanel>
       <div className="flex items-center justify-between gap-3">
@@ -31,16 +36,28 @@ export default function LeaderboardPanel({ entries = [], showRoundDetails = true
       <div className="mt-4 space-y-2">
         {entries.length ? entries.map((entry, index) => {
           const roundDetail = getRoundDetail(entry, showRoundDetails);
+          const isCurrentPlayer = currentPlayerId === entry.playerId;
 
           return (
             <div
               key={entry.playerId}
-              className="grid grid-cols-[2rem_2.5rem_1fr_auto] items-center gap-3 rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-950"
+              className={`grid grid-cols-[2rem_2.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-md border px-3 py-2 text-sm ${
+                isCurrentPlayer
+                  ? 'border-blue-400 bg-blue-50 ring-2 ring-blue-300/50 dark:border-blue-600 dark:bg-blue-950/60'
+                  : 'border-gray-100 bg-gray-50 dark:border-zinc-800 dark:bg-zinc-950'
+              }`}
             >
               <span className="font-bold text-blue-600 dark:text-blue-300">#{index + 1}</span>
               <PigeonAvatar avatar={entry.avatar} size="sm" label={`Avatar de ${entry.name}`} />
-              <div>
-                <p className="font-semibold text-gray-900 dark:text-white">{entry.name}</p>
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-gray-900 dark:text-white">
+                  {entry.name}
+                  {isCurrentPlayer && (
+                    <span className="ml-2 rounded-full bg-blue-600 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-white">
+                      Você
+                    </span>
+                  )}
+                </p>
                 {roundDetail && (
                   <p className="text-xs text-gray-600 dark:text-gray-300">
                     {roundDetail}

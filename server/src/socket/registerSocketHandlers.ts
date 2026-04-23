@@ -100,16 +100,28 @@ export function registerSocketHandlers(
         }
 
         if (cleanPayload.playerToken) {
-          const state = store.reconnectPlayer(cleanPayload.pin, cleanPayload.playerToken);
+          const reconnect = store.reconnectPlayer(cleanPayload.pin, cleanPayload.playerToken);
           attachSocketToRoom(socket, cleanPayload.pin, { playerToken: cleanPayload.playerToken });
-          ack?.({ ok: true, pin: cleanPayload.pin, playerToken: cleanPayload.playerToken, state });
-          emitRoom(io, cleanPayload.pin, ServerEvents.PRESENCE_UPDATE, state);
+          ack?.({
+            ok: true,
+            pin: cleanPayload.pin,
+            playerId: reconnect.playerId,
+            playerToken: cleanPayload.playerToken,
+            state: reconnect.state,
+          });
+          emitRoom(io, cleanPayload.pin, ServerEvents.PRESENCE_UPDATE, reconnect.state);
           return;
         }
 
         const room = store.joinPlayer(cleanPayload.pin, cleanPayload.name ?? '', cleanPayload.avatar);
         attachSocketToRoom(socket, cleanPayload.pin, { playerToken: room.playerToken });
-        ack?.({ ok: true, pin: cleanPayload.pin, playerToken: room.playerToken, state: room.state });
+        ack?.({
+          ok: true,
+          pin: cleanPayload.pin,
+          playerId: room.playerId,
+          playerToken: room.playerToken,
+          state: room.state,
+        });
         emitRoom(io, cleanPayload.pin, ServerEvents.PRESENCE_UPDATE, room.state);
       } catch (error) {
         ackError(ack, error);

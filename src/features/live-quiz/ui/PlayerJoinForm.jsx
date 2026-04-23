@@ -31,8 +31,8 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
   };
 
   return (
-    <ResultPanel>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <ResultPanel className="p-4 sm:p-5">
+      <form onSubmit={handleSubmit} className="space-y-3.5">
         <div>
           <label htmlFor="live-name" className="text-sm font-semibold text-gray-700 dark:text-gray-200">
             Nome
@@ -72,7 +72,7 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
           {loading ? 'Entrando...' : 'Entrar na sala'}
         </button>
 
-        <div className="border-t border-gray-200 pt-4 dark:border-zinc-800">
+        <div className="border-t border-gray-200 pt-3.5 dark:border-zinc-800">
           <button
             type="button"
             onClick={() => setCustomizerOpen((open) => !open)}
@@ -81,9 +81,7 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
           >
             <span>
               <span className="block text-sm font-semibold text-gray-900 dark:text-white">Avatar do jogador</span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400">
-                Opcional, pode entrar com o padrão.
-              </span>
+              <span className="block text-xs text-gray-500 dark:text-gray-400">Opcional.</span>
             </span>
             <span className="flex shrink-0 items-center gap-2">
               <PigeonAvatar avatar={avatar} size="sm" label="Preview do avatar" />
@@ -94,7 +92,7 @@ export default function PlayerJoinForm({ initialPin = '', onJoin }) {
           </button>
 
           {customizerOpen && (
-            <div className="mt-4">
+            <div className="mt-3 max-h-[42svh] overflow-y-auto pr-1">
               <PigeonAvatarEditor
                 value={avatar}
                 onChange={setAvatar}

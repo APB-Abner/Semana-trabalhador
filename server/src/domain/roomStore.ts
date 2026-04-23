@@ -88,7 +88,13 @@ type CreateRoomResult = {
 
 type JoinPlayerResult = {
   pin: string;
+  playerId: string;
   playerToken: string;
+  state: RoomState;
+};
+
+type ReconnectPlayerResult = {
+  playerId: string;
   state: RoomState;
 };
 
@@ -622,6 +628,7 @@ export function createRoomStore({
 
     return {
       pin,
+      playerId,
       playerToken,
       state: sanitizeRoom(room),
     };
@@ -636,7 +643,7 @@ export function createRoomStore({
     return sanitizeRoom(room);
   }
 
-  function reconnectPlayer(pin: string, playerToken: string) {
+  function reconnectPlayer(pin: string, playerToken: string): ReconnectPlayerResult {
     const room = requireRoom(pin);
     const player = [...room.players.values()].find((candidate) => candidate.token === playerToken);
 
@@ -646,7 +653,10 @@ export function createRoomStore({
 
     player.connected = true;
     emit(room, 'presence:update');
-    return sanitizeRoom(room);
+    return {
+      playerId: player.id,
+      state: sanitizeRoom(room),
+    };
   }
 
   function startGame(pin: string, hostToken: string) {
